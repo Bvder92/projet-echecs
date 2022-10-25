@@ -1,5 +1,5 @@
-#ifndef _CHESS_H__
-#define _CHESS_H__
+#ifndef __CHESS_H__
+#define __CHESS_H__
 
 #define TAILLE 8
 #define MAX 64
