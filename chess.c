@@ -45,8 +45,8 @@ void initialiser_jeu(){
     for (i = 8; i<16; i++){
         echequier[i] = PION+NOIR;
     }
-    for (int j = 16; j<48; j++){
-        echequier[j] = VIDE;
+    for ( i = 16; i<48; i++){
+        echequier[i] = VIDE;
     }
     for (i = 48; i<56; i++){
         echequier[i] = PION;
