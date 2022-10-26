@@ -60,3 +60,57 @@ void initialiser_jeu(){
     echequier[62] = CAVALIER;
     echequier[63] = TOUR;
 }
+
+
+/*
+-> Pour l'instant la fonction affiche les coordonnées des mouvements légaux sous forme d'indice du tableau echequier
+-> Le but serait qu'elle l'affiche sous forme <lettre><chiffre> genre 'A4'
+-> Faut écrire une fonction qui fait l'inverse de "placer_pion" : on lui donne un indice et elle nous renvoie ligne et colonne
+*/
+void bouger_pion(int position){ //si on entre dans cette fonction on sait qu'il y a un pion dans la position passée en argument, ca sera vérifié dans le main
+    int reponse = 0;
+    if (128 % echequier[position] == 128) { // le pion est noir
+            
+        if(position >= 8 && position <= 15){ // le pion n'a jamais bougé donc il peut avancer d'une ou deux cases
+            printf("~Moves légaux: 1)%d ; 2)%d", position+8, position+16); 
+            while (reponse != 1 && reponse != 2){ //on demande a l'utilisateur tant que la rep est incorrecte
+                printf("\n1 ou 2: ");
+                scanf("%d", &reponse);
+            }
+            if (reponse == 1) {
+                echequier[position + 8] = echequier[position];
+                echequier[position] = VIDE;
+            }
+            else {
+                echequier[position + 16] = echequier[position];
+                echequier[position] = VIDE;
+            }
+        }
+        else { //le pion a déja été déplacé, on le bouge direct pcq flemme
+            echequier[position + 8] = echequier[position];
+            echequier[position] = VIDE;
+        }
+    }
+
+    else{ // le pion est blanc: on fait la meme chose qu'avant mais avec d'autres indices
+        if(position >= 48 && position <= 55){ // le pion n'a jamais bougé donc il peut avancer d'une ou deux cases
+            printf("~Moves légaux: 1)%d ; 2)%d", position-8, position-16); 
+            while (reponse != 1 && reponse != 2){ //on demande a l'utilisateur tant que la rep est incorrecte
+                printf("\n1 ou 2: ");
+                scanf("%d", &reponse);
+            }
+            if (reponse == 1) {
+                echequier[position - 8] = echequier[position];
+                echequier[position] = VIDE;
+            }
+            else {
+                echequier[position - 16] = echequier[position];
+                echequier[position] = VIDE;
+            }
+        }
+        else{ // le pion a déja été déplacé, on le bouge direct pcq flemme
+            echequier[position - 8] = echequier[position];
+            echequier[position] = VIDE;
+        }
+    }
+}

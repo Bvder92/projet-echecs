@@ -24,5 +24,7 @@ void affichage_tableau(char * tab, int taille);
 void affichage_echequier(char * tab, int taille);
 
 void initialiser_jeu();
+
+void bouger_pion(int position);
     
 #endif
