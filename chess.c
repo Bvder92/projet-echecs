@@ -1,6 +1,7 @@
 #include "chess.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void init_echequier(){
     for (int i = 0; i<MAX; i++){
@@ -74,6 +75,34 @@ int get_colonne(int position){
     int col;
     col = position - (get_ligne(position)*8);
     return col;
+}
+
+void print_name(int piece){
+    switch (piece){
+        case 0: 
+            printf("vide");
+            break;
+        case 1:
+            printf("pion");
+            break;
+        case 2:
+            printf("cavalier");
+            break;
+        case 3:
+            printf("fou");
+            break;
+        case 4:
+            printf("tour");
+            break;
+        case 5:
+            printf("reine");
+            break;
+        case 6:
+            printf("roi");
+            break;
+        default:
+            printf("ERREUR");
+    }
 }
 
 /*

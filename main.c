@@ -1,6 +1,7 @@
 #include "chess.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int main(){
 
@@ -13,9 +14,11 @@ int main(){
     printf("\n\tColonne: ");
     scanf("%d", &colonne);
 
-    position = get_pos(ligne, colonne);
+    //position = get_pos(ligne, colonne);
 
-    printf("%d", echequier[position]);
-
+    for (position = 48; position<64; position++){
+        printf("\nNom de la piece: ");
+        print_name(echequier[position]);
+    }
     return 0;
 }

@@ -13,6 +13,8 @@
 #define ROI 6
 #define NOIR 128
 
+enum pieces {empty, pawn, knight, bishop, rook, queen, king};
+
 char echequier[MAX];
 
 void init_echequier();
@@ -30,6 +32,8 @@ void initialiser_jeu();
 int get_ligne(int position);
 
 int get_colonne(int position);
+
+void print_name(int piece);
 
 void bouger_pion(int position);
     
