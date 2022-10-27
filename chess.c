@@ -1,7 +1,6 @@
 #include "chess.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 void init_echequier(){
     for (int i = 0; i<MAX; i++){
