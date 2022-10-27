@@ -19,11 +19,17 @@ void init_echequier();
 
 void placer_pion(int ligne, int colonne);
 
+int get_pos(int ligne, int colonne);
+
 void affichage_tableau(char * tab, int taille);
    
 void affichage_echequier(char * tab, int taille);
 
 void initialiser_jeu();
+
+int get_ligne(int position);
+
+int get_colonne(int position);
 
 void bouger_pion(int position);
     

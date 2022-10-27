@@ -1,6 +1,7 @@
 #include "chess.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 void init_echequier(){
     for (int i = 0; i<MAX; i++){
@@ -12,6 +13,11 @@ void placer_pion(int ligne, int colonne){
     int i = (ligne -1)*8;
     i = i + colonne-1;
     echequier[i] = '1';
+}
+
+int get_pos(int ligne, int colonne){
+    int i = (ligne -1)*8;
+    return i + (colonne-1);
 }
 
 void affichage_tableau(char * tab, int taille){
@@ -61,6 +67,15 @@ void initialiser_jeu(){
     echequier[63] = TOUR;
 }
 
+int get_ligne(int position){
+    return (position/8);
+}
+
+int get_colonne(int position){
+    int col;
+    col = position - (get_ligne(position)*8);
+    return col;
+}
 
 /*
 -> Pour l'instant la fonction affiche les coordonnées des mouvements légaux sous forme d'indice du tableau echequier
@@ -72,7 +87,7 @@ void bouger_pion(int position){ //si on entre dans cette fonction on sait qu'il 
     if (128 % echequier[position] == 128) { // le pion est noir
             
         if(position >= 8 && position <= 15){ // le pion n'a jamais bougé donc il peut avancer d'une ou deux cases
-            printf("~Moves légaux: 1)%d ; 2)%d", position+8, position+16); 
+            printf("~Moves légaux: 1) (%d,%d) ; 2) (%d,%d)", get_colonne(position+8), get_ligne(position+8),  get_colonne(position+16), get_ligne(position+16)); 
             while (reponse != 1 && reponse != 2){ //on demande a l'utilisateur tant que la rep est incorrecte
                 printf("\n1 ou 2: ");
                 scanf("%d", &reponse);
