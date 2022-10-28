@@ -5,20 +5,29 @@
 
 int main(){
 
-    int ligne, colonne, position;
-    initialiser_jeu();
+    int ligne, colonne, position, rep = 0;
+    initialiser_debug();
     
     affichage_echequier(echequier, MAX);
-    printf("\nSelectionner une piece:\n\tLigne: ");
-    scanf("%d", &ligne);
-    printf("\n\tColonne: ");
-    scanf("%d", &colonne);
+    while (rep != 2){
 
-    //position = get_pos(ligne, colonne);
+        printf("\nSelectionner une piece:\n\tColonne: ");
+        scanf("%d", &colonne);
+        printf("\n\tLigne: ");
+        scanf("%d", &ligne);
 
-    for (position = 48; position<64; position++){
-        printf("\nNom de la piece: ");
-        print_name(echequier[position]);
+        position = get_pos(ligne, colonne);
+        if (echequier[position] == PION){
+            printf("\nPion selectionne\n");
+            bouger_tour(position);
+        }
+        else{
+            printf("\ny'a rien la\n");
+        }
+        affichage_echequier(echequier, MAX);
+        printf("\n*Continuer? (1: oui, 2: non): ");
+        scanf("%d", &rep);
     }
+
     return 0;
 }

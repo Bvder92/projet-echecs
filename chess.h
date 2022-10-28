@@ -1,7 +1,7 @@
 #ifndef __CHESS_H__
 #define __CHESS_H__
 
-#define TAILLE 8
+#define TAILLE_LIGNE 8
 #define MAX 64
 
 #define VIDE 0
@@ -15,7 +15,7 @@
 
 enum pieces {empty, pawn, knight, bishop, rook, queen, king};
 
-char echequier[MAX];
+int echequier[MAX];
 
 void init_echequier();
 
@@ -25,9 +25,11 @@ int get_pos(int ligne, int colonne);
 
 void affichage_tableau(char * tab, int taille);
    
-void affichage_echequier(char * tab, int taille);
+void affichage_echequier(int * tab, int taille);
 
 void initialiser_jeu();
+
+void initialiser_debug();
 
 int get_ligne(int position);
 
@@ -37,4 +39,12 @@ void print_name(int piece);
 
 void bouger_pion(int position);
     
+int * get_legal_cavalier(int position, int * array);
+
+void bouger_cavalier(int position);
+
+int * get_legal_tour(int position, int * moves);
+
+void bouger_tour(int position);
+
 #endif

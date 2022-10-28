@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 void init_echequier(){
     for (int i = 0; i<MAX; i++){
         echequier[i] = '0';
@@ -16,8 +17,8 @@ void placer_pion(int ligne, int colonne){
 }
 
 int get_pos(int ligne, int colonne){
-    int i = (ligne -1)*8;
-    return i + (colonne-1);
+    int i = (ligne)*8;
+    return i + (colonne);
 }
 
 void affichage_tableau(char * tab, int taille){
@@ -26,7 +27,7 @@ void affichage_tableau(char * tab, int taille){
     }
 }
 
-void affichage_echequier(char * tab, int taille){
+void affichage_echequier(int * tab, int taille){
     int c = 0;
     for (int i = 0; i<taille; i++){
         printf("%d | ", tab[i]);
@@ -67,6 +68,17 @@ void initialiser_jeu(){
     echequier[63] = TOUR;
 }
 
+void initialiser_debug(){
+    int i;
+    for (i = 0; i < 28; i++){
+        echequier[i] = VIDE;
+    }
+    echequier[28] = PION;
+    for (i = 29; i < 64; i++){
+        echequier[i] = VIDE;
+    }
+}
+
 int get_ligne(int position){
     return (position/8);
 }
@@ -79,25 +91,25 @@ int get_colonne(int position){
 
 void print_name(int piece){
     switch (piece){
-        case 0: 
+        case VIDE: 
             printf("vide");
             break;
-        case 1:
+        case PION:
             printf("pion");
             break;
-        case 2:
+        case CAVALIER:
             printf("cavalier");
             break;
-        case 3:
+        case FOU:
             printf("fou");
             break;
-        case 4:
+        case TOUR:
             printf("tour");
             break;
-        case 5:
+        case REINE:
             printf("reine");
             break;
-        case 6:
+        case ROI:
             printf("roi");
             break;
         default:
@@ -156,4 +168,105 @@ void bouger_pion(int position){ //si on entre dans cette fonction on sait qu'il 
             echequier[position] = VIDE;
         }
     }
+}
+
+/* Retourne un tableau contenant les indice des 8 cases des 8 moves possibles pour le cavalier
+Si la valeur est -1, le move est impossible car hors limite */
+int * get_legal_cavalier(int position, int * moves){
+    int ligne = get_ligne(position);
+    int colonne = get_colonne(position);
+    moves[0] = position - 17;
+    moves[1] = position - 15;
+    moves[2] = position - 10;
+    moves[3] = position - 6;
+    moves[4] = position + 6;
+    moves[5] = position + 10;
+    moves[6] = position + 15;
+    moves[7] = position + 17;
+
+    if (ligne == 0) moves[0] = moves[1] = moves[2] = moves[3] = -1;
+    if (ligne == 1) moves[0] = moves[1] = -1;
+    if (ligne == 6) moves[6] = moves[7] = -1;
+    if (ligne == 7) moves[4] = moves[5] = moves[6] = moves[7] = -1;
+
+    if (colonne == 0) moves[0] = moves[2] = moves[4] = moves[6] = -1;
+    if (colonne == 1) moves[2] = moves[4] = -1;
+    if (colonne == 6) moves[3] = moves[5] = -1;
+    if (colonne == 7) moves[1] = moves[3] = moves[5] = moves[7] = -1;
+
+    return moves;
+}
+
+/* Retourne un tableau contenant les indices des 14 cases des 14 moves possibles pour la tour
+Si la valeur est -1, le move est impossible car hors limite*/
+int * get_legal_tour(int position, int * moves){
+    int ligne = get_ligne(position);
+    int colonne = get_colonne(position);
+    int i = 8;//on utilise i pour incrémenter au sein des boucles, il est réinitialisé a chaque fois
+    int j = 0; //on utilise j pour incrémenter l'indice du tableau moves[], il n'est pas réinitialisé entre les 4 boucles
+
+    while( (position - i)  >= 0 ){ //on regarde pour la ligne verticale vers le haut => i = 8 car on monte de ligne en ligne
+        moves[j] = position - i;
+        i = i+8;
+        j++;
+    }
+    i = 1; //on réinitialise i
+
+    while (get_colonne(position - i) == colonne){ //ligne horizontale vers la gauche => i = 1 car on recule case par case
+        moves[j] = position - i;
+        i++;
+        j++;
+    }
+    i = 1;
+
+    while (get_colonne(position + i) == colonne){ //ligne horizontale vers la droite
+        moves[j] = position - i;
+        i++;
+        j++;
+    }
+    i = 8;
+
+    while ( (position + i) < 64){ //ligne verticale vers le bas
+        moves[j] = position + i;
+        i = i+8;
+        j++;
+    }
+
+    return moves;
+}
+
+void bouger_cavalier(int position){
+    int i;
+    
+    int * moves = (int *)malloc(sizeof(int)*8); //tableau de 8 car il y a 8 moves possibles pour un cavalier
+    moves = get_legal_cavalier(position, moves);
+
+    printf("\n\t~~Moves Possibles~~\n");
+    for (i = 0; i<8; i++){
+        if (moves[i] == -1){ 
+            printf(" ");
+        }
+        else{
+            printf("%d: (%d,%d) ", i, get_colonne(moves[i]), get_ligne(moves[i]));
+        }
+    }
+    printf("\n\n");
+}
+
+void bouger_tour(int position){
+    int i;
+    
+    int * moves = (int *)malloc(sizeof(int)*14); //tableau de 14 car il y a 14 moves possibles pour une tour
+    moves = get_legal_tour(position, moves);
+
+    printf("\n\t~~Moves Possibles~~\n");
+    for (i = 0; i<14; i++){
+        if (moves[i] == -1){ 
+            printf(" ");
+        }
+        else{
+            printf("%d: (%d,%d) ", i, get_colonne(moves[i]), get_ligne(moves[i]));
+        }
+    }
+    printf("\n\n");
 }
