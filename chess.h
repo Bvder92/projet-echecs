@@ -47,4 +47,6 @@ int * get_legal_tour(int position, int * moves);
 
 void bouger_tour(int position);
 
+void bouger(int position);
+
 #endif

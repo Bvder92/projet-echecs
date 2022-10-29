@@ -17,13 +17,7 @@ int main(){
         scanf("%d", &ligne);
 
         position = get_pos(ligne, colonne);
-        if (echequier[position] == PION){
-            printf("\nPion selectionne\n");
-            bouger_tour(position);
-        }
-        else{
-            printf("\ny'a rien la\n");
-        }
+        bouger(position);
         affichage_echequier(echequier, MAX);
         printf("\n*Continuer? (1: oui, 2: non): ");
         scanf("%d", &rep);

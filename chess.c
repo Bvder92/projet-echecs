@@ -70,13 +70,10 @@ void initialiser_jeu(){
 
 void initialiser_debug(){
     int i;
-    for (i = 0; i < 28; i++){
+    for (i = 0; i < 63; i++){
         echequier[i] = VIDE;
     }
-    echequier[28] = PION;
-    for (i = 29; i < 64; i++){
-        echequier[i] = VIDE;
-    }
+    echequier[52] = TOUR;
 }
 
 int get_ligne(int position){
@@ -202,33 +199,35 @@ Si la valeur est -1, le move est impossible car hors limite*/
 int * get_legal_tour(int position, int * moves){
     int ligne = get_ligne(position);
     int colonne = get_colonne(position);
-    int i = 8;//on utilise i pour incrémenter au sein des boucles, il est réinitialisé a chaque fois
+    int i;//on utilise i pour incrémenter au sein des boucles, il est réinitialisé a chaque fois
     int j = 0; //on utilise j pour incrémenter l'indice du tableau moves[], il n'est pas réinitialisé entre les 4 boucles
 
-    while( (position - i)  >= 0 ){ //on regarde pour la ligne verticale vers le haut => i = 8 car on monte de ligne en ligne
-        moves[j] = position - i;
-        i = i+8;
+    for (i = position-8; i>=0; i= i-8){
+        moves[j] = i;
         j++;
     }
-    i = 1; //on réinitialise i
 
-    while (get_colonne(position - i) == colonne){ //ligne horizontale vers la gauche => i = 1 car on recule case par case
-        moves[j] = position - i;
+    for (i = position+8; i<64; i = i+8){
+        moves[j] = i;
+        j++;
+    }
+
+    i = position+1;
+    while (get_ligne(i) == ligne){
+        moves[j] = i;
         i++;
         j++;
     }
-    i = 1;
 
-    while (get_colonne(position + i) == colonne){ //ligne horizontale vers la droite
-        moves[j] = position - i;
-        i++;
+    i=position-1;
+    while (get_ligne(i) == ligne){
+        moves[j] = i;
+        i--;
         j++;
     }
-    i = 8;
 
-    while ( (position + i) < 64){ //ligne verticale vers le bas
-        moves[j] = position + i;
-        i = i+8;
+    while (j<14){
+        moves[j] = -1;
         j++;
     }
 
@@ -262,11 +261,69 @@ void bouger_tour(int position){
     printf("\n\t~~Moves Possibles~~\n");
     for (i = 0; i<14; i++){
         if (moves[i] == -1){ 
-            printf(" ");
+            printf("%d) (-1, -1)", i);
         }
         else{
             printf("%d: (%d,%d) ", i, get_colonne(moves[i]), get_ligne(moves[i]));
         }
     }
     printf("\n\n");
+}
+
+void bouger(int position){
+    if (echequier[position] == VIDE){
+        printf("\nAucune piece selectionnee\n");
+        return;
+    }
+
+    int i, taille;
+    int * moves;
+    printf("\n\t**Piece Selectionnee: ");
+    print_name(echequier[position]);
+
+    switch (echequier[position]){
+        case PION:
+            taille = -1;
+            moves = (int *)malloc(sizeof(int)*taille);
+            moves = get_legal_tour(position, moves);
+            break;
+        case CAVALIER:
+            taille = 8;
+            moves = (int *)malloc(sizeof(int)*taille);
+            moves = get_legal_cavalier(position, moves);
+            break;
+        case FOU:
+            taille = -1;
+            moves = (int *)malloc(sizeof(int)*taille);
+            moves = get_legal_tour(position, moves);
+            break;
+        case TOUR:
+            taille = 14;
+            moves = (int *)malloc(sizeof(int)*taille);
+            moves = get_legal_tour(position, moves);
+            break;
+        case REINE:
+            taille = -1;
+            moves = (int *)malloc(sizeof(int)*taille);
+            moves = get_legal_tour(position, moves);
+            break;
+        case ROI:
+            taille = -1;
+            moves = (int *)malloc(sizeof(int)*taille);
+            moves = get_legal_tour(position, moves);
+            break;
+        default:
+            printf("ERREUR");
+    }
+
+    printf("\n\t~~Moves Possibles~~\n");
+    for (i = 0; i<taille; i++){
+        if (moves[i] == -1){ 
+            printf("");
+        }
+        else{
+            printf("%d: (%d,%d) ", i, get_colonne(moves[i]), get_ligne(moves[i]));
+        }
+    }
+    printf("\n");
 }
