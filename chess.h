@@ -15,7 +15,7 @@
 
 enum pieces {empty, pawn, knight, bishop, rook, queen, king};
 
-int echequier[MAX];
+extern int echequier[MAX];
 
 void init_echequier();
 
@@ -43,7 +43,9 @@ int * get_legal_cavalier(int position, int * array);
 
 void bouger_cavalier(int position);
 
-int * get_legal_tour(int position, int * moves);
+int * get_legal_tour(int position, int * moves, int taille);
+
+int * get_legal_fou(int position, int * moves, int taille);
 
 void bouger_tour(int position);
 

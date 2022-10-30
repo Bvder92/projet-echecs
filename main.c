@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+int echequier[64];
+
 int main(){
 
     int ligne, colonne, position, rep = 0;
