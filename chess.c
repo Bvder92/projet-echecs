@@ -78,7 +78,7 @@ void initialiser_debug(){
     for (i = 0; i < 63; i++){
         echequier[i] = VIDE;
     }
-    echequier[3] = REINE; //27 marche pas
+    echequier[3] = TOUR;
 }
 
 //retourne le numero de ligne d'une pièce en fonction de sa position dans le tableau
@@ -122,14 +122,26 @@ void print_name(int position){
     }
 }
 
-//retire les -1 d'un tableau
-void retirer_impossible(int * tab, int taille){
-    for (int i = 0; i < taille; i++){
-        if (tab[i] == -1 && i != taille-1 ){
-            tab[i] = tab[i+1];
-            tab[i+1] = -1;
+//retourne un nouveau tableau ou les -1 sont à la fin
+int * retirer_impossible(int *tab, int taille)
+{
+    int * tableau_trie = (int *)malloc(sizeof(int)*taille);
+    int i = 0, j = 0;
+    while (i < taille){
+        if (tab[i] != -1){
+            tableau_trie[j] = tab[i];
+            i++;
+            j++;
         }
-    }//on a ramené les -1 a la fin
+        else{
+            i++;
+        }
+    }
+    while(j <taille){
+        tableau_trie[j] = -1;
+        j++;
+    }
+    return tableau_trie;
 }
 
 /*
@@ -220,7 +232,7 @@ int * get_legal_tour(int position, int * moves, int taille){
     int ligne = get_ligne(position);
     int colonne = get_colonne(position);
     int i;//on utilise i pour incrémenter au sein des boucles, il est réinitialisé entre chaque while
-    int j = 0; //on utilise j pour incrémenter l'indice du tableau moves[], il n'est pas réinitialisé entre les 4 boucles
+    int j = 0; //on utilise j pour incrémenter l'indice du tableau moves[], il n'est pas réinitialisé entre les boucles
 
     for (i = position-8; i>=0; i= i-8){ //ligne verticale vers le haut: on retire 8 à i tant qu'il ne sort pas du tableau (i >= 0)
         moves[j] = i;
@@ -243,11 +255,6 @@ int * get_legal_tour(int position, int * moves, int taille){
     while (get_ligne(i) == ligne){ //ligne horizontale vers la gauche: on retire 1 à i tant qu'il ne change pas de ligne
         moves[j] = i;
         i--;
-        j++;
-    }
-
-    while (j<taille){ //on complète le tableau jusqu'a sa taille maximale pour pas qu'on ne lise de valeurs de cases vides dans la fonction bouger()
-        moves[j] = -1;
         j++;
     }
 
@@ -311,26 +318,35 @@ int * get_legal_roi(int position, int * moves){
 
 //fais appel a la fonction du fou et du roi puis combine les 2 tableaux: faudra que je la réécrive en plus propre la c'est rude mais flemme
 int * get_legal_reine(int position, int * moves, int taille){
+
+    int i = 0, a = 0, j; //i sert a incrémenter les boucles, j sert a garder l'indice de moves[] entre les boucles et a sert dans la dernière boucle
+
     
     int ligne = get_ligne(position);
     int colonne = get_colonne(position);
-    int i = 0, a = 0, j; //i sert a incrémenter les boucles, j sert a garder l'indice de moves[] entre les boucles et a sert dans la dernière boucle
     int * moves_fou = (int *)malloc(sizeof(int)*13); //tableau qu'on va remplir avec les 13 moves dispo du fou
     int * moves_roi = (int *)malloc(sizeof(int)*4); //tableau qu'on va remplir avec les 4 moves restants pour la reine
     
     moves_fou = get_legal_fou(position, moves_fou, 13);
     moves_roi = get_legal_roi(position, moves_roi);
-    while (moves_fou[i] >= 0 && i < 13){
-        moves[i] = moves_fou[i];
-        j = i;
-        i++;
-    } //on a remplit moves avec moves_fou et on a conservé l'indice du dernier élément: j
 
-    for (i = j+1; i<taille; i++){// boucle pour ajouter les 4 moves du roi au tableau moves
-        moves[i] = moves_roi[a];
+    while (moves_fou[i] >= 0 && i < 13){//on remplit moves[] avec les valeurs de moves_fou[]
+        moves[i] = moves_fou[i];
+        i++;
+        j = i;
+    } //on a remplit moves avec moves_fou et on a conservé l'indice de la case suivante de moves[]: j
+
+    while (a < 4){ //on remplit la suite de moves[](a partir de j) avec les valeurs de moves_roi[]
+        moves[j] = moves_roi[a];
+        j++;
         a++;
     }
 
+    while (j < taille){ //on remplit la fin de moves[](a partir de j) avec des -1 pour ne pas lire de valeurs de cases vides dans la fonction bouger()
+        moves[j] = -1;
+        j++;
+    }
+    //moves est maintenant composé des moves du fou(sans les -1 qui ne sont qu'a la fin), puis du roi (-1 possibles), puis de -1 jusqu'a taille
     return moves;
 }
 
@@ -338,10 +354,10 @@ int * get_legal_reine(int position, int * moves, int taille){
 int bouger(int position){
     if (echequier[position] == VIDE){
         printf("\nAucune piece selectionnee\n");
-        return;
+        return -1;
     }
 
-    int i, taille, rep = -1;
+    int i = 0, taille, rep = -1;
     int * moves;
     printf("\n\t**Piece Selectionnee: ");
     print_name(position);
@@ -381,21 +397,30 @@ int bouger(int position){
             printf("ERREUR");
     }
 
+    //moves = retirer_impossible(moves, taille); //on met les -1 a la fin du tableau pour pouvoir proposer que les moves possibles a l'utilisateur
+
     printf("\n\t~~Moves Possibles~~\n");
     for (i = 0; i<taille; i++){
         if (moves[i] == -1){ 
-            printf("");
+            printf("[-MOINS 1] ");
         }
         else{
             printf("%d: (%d,%d) ", i, get_colonne(moves[i]), get_ligne(moves[i]));
         }
     }
     printf("\n");
+
+    /*while (moves[i] != -1){
+        printf("%d: (%d,%d) ", i, get_colonne(moves[i]), get_ligne(moves[i]));
+        i++;
+    }*/
     
     //PAS FINI
-    while ((moves[rep] == -1 ) || (rep < taille)){
-        printf("\n[PAS FINI]Choisir move: ");
+    do
+    {
+        printf("\nChoisir move: ");
         scanf("%d", &rep);
-    }
+    } while ((rep > taille) || (moves[rep] < 0));
+    
     return moves[rep];
 }

@@ -8,6 +8,7 @@ int echequier[64];
 int main(){
 
     int ligne, colonne, position, rep = 0;
+    int move;
     initialiser_debug();
     
     affichage_echequier(echequier, MAX);
@@ -19,7 +20,11 @@ int main(){
         scanf("%d", &ligne);
 
         position = get_pos(ligne, colonne);
-        bouger(position);
+        move = bouger(position);
+        if ((move < 64) && (move >= 0)){
+            echequier[move] = echequier[position];
+            echequier[position] = 0;
+        }
         affichage_echequier(echequier, MAX);
         printf("\n*Continuer? (1: oui, 2: non): ");
         scanf("%d", &rep);

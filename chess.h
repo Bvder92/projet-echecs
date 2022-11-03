@@ -37,7 +37,7 @@ int get_colonne(int position);
 
 void print_name(int piece);
 
-void retirer_impossible(int * tab, int taille);
+int * retirer_impossible(int * tab, int taille);
 
 void bouger_pion(int position);
     
