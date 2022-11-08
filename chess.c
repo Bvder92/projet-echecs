@@ -30,10 +30,10 @@ void affichage_tableau(char * tab, int taille){
 }
 
 //affiche l'echequier dans son état actuel
-void affichage_echequier(int * tab, int taille){
+void affichage_echequier(){
     int c = 0;
-    for (int i = 0; i<taille; i++){
-        printf("%d | ", tab[i]);
+    for (int i = 0; i<MAX; i++){
+        printf("%d | ", echequier[i]);
         c++;
         if (c == 8){
             printf("\n");
@@ -78,7 +78,7 @@ void initialiser_debug(){
     for (i = 0; i < 63; i++){
         echequier[i] = VIDE;
     }
-    echequier[3] = REINE;
+    echequier[10] = ROI;
 }
 
 //retourne le numero de ligne d'une pièce en fonction de sa position dans le tableau
@@ -95,7 +95,14 @@ int get_colonne(int position){
 
 //affiche le nom de la piece dont la valeur est passée en argument
 void print_name(int position){
-    switch (echequier[position]){
+    int a;
+    if (echequier[position] < 128){ 
+        a = 0;
+    }
+    else{
+        a = 128;
+    }
+    switch (echequier[position]-a){
         case VIDE: 
             printf("Vide");
             break;
@@ -120,6 +127,21 @@ void print_name(int position){
         default:
             printf("ERREUR");
     }
+}
+
+void print_color(int position){
+    if (echequier[position] > 128){
+        printf(" noir");
+    }
+    else{
+        printf(" blanc");
+    }
+}
+
+//retourne 1 si la piece est noire, 0 si blanc
+int get_color(int position){
+    if ((echequier[position]&128) == NOIR) return 1;
+    return 0;
 }
 
 //retourne un nouveau tableau ou les -1 sont à la fin
@@ -197,6 +219,57 @@ void bouger_pion(int position){ //si on entre dans cette fonction on sait qu'il 
     }
 }
 
+//retourne un tableau contenant les moves possibles
+int * get_legal_pion(int position, int * moves){
+    moves[0] = position-8; //on avance normalement
+    moves[1] = position-16; //on avance de 2 cases: dispo seulement si le pion a pas bougé
+    moves[2] = position-7; //capture droite
+    moves[3] = position-9; //capture gauche
+
+    //pour que moves[0] soit possible: si le pion n'a pas d'obstacle
+    if (echequier[position-8] != VIDE) moves[0] = -1;
+
+    //pour que moves[1] soit possible: si le pion a jamais bougé et qu'il n'a pas d'obstacles 
+    if ((get_ligne(position) != 6) && ((echequier[position-8] != VIDE) && (echequier[position-16] != VIDE))) moves[1] = -1;
+
+    //pour que moves[2] soit possible: si la case -7 contient une piece noire:
+    if ((echequier[position-7] == VIDE) || (get_color(echequier[position-7]) != 1)) moves[2] = -1;
+
+    //pour moves[3]:
+    if ((echequier[position-9] == VIDE) || (get_color(echequier[position-9]) != 1)) moves[3] = -1;
+
+    return moves;
+}
+
+int * get_legal_pion_noir(int position, int * moves){
+    moves[0] = position+8; //on avance normalement
+    moves[1] = position+16; //on avance de 2 cases: dispo seulement si le pion a pas bougé
+    moves[2] = position+7; //capture droite
+    moves[3] = position+9; //capture gauche
+
+    //pour que moves[0] soit possible: si le pion n'a pas d'obstacle
+    if (echequier[position+8] != VIDE) moves[0] = -1;
+
+    //pour que moves[1] soit possible: si le pion a jamais bougé et qu'il n'a pas d'obstacles 
+    if ((get_ligne(position) != 1)){
+         moves[1] = -1;
+    }
+    if ((echequier[position+8] != VIDE) && (echequier[position+16] != VIDE)){
+         moves[1] = -1;
+    }
+
+    //pour que moves[2] soit possible: si la case -7 contient une piece noire:
+    if ((echequier[position+7] == VIDE)) moves[2] = -1;
+    if (get_color(echequier[position+7]) == 1) moves[2] = -1;
+
+    //pour moves[3]:
+    if ((echequier[position+9] == VIDE)) moves[3] = -1;
+    if (get_color(echequier[position+9]) == 1) moves[3] = -1;
+
+    return moves;
+}
+
+
 /* Retourne un tableau contenant les indice des 8 cases des 8 moves possibles pour le cavalier
 Si la valeur est -1, le move est impossible car hors limite */
 int * get_legal_cavalier(int position, int * moves){
@@ -235,17 +308,29 @@ int * get_legal_tour(int position, int * moves, int taille){
     int j = 0; //on utilise j pour incrémenter l'indice du tableau moves[], il n'est pas réinitialisé entre les boucles
 
     for (i = position-8; i>=0; i= i-8){ //ligne verticale vers le haut: on retire 8 à i tant qu'il ne sort pas du tableau (i >= 0)
+        if (echequier[i] != VIDE){
+            moves[j] = i;
+            break;
+        }
         moves[j] = i;
         j++;
     }
 
     for (i = position+8; i<64; i = i+8){ //ligne verticale vers le bas: on ajoute 8 à i tant qu'il ne sort pas du tableau (i < 64)
+        if (echequier[i] != VIDE){
+            moves[j] = i;
+            break;
+        }
         moves[j] = i;
         j++;
     }
 
     i = position+1; //on initialise i à position+1 et on va l'incrémenter tant qu'il ne change pas de ligne
     while (get_ligne(i) == ligne){ //ligne horizontale vers la droite: on ajoute 1 à i tant qu'il ne change pas de ligne 
+        if (echequier[i] != VIDE){
+            moves[j] = i;
+            break;
+        }
         moves[j] = i;
         i++;
         j++;
@@ -253,8 +338,17 @@ int * get_legal_tour(int position, int * moves, int taille){
 
     i=position-1;
     while (get_ligne(i) == ligne){ //ligne horizontale vers la gauche: on retire 1 à i tant qu'il ne change pas de ligne
+        if (echequier[i] != VIDE){
+            moves[j] = i;
+            break;
+        }
         moves[j] = i;
         i--;
+        j++;
+    }
+
+    while(j<taille){
+        moves[j] = -1;
         j++;
     }
 
@@ -269,24 +363,40 @@ int * get_legal_fou(int position, int * moves, int taille){
     
     i = position-9;
     while((get_colonne(i) < colonne) && (i>=0)){ //diagonale vers le haut gauche: on décrémente de 9 tant qu'on est dans l'échequier
+        if (echequier[i] != VIDE){
+            moves[j] = i;
+            break;
+        }
         moves[j] = i;
         i = i-9;
         j++;
     }
     i = position-7;
     while((get_colonne(i) > colonne) && (i>=0)){ //diagonale vers le haut droit: on décrémente de 7 tant qu'on est dans l'échequier
+        if (echequier[i] != VIDE){
+            moves[j] = i;
+            break;
+        }
         moves[j] = i;
         i = i-7;
         j++;
     }
     i = position+7;
     while((get_colonne(i) < colonne) && (i<64)){ //diagonale vers le bas droit: on incrémente de 9 tant qu'on est dans l'échequier
+        if (echequier[i] != VIDE){
+            moves[j] = i;
+            break;
+        }
         moves[j] = i;
         i = i+7;
         j++;
     }
     i = position+9;
     while((get_colonne(i) > colonne) && (i<64)){ //diagonale vers le bas gauche: on incrémente de 7 tant qu'on est dans l'échequier
+        if (echequier[i] != VIDE){
+            moves[j] = i;
+            break;
+        }
         moves[j] = i;
         i = i+9;
         j++;
@@ -303,16 +413,15 @@ int * get_legal_fou(int position, int * moves, int taille){
 int * get_legal_roi(int position, int * moves){
     int ligne = get_ligne(position);
     int colonne = get_colonne(position);
-    moves[0] = position - 8; 
-    moves[1] = position - 1;
-    moves[2] = position + 1;
-    moves[3] = position + 8;
-
-    if (ligne == 0) moves[0] = -1;
-    if (colonne == 0) moves[1] = -1;
-    if (colonne == 7) moves[2] = -1;
-    if (ligne == 7) moves[3] = -1;
-
+    moves[0] = position - 9; 
+    moves[1] = position - 8;
+    moves[2] = position - 7;
+    moves[3] = position - 1;
+    moves[4] = position + 1;
+    moves[5] = position + 7;
+    moves[6] = position + 8;
+    moves[7] = position + 9;
+    
     return moves;
 }
 
@@ -365,12 +474,18 @@ int bouger(int position){
     int * moves;
     printf("\n\t**Piece Selectionnee: ");
     print_name(position);
+    print_color(position);
 
     switch (echequier[position]){
         case PION:
-            taille = -1;
+            taille = 4;
             moves = (int *)malloc(sizeof(int)*taille);
-            moves = get_legal_tour(position, moves, taille);
+            moves = get_legal_pion(position, moves);
+            break;
+        case PION + NOIR:
+            taille = 4;
+            moves = (int *)malloc(sizeof(int)*taille);
+            moves = get_legal_pion_noir(position, moves);
             break;
         case CAVALIER:
             taille = 8;

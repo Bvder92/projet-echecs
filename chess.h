@@ -25,7 +25,7 @@ int get_pos(int ligne, int colonne);
 
 void affichage_tableau(char * tab, int taille);
    
-void affichage_echequier(int * tab, int taille);
+void affichage_echequier();
 
 void initialiser_jeu();
 
@@ -36,6 +36,8 @@ int get_ligne(int position);
 int get_colonne(int position);
 
 void print_name(int piece);
+
+void print_color(int position);
 
 int * retirer_impossible(int * tab, int taille);
 
