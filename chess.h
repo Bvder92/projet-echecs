@@ -42,6 +42,10 @@ void print_color(int position);
 int * retirer_impossible(int * tab, int taille);
 
 void bouger_pion(int position);
+
+int * get_legal_pion_blanc(int position, int * moves);
+
+int * get_legal_pion_noir(int position, int * moves);
     
 int * get_legal_cavalier(int position, int * array);
 
