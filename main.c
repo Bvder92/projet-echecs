@@ -35,7 +35,7 @@ int main(){
 
 /* TODO:
 
--vérifier que tout marche (déplacements pion blanc, noir, cavalier, fou, tour, reine, roi)
+-vérifier que tout marche (déplacements pion blanc, noir, reine)
 -capture:
     -les fontions cavalier et roi retournent -1 pour une case occupée
     -les fontions pions, fou, tour, reine proposent le move de la case occupée (mais pas les suivantes, respect d'obstacles(normalement))
