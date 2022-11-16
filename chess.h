@@ -45,7 +45,11 @@ void bouger_pion(int position);
 
 int * get_legal_pion_blanc(int position, int * moves);
 
+int * get_lagal_pion_blanc(int position, int * moves);
+
 int * get_legal_pion_noir(int position, int * moves);
+
+int * get_lagal_pion_noir(int position, int * moves);
     
 int * get_legal_cavalier(int position, int * array);
 
