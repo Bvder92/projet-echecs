@@ -13,21 +13,28 @@
 #define ROI 6
 #define NOIR 128
 
-enum pieces {empty, pawn, knight, bishop, rook, queen, king};
+struct FEN{
+    int tab[MAX]; //echequier
+    int tour; //0 si blanc, 1 si noir (un int c'est mieux qu'un booléen)
+    int *castlew; 
+    int *castleb; //coté reine alors "q" coté roi "k" sinon -
+    int en_passant; //coordonées du tableau pour en_passant
+    int half_move; 
+    int full_move;
+}; 
+typedef struct FEN FEN; 
 
 extern int echequier[MAX];
-
-void init_echequier();
-
-void placer_pion(int ligne, int colonne);
 
 int get_pos(int ligne, int colonne);
 
 void affichage_tableau(char * tab, int taille);
+
+void initialiser_fen(FEN fen);
    
 void affichage_echequier();
 
-void initialiser_jeu();
+void initialiser_jeu(FEN fen);
 
 void initialiser_debug();
 
@@ -39,15 +46,15 @@ void print_name(int piece);
 
 void print_color(int position);
 
+int get_color(int position);
+
+int select_piece();
+
+FEN update_fen(FEN fen);
+
 int * retirer_impossible(int * tab, int taille);
 
-void bouger_pion(int position);
-
-int * get_legal_pion_blanc(int position, int * moves);
-
 int * get_lagal_pion_blanc(int position, int * moves);
-
-int * get_legal_pion_noir(int position, int * moves);
 
 int * get_lagal_pion_noir(int position, int * moves);
     
