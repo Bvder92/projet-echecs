@@ -78,9 +78,7 @@ void initialiser_debug(){
     for (i = 0; i < 63; i++){
         echequier[i] = VIDE;
     }
-    echequier[50] = PION;
-    echequier[33] = PION+NOIR;
-    echequier[43] = PION+NOIR;
+    echequier[10] = CAVALIER+NOIR;
 }
 
 //retourne le numero de ligne d'une pièce en fonction de sa position dans le tableau
@@ -468,10 +466,10 @@ int * get_legal_roi(int position, int * moves){
     moves[7] = position + 9;
 
     //elimination des moves qui sortent de l'echequier
-    if ((colonne == 0)) moves[0] = moves[3] = moves[5] = -1; //colonne 0 -> on peut pas aller en -9, -1 ou 7
-    if ((colonne == 7)) moves[2] = moves[4] = moves[7] = -1; //colonne 7 -> on peut pas aller en -7, 1 ou 9
-    if ((ligne == 0)) moves[0] = moves[1] = moves[2] = -1; //ligne 0 -> on peut pas aller en -9, -8, -7
-    if ((ligne == 7)) moves[5] = moves[6] = moves[7] = -1; //ligne 7 -> on peut pas aller en 7 8 ou 9
+    if ((colonne == 0)) moves[0] = moves[3] = moves[5]; //colonne 0 -> on peut pas aller en -9, -1 ou 7
+    if ((colonne == 7)) moves[2] = moves[4] = moves[7]; //colonne 7 -> on peut pas aller en -7, 1 ou 9
+    if ((ligne == 0)) moves[0] = moves[1] = moves[2]; //ligne 0 -> on peut pas aller en -9, -8, -7
+    if ((ligne == 7)) moves[5] = moves[6] = moves[7]; //ligne 7 -> on peut pas aller en 7 8 ou 9
 
     /*elimination des moves dont la case est occupée
     for (i = 0; i<8; i++){
@@ -516,7 +514,6 @@ int * get_legal_reine(int position, int * moves, int taille){
 
     free(moves_fou);
     free(moves_tour);
-    moves_fou = moves_tour = NULL;
     //moves est maintenant composé des moves du fou, puis de ceux de la tour, puis de -1 jusqu'a taille
     return moves;
 }
@@ -625,6 +622,5 @@ int bouger(int position){
     
     rep = moves[rep];
     free(moves);
-    moves = NULL;
     return rep;
 }
