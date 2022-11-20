@@ -21,6 +21,8 @@ struct FEN{
     int en_passant; //coordonées du tableau pour en_passant
     int half_move; 
     int full_move;
+    int echec_blanc; //pour l'instant c'est juste du 0/1 mais si besoin on peut compter toutes les pieces
+    int echec_noir; //0 par défaut
 }; 
 typedef struct FEN FEN; 
 
@@ -41,6 +43,10 @@ void initialiser_debug();
 int get_ligne(int position);
 
 int get_colonne(int position);
+
+int compter_blanc();
+
+int compter_noir();
 
 void print_name(int piece);
 
@@ -69,5 +75,9 @@ int * get_legal_roi(int position, int * moves);
 int * get_legal_reine(int position, int * moves, int taille);
 
 int bouger(int position);
+
+int * recuperer_moves(int position);
+
+FEN verifier_echec(FEN fen);
 
 #endif
