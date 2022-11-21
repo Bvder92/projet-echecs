@@ -778,54 +778,76 @@ int bouger(int position)
     return rep;
 }
 
+
+//retroune la taille du tableau de moves de la piece dans echequier[position]:
+int get_taille_moves(int position){
+    int taille;
+    switch (echequier[position])
+    {
+    case PION:
+    case PION + NOIR:
+        taille = 4;
+        break;
+    case CAVALIER:
+    case CAVALIER + NOIR:
+    case ROI:
+    case ROI + NOIR:
+        taille = 8;
+        break;
+    case FOU:
+    case FOU + NOIR:
+        taille = 13;
+        break;
+    case TOUR:
+    case TOUR + NOIR:
+        taille = 14;
+        break;
+    case REINE:
+    case REINE + NOIR:
+        taille = 27;
+        break;
+    default:
+        fprintf(stderr, "ERREUR");
+        return 0;
+    }
+    return taille;
+}
+
 // retourne le tableau de moves legaux d'une piece(bouger sans la partie ou on choisit)
 int *recuperer_moves(int position)
 {
 
     int *moves;
-    int taille, i;
+    int i;
+    int taille = get_taille_moves(position);
+    moves = (int *)malloc(sizeof(int)*taille);
 
     switch (echequier[position])
     {
     case PION:
-        taille = 4;
-        moves = (int *)malloc(sizeof(int) * taille);
         moves = get_lagal_pion_blanc(position, moves);
         break;
     case PION + NOIR:
-        taille = 4;
-        moves = (int *)malloc(sizeof(int) * taille);
         moves = get_lagal_pion_noir(position, moves);
         break;
     case CAVALIER:
     case CAVALIER + NOIR:
-        taille = 8;
-        moves = (int *)malloc(sizeof(int) * taille);
         moves = get_legal_cavalier(position, moves);
         break;
     case FOU:
     case FOU + NOIR:
-        taille = 13;
-        moves = (int *)malloc(sizeof(int) * taille);
         moves = get_legal_fou(position, moves, taille);
         break;
     case TOUR:
     case TOUR + NOIR:
-        taille = 14;
-        moves = (int *)malloc(sizeof(int) * taille);
         moves = get_legal_tour(position, moves, taille);
         break;
     case REINE:
     case REINE + NOIR:
-        taille = 27;
-        moves = (int *)malloc(sizeof(int) * taille);
-        printf("\n malloc reussie");
         moves = get_legal_reine(position, moves, taille);
         break;
     case ROI:
     case ROI + NOIR:
-        taille = 8;
-        moves = (int *)malloc(sizeof(int) * taille);
         moves = get_legal_roi(position, moves);
         break;
     default:
@@ -840,7 +862,7 @@ int *recuperer_moves(int position)
     }
 
     /* ********************************************************************
-    ELIMINATION DES MOVES IMPOSSIBLES ET AFFICHAGE:
+    ELIMINATION DES MOVES IMPOSSIBLES:
     *********************************************************************/
 
     for (i = 0; i < taille; i++)
@@ -858,23 +880,31 @@ int *recuperer_moves(int position)
 int bouger_alt(int position)
 {
 
-    int i = 0, taille, rep = -1;
+    /* ******************************************************
+    DELARATIONS:
+    *********************************************************/
+
+    int i, taille, rep = -1;
     int capture = 0;
     int *moves;
+    taille = get_taille_moves(position);
     printf("\n\t**Piece Selectionnee: ");
     print_name(position);
     print_color(position);
 
-    printf("\n***************ehehefhjsh*****************\n");
-    moves = recuperer_moves(position);
-    printf("\n**********************sdfqù****\n");
+    moves = (int *)malloc(sizeof(int)*taille);
     if (moves == NULL){
         fprintf(stderr, "erreur malloc bouger_alt");
         return 0;
     }
+    moves = recuperer_moves(position);
+
+    /* ******************************************************
+    AFFICHAGE:
+    *********************************************************/
 
     printf("\n");
-    for (i = 0; i < 30; i++) //grosse dinguerie ici oublie pas
+    for (i = 0; i < taille; i++)
     {
         if (moves[i] == -1)
         {
@@ -925,7 +955,7 @@ FEN verifier_echec(FEN fen)
     /* ********************************************************************
     DECLARATIONS:
     *********************************************************************/
-    int i, j = 0, taille;
+    int i, j = 0, taille_moves;
     int *moves = NULL;       // pour stocker les moves de la piece qu'on va "étudier"
     int *echec_blanc = NULL; // cases de l'echequier contenant une piece pouvant tuer le roi blanc
     int *echec_noir = NULL;  // cases de l'echequier contenant une piece pouvant tuer le roi noir
@@ -942,7 +972,6 @@ FEN verifier_echec(FEN fen)
     // tableaux qui vont contenir toutes les pieces pouvants echec le roi
     echec_blanc = (int *)malloc(taille_blanc);
     echec_noir = (int *)malloc(taille_noir);
-    moves = (int *)malloc(sizeof(int) * 30);
 
     // verif malloc
     if (echec_blanc == NULL || echec_noir == NULL)
@@ -969,9 +998,12 @@ FEN verifier_echec(FEN fen)
     {
         if (echequier[i] != VIDE) // si une case contient une piece
         {
+            taille_moves = get_taille_moves(i);
+            moves = (int *)malloc(sizeof(int)*taille_moves);
             moves = recuperer_moves(i); // on récupere ses moves
             if (moves == NULL)
             {
+                fprintf(stderr, "FONCTION verifier_echec: MALLOC DE MOVES ECHOUEE");
                 return fen;
             }
             printf("\n**************Recup moves reussie ! ****************\n");
@@ -998,9 +1030,9 @@ FEN verifier_echec(FEN fen)
                     compteur_noir++;
                 }
             }
+            free(moves);
+            moves = NULL;
         }
-        free(moves);
-        moves = NULL;
     }
     printf("\n****************mega boucle reussie**************\n");
 
