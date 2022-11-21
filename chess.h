@@ -50,6 +50,8 @@ int compter_noir();
 
 void print_name(int piece);
 
+void debug_mode();
+
 void print_color(int position);
 
 int get_color(int position);
@@ -77,6 +79,8 @@ int * get_legal_reine(int position, int * moves, int taille);
 int bouger(int position);
 
 int * recuperer_moves(int position);
+
+int bouger_alt(int position);
 
 FEN verifier_echec(FEN fen);
 

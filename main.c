@@ -8,7 +8,7 @@ FEN fen;
 
 int main()
 {
-    int position, rep = 0;
+    /*int position, rep = 0;
     int move;
 
     initialiser_jeu(fen);
@@ -29,11 +29,13 @@ int main()
         echequier[move] = echequier[position];
         echequier[position] = VIDE;
         fen = update_fen(fen);
+        printf("\n**************UPDATE REUSSIE****************\n");
+
     }
 
     printf("\n%d, %d", fen.echec_blanc, fen.echec_noir);
 
-    /*printf("\nECHEC ROI ");
+    printf("\nECHEC ROI ");
     if (fen.echec_blanc != 0){
         printf("BLANC");
     }
@@ -43,5 +45,6 @@ int main()
     else{
         printf("Les deux?????");
     }*/
+    debug_mode();
     return 0;
 }
