@@ -78,7 +78,7 @@ int * get_legal_reine(int position, int * moves, int taille);
 
 int bouger(int position);
 
-int * recuperer_moves(int position);
+int * recuperer_moves(int position, int taille);
 
 int bouger_alt(int position);
 

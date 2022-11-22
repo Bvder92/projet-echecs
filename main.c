@@ -8,7 +8,7 @@ FEN fen;
 
 int main()
 {
-    /*int position, rep = 0;
+    int position, rep = 0;
     int move;
 
     initialiser_jeu(fen);
@@ -24,27 +24,25 @@ int main()
             printf("\nTour des Noirs:\n");
         }
         position = select_piece(fen.tour);
-        move = bouger(position);
+        move = bouger_alt(position);
         
         echequier[move] = echequier[position];
         echequier[position] = VIDE;
         fen = update_fen(fen);
-        printf("\n**************UPDATE REUSSIE****************\n");
-
     }
 
     printf("\n%d, %d", fen.echec_blanc, fen.echec_noir);
 
     printf("\nECHEC ROI ");
-    if (fen.echec_blanc != 0){
+    if (fen.echec_blanc == 1 && fen.echec_noir == 0){
         printf("BLANC");
     }
-    else if (fen.echec_noir != 0){
+    else if (fen.echec_noir == 1 && fen.echec_blanc == 0){
         printf("NOIR");
     }
     else{
         printf("Les deux?????");
-    }*/
+    }
     debug_mode();
     return 0;
 }
