@@ -10,19 +10,10 @@ int get_pos(int ligne, int colonne)
     return i + (colonne);
 }
 
-void affichage_tableau(char *tab, int taille)
-{
-    for (int i = 0; i < taille; i++)
-    {
-        printf("%c | ", tab[i]);
-    }
-}
-
+//affiche l'initiale d'une piece, utilisée pour affichage_echequier
 char int_to_piece(int position)
 {
-
     char c;
-
     switch (echequier[position])
     {
     case VIDE:
@@ -74,7 +65,7 @@ char int_to_piece(int position)
 void affichage_echequier()
 {
     int c = 0;
-    printf("     | ~1~ | ~2~ | ~2~ | ~3~ | ~4~ | ~5~ | ~6~ | ~7~ |\n");
+    printf("     | ~0~ | ~1~ | ~2~ | ~3~ | ~4~ | ~5~ | ~6~ | ~7~ |\n");
     printf("+----+-----+-----+-----+-----+-----+-----+-----+-----+\n");
     for (int i = 0; i < MAX; i++)
     {
@@ -167,9 +158,7 @@ int get_ligne(int position)
 // retourne le numero de colonne d'une pièce en fonction de sa position dans le tableau
 int get_colonne(int position)
 {
-    int col;
-    col = position - (get_ligne(position) * 8);
-    return col;
+    return (position - (get_ligne(position) * 8));
 }
 
 // retourne le nombre de pieces blanches
@@ -240,6 +229,34 @@ void print_name(int position)
     }
 }
 
+void print_color(int position)
+{
+    if (echequier[position] > 128)
+    {
+        printf(" noir");
+    }
+    else if (echequier[position] == VIDE)
+    {
+        printf("Vide");
+    }
+    else
+    {
+        printf(" blanc");
+    }
+}
+
+//retourne 1 pour noir, 0 pour blanc, -1 pour vide
+int get_color(int position){
+    if (echequier[position] > 128){
+        return 1;
+    }
+    else if (echequier[position] == VIDE){
+        return -1;
+    }
+    else return 0;
+}
+
+//version alternative du jeu avec des printf etc
 void debug_mode()
 {
     int ligne, colonne, position, rep = 0;
@@ -258,7 +275,7 @@ void debug_mode()
 
         position = get_pos(ligne, colonne);
 
-        move = bouger_alt(position); // on vérifie que le move est legit?? et on modifie l'echequier
+        move = bouger(position); // on vérifie que le move est legit?? et on modifie l'echequier
         if ((move < 64) && (move >= 0))
         {
             echequier[move] = echequier[position];
@@ -267,39 +284,6 @@ void debug_mode()
         affichage_echequier(echequier, MAX);
         printf("\n*Continuer? (1: oui, 2: non): ");
         scanf("%d", &rep);
-    }
-}
-
-void print_color(int position)
-{
-    if (echequier[position] > 128)
-    {
-        printf(" noir");
-    }
-    else if (echequier[position] == VIDE)
-    {
-        printf("Vide");
-    }
-    else
-    {
-        printf(" blanc");
-    }
-}
-
-// retourne 1 si la piece est noire, 0 si blanc, -1 si vide:
-int get_color(int position)
-{
-    if (echequier[position] > 128)
-    {
-        return 1;
-    }
-    else if (echequier[position] == VIDE)
-    {
-        return -1;
-    }
-    else
-    {
-        return 0;
     }
 }
 
@@ -358,7 +342,7 @@ int *retirer_impossible(int *tab, int taille)
 MOVES LEGAUX - Les fontions retournent toutes un tableau contenant les indices des cases de l'echequier ou la piece passée en argument peut aller
 */
 
-int *get_lagal_pion_blanc(int position, int *moves)
+int *get_legal_pion_blanc(int position, int *moves)
 {
     moves[0] = moves[1] = moves[2] = moves[3] = -1;
 
@@ -389,7 +373,7 @@ int *get_lagal_pion_blanc(int position, int *moves)
     return moves;
 }
 
-int *get_lagal_pion_noir(int position, int *moves)
+int *get_legal_pion_noir(int position, int *moves)
 {
     moves[0] = moves[1] = moves[2] = moves[3] = -1;
 
@@ -706,10 +690,10 @@ int *recuperer_moves(int position, int taille)
     switch (echequier[position])
     {
     case PION:
-        moves = get_lagal_pion_blanc(position, moves);
+        moves = get_legal_pion_blanc(position, moves);
         break;
     case PION + NOIR:
-        moves = get_lagal_pion_noir(position, moves);
+        moves = get_legal_pion_noir(position, moves);
         break;
     case CAVALIER:
     case CAVALIER + NOIR:
@@ -758,7 +742,7 @@ int *recuperer_moves(int position, int taille)
     return moves;
 }
 
-int bouger_alt(int position)
+int bouger(int position)
 {
 
     /* ******************************************************
@@ -850,15 +834,13 @@ FEN verifier_echec(FEN fen){
                 return fen;
             }
 
-            while (j != -1 && j<taille_moves){
-                if ((echequier[moves[j]] == ROI) && (get_color(j) == 1)){ //si moves[j] contient roi blanc et que j est une piece noire
-                    echec_blanc = 1;
-                    printf("\n****echec blanc: position piece = %d, move = (%d,%d)\n", i, get_colonne(moves[j]), get_ligne(moves[j]) );
+            j=0;
+            while ( j<taille_moves){
+                if (echequier[moves[j]] == ROI){ //si moves[j] contient roi blanc et que j est une piece noire
+                    fen.echec_blanc = 1;
                 }
-                else if ((echequier[moves[j]] == ROI+NOIR) && (get_color(j) == 0)){ //si moves[j] contient roi noir et que j est une piece blanche
-                    echec_noir = 1;
-                    printf("\n****echec noir: position piece = %d, move = (%d,%d)\n", i, get_colonne(moves[j]), get_ligne(moves[j]) );
-
+                if (echequier[moves[j]] == ROI+NOIR){ //si moves[j] contient roi noir et que j est une piece blanche
+                    fen.echec_noir = 1;
                 }
                 j++;
             }
@@ -867,13 +849,6 @@ FEN verifier_echec(FEN fen){
         moves = NULL;
     }
 
-    if (echec_blanc == 1){
-        fen.echec_blanc = 1;
-    }
-
-    if (echec_noir == 1){
-        fen.echec_noir = 1;
-    }
     return fen;
 }
 

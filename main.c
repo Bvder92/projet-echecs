@@ -24,15 +24,14 @@ int main()
             printf("\nTour des Noirs:\n");
         }
         position = select_piece(fen.tour);
-        move = bouger_alt(position);
+        move = bouger(position);
         
         echequier[move] = echequier[position];
         echequier[position] = VIDE;
         fen = update_fen(fen);
     }
 
-    printf("\n%d, %d", fen.echec_blanc, fen.echec_noir);
-
+    affichage_echequier();
     printf("\nECHEC ROI ");
     if (fen.echec_blanc == 1 && fen.echec_noir == 0){
         printf("BLANC");
@@ -43,6 +42,5 @@ int main()
     else{
         printf("Les deux?????");
     }
-    debug_mode();
     return 0;
 }

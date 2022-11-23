@@ -30,11 +30,13 @@ extern int echequier[MAX];
 
 int get_pos(int ligne, int colonne);
 
-void affichage_tableau(char * tab, int taille);
-
 void initialiser_fen(FEN fen);
+
+char int_to_piece(int position);
    
 void affichage_echequier();
+
+void initialiser_fen(FEN fen);
 
 void initialiser_jeu(FEN fen);
 
@@ -50,21 +52,19 @@ int compter_noir();
 
 void print_name(int piece);
 
-void debug_mode();
-
 void print_color(int position);
 
 int get_color(int position);
 
-int select_piece();
+void debug_mode();
 
-FEN update_fen(FEN fen);
+int select_piece();
 
 int * retirer_impossible(int * tab, int taille);
 
-int * get_lagal_pion_blanc(int position, int * moves);
+int * get_legal_pion_blanc(int position, int * moves);
 
-int * get_lagal_pion_noir(int position, int * moves);
+int * get_legal_pion_noir(int position, int * moves);
     
 int * get_legal_cavalier(int position, int * array);
 
@@ -76,12 +76,15 @@ int * get_legal_roi(int position, int * moves);
 
 int * get_legal_reine(int position, int * moves, int taille);
 
-int bouger(int position);
+int get_taille_moves(int position);
 
 int * recuperer_moves(int position, int taille);
 
-int bouger_alt(int position);
+int bouger(int position);
 
 FEN verifier_echec(FEN fen);
+
+FEN update_fen(FEN fen);
+
 
 #endif
