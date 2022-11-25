@@ -23,6 +23,7 @@ struct FEN{
     int full_move;
     int echec_blanc; //pour l'instant c'est juste du 0/1 mais si besoin on peut compter toutes les pieces
     int echec_noir; //0 par défaut
+    int echec_et_mat; //-1 defaut, prend la couleur du perdant
 }; 
 typedef struct FEN FEN; 
 
@@ -30,15 +31,13 @@ extern int echequier[MAX];
 
 int get_pos(int ligne, int colonne);
 
-void initialiser_fen(FEN fen);
+FEN initialiser_fen(FEN fen);
 
 char int_to_piece(int position);
    
 void affichage_echequier();
 
-void initialiser_fen(FEN fen);
-
-void initialiser_jeu(FEN fen);
+void initialiser_jeu();
 
 void initialiser_debug();
 

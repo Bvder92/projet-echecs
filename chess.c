@@ -17,7 +17,7 @@ char int_to_piece(int position)
     switch (echequier[position])
     {
     case VIDE:
-        c = '0';
+        c = '.';
         break;
     case PION:
         c = 'p';
@@ -84,7 +84,7 @@ void affichage_echequier()
 }
 
 // met tout à 0, on verra plus tard pour les castle
-void initialiser_fen(FEN fen)
+FEN initialiser_fen(FEN fen)
 {
     int i;
     for (i = 0; i < 64; i++)
@@ -97,10 +97,12 @@ void initialiser_fen(FEN fen)
     fen.full_move = 0;
     fen.echec_blanc = 0;
     fen.echec_noir = 0;
+    fen.echec_et_mat = -1;
+    return fen;
 }
 
 // place toutes les pièces au bon endroit + initialise le fen
-void initialiser_jeu(FEN fen)
+void initialiser_jeu()
 {
     int i;
     echequier[0] = TOUR + NOIR;
@@ -131,7 +133,6 @@ void initialiser_jeu(FEN fen)
     echequier[61] = FOU;
     echequier[62] = CAVALIER;
     echequier[63] = TOUR;
-    initialiser_fen(fen);
 }
 
 // pour placer ce qu'on veut ou on veut
@@ -254,6 +255,44 @@ int get_color(int position){
         return -1;
     }
     else return 0;
+}
+
+int get_nombre_moves(int position){
+    int nombre_moves = 0;
+    int taille = get_taille_moves(position);
+    int * moves = (int *)malloc(sizeof(int)*taille);
+    moves = recuperer_moves(position, taille);
+    for(int i = 0; i<taille; i++){
+        if (moves[i] != -1){
+            nombre_moves++;
+        }
+    }
+    return nombre_moves;
+}
+
+int get_pos_roi(int couleur){
+    int i = 0;
+    int pos_roi;
+    if (couleur == 1){
+        while(i<MAX){
+            if (echequier[i] == ROI+NOIR){
+                pos_roi = i;
+            }
+            i++;
+        }
+    }
+    else if (couleur == 0){
+        while(i<MAX){
+            if (echequier[i] == ROI){
+                pos_roi = i;
+            }
+            i++;
+        }
+    }
+    else{
+        return -1;
+    }
+    return pos_roi;
 }
 
 //version alternative du jeu avec des printf etc
@@ -769,7 +808,7 @@ int bouger(int position)
     *********************************************************/
 
     printf("\n");
-    for (i = 0; i < taille; i++)
+    /*for (i = 0; i < taille; i++)
     {
         if (moves[i] == -1)
         {
@@ -779,6 +818,12 @@ int bouger(int position)
         {
             printf(" %d: (%d,%d) ", i, get_colonne(moves[i]), get_ligne(moves[i]));
         }
+    }*/
+
+    i = 0;
+    while (i<taille && moves[i] != -1){
+        printf("%d: (%d,%d) ", i, get_colonne(moves[i]), get_ligne(moves[i]));
+        i++;
     }
 
     /* ******************************************************
@@ -852,6 +897,67 @@ FEN verifier_echec(FEN fen){
     return fen;
 }
 
+FEN echec_et_mat(FEN fen, int position_roi){
+
+    int i, k, j;
+    int * moves_roi; //moves du roi qui est en echec
+    int * moves; //moves de la piece etudiee (ça va etre toutes les pieces ennemies au roi)
+    int taille_moves_roi;
+    int nombre_moves_roi;
+    int taille_moves;
+    int couleur_roi;
+
+    couleur_roi = get_color(position_roi);
+    if (couleur_roi != 1 && couleur_roi != 0){
+        printf("\n COULEUR ROI ERREUR: %d", couleur_roi);
+        return fen;
+    }
+
+    nombre_moves_roi = get_nombre_moves(position_roi);
+
+    //allocation
+    taille_moves_roi = get_taille_moves(position_roi);
+    moves_roi = (int *)malloc(sizeof(int)*taille_moves);
+    moves_roi = recuperer_moves(position_roi, taille_moves_roi);
+
+    if (moves_roi == NULL){
+        fprintf(stderr, "erreur recup moves roi dans echec mat");
+        return fen;
+    } 
+
+    for (i = 0; i<MAX; i++){
+
+        if ((get_color(i) != couleur_roi) && (echequier[i] != VIDE) && (nombre_moves_roi != 0)){
+            taille_moves = get_taille_moves(i);
+            moves = (int *)malloc(sizeof(int)*taille_moves);
+            moves = recuperer_moves(i, taille_moves);
+            if (moves == NULL){
+                fprintf(stderr, "erreur recup moves");
+                return fen;
+            }
+
+            j=0;
+            //on parcours tous les moves de la piece actuelle:
+            while (moves[j] != -1 && j<taille_moves){
+                
+                for (k = 0; k<taille_moves_roi; k++){
+                    if (moves[j] == moves_roi[k]){
+                        moves_roi[k] = -1;
+                        nombre_moves_roi--;
+                    }
+                }
+                j++;
+            }
+        }
+        free(moves);
+        moves = NULL;
+    }
+    if (nombre_moves_roi == 0){
+        fen.echec_et_mat = couleur_roi;
+    }
+    return fen;
+}
+
 FEN update_fen(FEN fen)
 {
     int i;
@@ -871,6 +977,12 @@ FEN update_fen(FEN fen)
     }
 
     fen = verifier_echec(fen); // modifie les valeurs de echec_blanc et echec_noir
+    if (fen.echec_blanc != 0){
+        fen = echec_et_mat(fen, get_pos_roi(0));
+    }
+    if (fen.echec_noir != 0){
+        fen = echec_et_mat(fen, get_pos_roi(1));
+    }
 
     return fen;
 }

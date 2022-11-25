@@ -11,8 +11,9 @@ int main()
     int position, rep = 0;
     int move;
 
-    initialiser_jeu(fen);
-    while ((fen.echec_blanc == 0) && (fen.echec_noir == 0))
+    initialiser_jeu();
+    fen = initialiser_fen(fen);
+    while (fen.echec_et_mat == -1)
     {
         affichage_echequier();
         if (fen.tour == 0)
@@ -32,15 +33,12 @@ int main()
     }
 
     affichage_echequier();
-    printf("\nECHEC ROI ");
-    if (fen.echec_blanc == 1 && fen.echec_noir == 0){
-        printf("BLANC");
-    }
-    else if (fen.echec_noir == 1 && fen.echec_blanc == 0){
-        printf("NOIR");
+    printf("\nECHEC ET MAT: VICTOIRE DES ");
+    if (fen.echec_et_mat == 1){
+        printf("BLANCS\n");
     }
     else{
-        printf("Les deux?????");
+        printf("NOIRS\n");
     }
     return 0;
 }
