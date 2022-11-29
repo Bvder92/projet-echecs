@@ -21,8 +21,7 @@ struct FEN{
     int en_passant; //coordonées du tableau pour en_passant
     int half_move; 
     int full_move;
-    int echec_blanc; //pour l'instant c'est juste du 0/1 mais si besoin on peut compter toutes les pieces
-    int echec_noir; //0 par défaut
+    int echec; //-1 de base, prend la couleur du perdant (1 si le roi noir est en echec)
     int echec_et_mat; //-1 defaut, prend la couleur du perdant
 }; 
 typedef struct FEN FEN; 
@@ -72,6 +71,8 @@ int * get_legal_tour(int position, int * moves, int taille);
 int * get_legal_fou(int position, int * moves, int taille);
 
 int * get_legal_roi(int position, int * moves);
+
+int * get_legal_legal_roi(int position_roi);
 
 int * get_legal_reine(int position, int * moves, int taille);
 

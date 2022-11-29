@@ -95,8 +95,7 @@ FEN initialiser_fen(FEN fen)
     fen.castlew = fen.castleb = NULL;
     fen.half_move = 0;
     fen.full_move = 0;
-    fen.echec_blanc = 0;
-    fen.echec_noir = 0;
+    fen.echec = -1;
     fen.echec_et_mat = -1;
     return fen;
 }
@@ -304,7 +303,7 @@ void debug_mode()
     initialiser_debug();
     initialiser_fen(fen);
     affichage_echequier(echequier, MAX);
-    while (fen.echec_blanc == 0 && fen.echec_noir == 0)
+    while (fen.echec == -1)
     {
 
         printf("\nSelectionner une piece:\n\tColonne: ");
@@ -640,6 +639,62 @@ int *get_legal_roi(int position, int *moves)
     return moves;
 }
 
+//retourne un tableau des moves qui ne mettent pas le roi en echec
+int * get_legal_legal_roi(int position_roi){
+    int i, j, k;
+    int * moves_roi;
+    int * moves;
+    int taille_moves_roi;
+    int taille_moves;
+    int couleur_roi;
+
+    couleur_roi = get_color(position_roi);
+    int nombre_moves_roi = get_nombre_moves(position_roi);
+    
+    taille_moves_roi = get_taille_moves(position_roi);
+    moves_roi = (int *)malloc(sizeof(int)*taille_moves_roi);
+    moves_roi = get_legal_roi(position_roi, moves_roi); //on recupere tous les moves du roi
+
+    if (moves_roi == NULL){
+        fprintf(stderr, "erreur recup moves roi dans echec mat");
+        return NULL;
+    }
+
+    //suppression des moves qui mettent le roi en echec
+    for (i = 0; i<MAX; i++){
+
+        if ((get_color(i) != couleur_roi) && (echequier[i] != VIDE) && (nombre_moves_roi != 0)) //si echequier[i] contient une piece ennemie au roi
+        { 
+            
+            //on récupère les moves de cette pièce:
+            taille_moves = get_taille_moves(i);
+            moves = (int *)malloc(sizeof(int)*taille_moves);
+            moves = recuperer_moves(i, taille_moves);
+            if (moves == NULL){
+                fprintf(stderr, "erreur recup moves");
+                return NULL;
+            }
+
+            j = 0;
+            while (moves[j] != -1 && j<taille_moves) //on compare les moves de la pièce avec ceux du roi, et retire ceux du roi si il y en a en commun
+            {
+
+                for (k = 0; k<taille_moves_roi; k++){
+                    if (moves[j] == moves_roi[k]){
+                        moves_roi[k] = -1;
+                        nombre_moves_roi--;
+                    }
+                }
+                j++;
+            }
+        }
+        free(moves);
+        moves = NULL;
+    }
+
+    return moves_roi;
+}
+
 // fais appel a la fonction du fou et de la tour puis combine les 2 tableaux: faudra que je la réécrive en plus propre la c'est rude mais flemme
 int *get_legal_reine(int position, int *moves, int taille)
 {
@@ -751,8 +806,10 @@ int *recuperer_moves(int position, int taille)
         moves = get_legal_reine(position, moves, taille);
         break;
     case ROI:
+        moves = get_legal_legal_roi(get_pos_roi(0));
+        break;
     case ROI + NOIR:
-        moves = get_legal_roi(position, moves);
+        moves = get_legal_legal_roi(get_pos_roi(1));
         break;
     default:
         fprintf(stderr, "ERREUR");
@@ -808,17 +865,6 @@ int bouger(int position)
     *********************************************************/
 
     printf("\n");
-    /*for (i = 0; i < taille; i++)
-    {
-        if (moves[i] == -1)
-        {
-            printf(" [MOINS 1] ");
-        }
-        else
-        {
-            printf(" %d: (%d,%d) ", i, get_colonne(moves[i]), get_ligne(moves[i]));
-        }
-    }*/
 
     i = 0;
     while (i<taille && moves[i] != -1){
@@ -859,11 +905,10 @@ int bouger(int position)
     return rep;
 }
 
+//regarde les moves de toutes les pieces ennemies: si une des pieces ennemies a le roi dans ses moves: echec pour ce roi
 FEN verifier_echec(FEN fen){
     int i, j=0;
     int * moves = NULL;
-    int echec_blanc = 0;
-    int echec_noir = 0;
     int taille_moves;
 
     for (i = 0; i<MAX; i++){
@@ -882,10 +927,10 @@ FEN verifier_echec(FEN fen){
             j=0;
             while ( j<taille_moves){
                 if (echequier[moves[j]] == ROI){ //si moves[j] contient roi blanc et que j est une piece noire
-                    fen.echec_blanc = 1;
+                    fen.echec = 0;
                 }
                 if (echequier[moves[j]] == ROI+NOIR){ //si moves[j] contient roi noir et que j est une piece blanche
-                    fen.echec_noir = 1;
+                    fen.echec = 1;
                 }
                 j++;
             }
@@ -897,6 +942,8 @@ FEN verifier_echec(FEN fen){
     return fen;
 }
 
+//comtpe les nombres de moves du roi, si il n'y en a pas: echec et mat
+// ATTENTION: Le roi peut avoir aucun moves dispo sans etre en échec (ex: début de partie), cette fontion doit être appelée seulement sur un roi en échec
 FEN echec_et_mat(FEN fen, int position_roi){
 
     int i, k, j;
@@ -977,12 +1024,15 @@ FEN update_fen(FEN fen)
     }
 
     fen = verifier_echec(fen); // modifie les valeurs de echec_blanc et echec_noir
-    if (fen.echec_blanc != 0){
+    
+    /*if (fen.echec == 0) //roi blanc en echec
+    {
         fen = echec_et_mat(fen, get_pos_roi(0));
     }
-    if (fen.echec_noir != 0){
+    if (fen.echec == 1) //roi noir en echec
+    {
         fen = echec_et_mat(fen, get_pos_roi(1));
-    }
+    }*/
 
     return fen;
 }
