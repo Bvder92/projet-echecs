@@ -44,6 +44,8 @@ int get_ligne(int position);
 
 int get_colonne(int position);
 
+int * copie_echequier(int * tab);
+
 int compter_blanc();
 
 int compter_noir();
@@ -78,11 +80,13 @@ int get_taille_moves(int position);
 
 int * recuperer_moves(int position, int taille);
 
+int * retirer_echec(int position, int * moves);
+
 int * supprimer_echec(int position_roi, int * moves_roi);
 
 int bouger(int position);
 
-FEN verifier_echec(FEN fen);
+int verifier_echec(int * tab);
 
 FEN update_fen(FEN fen);
 

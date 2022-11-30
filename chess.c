@@ -161,6 +161,14 @@ int get_colonne(int position)
     return (position - (get_ligne(position) * 8));
 }
 
+//copie l'echequier dans un tableau passé en argument
+int * copie_echequier(int * tab){
+    for (int i = 0; i<MAX; i++){
+        tab[i] = echequier[i];
+    }
+    return tab;
+}
+
 // retourne le nombre de pieces blanches
 int compter_blanc()
 {
@@ -267,6 +275,7 @@ int get_nombre_moves(int position){
             nombre_moves++;
         }
     }
+    printf("\n");
     return nombre_moves;
 }
 
@@ -783,9 +792,41 @@ int *recuperer_moves(int position, int taille)
     /* ****************************************************
     SUPPRESSION DES MOVES QUI METTENT LE ROI EN ECHEC
     *******************************************************/
-    if (echequier[position] == ROI || echequier[position] == ROI+NOIR){
-        moves = supprimer_echec(position, moves);
+    if ( echequier[position] == ROI || echequier[position] == ROI+NOIR){
+        //moves = supprimer_echec(position, moves);
+    }else{
+    moves = retirer_echec(position, moves);
     }
+
+    return moves;
+}
+
+//retire tous les moves qui vont entrainer un echec
+int * retirer_echec(int position, int * moves){
+    int j, couleur, taille_moves;
+    int * echequier_tmp;
+    
+    echequier_tmp = (int *)malloc(sizeof(int)*MAX);
+    echequier_tmp = copie_echequier(echequier_tmp);
+    
+    couleur = get_color(position);
+    taille_moves = get_taille_moves(position);
+    
+    j = 0;
+    while(moves[j] != -1 && j<taille_moves) //on va effectuer chaque move dans un echequier temporaire et regarder si le move crée un echec
+    {
+        echequier_tmp[moves[j]] = echequier_tmp[position];
+        echequier_tmp[position] = VIDE;
+                
+        if (verifier_echec(echequier_tmp) == couleur)
+        {
+            moves[j] = -1;
+        }
+        j++;
+        echequier_tmp = copie_echequier(echequier_tmp);
+    }
+    free (echequier_tmp);
+    echequier_tmp = NULL;
 
     return moves;
 }
@@ -915,31 +956,33 @@ int bouger(int position)
 }
 
 //regarde les moves de toutes les pieces ennemies: si une des pieces ennemies a le roi dans ses moves: echec pour ce roi
-FEN verifier_echec(FEN fen){
-    int i, j=0;
+int verifier_echec(int * tab){
+    int i, j=0, echec = -1;
     int * moves = NULL;
     int taille_moves;
 
     printf("\navant verif echec\n");
     for (i = 0; i<MAX; i++){
 
-        if ((echequier[i] != VIDE) && (echequier[i] != ROI) && (echequier[i] != ROI+NOIR)){
+        if ((tab[i] != VIDE) && (tab[i] != ROI) && (tab[i] != ROI+NOIR)){
             taille_moves = get_taille_moves(i);
             moves = (int *)malloc(sizeof(int)*taille_moves);
             moves = recuperer_moves(i, taille_moves);
 
             if (moves == NULL){
                 fprintf(stderr, "erreur recup moves");
-                return fen;
+                return -1;
             }
 
             j=0;
             while ( j<taille_moves){
-                if (echequier[moves[j]] == ROI){ //si moves[j] contient roi blanc et que j est une piece noire
-                    fen.echec = 0;
+                if (tab[moves[j]] == ROI){ //si moves[j] contient roi blanc et que j est une piece noire
+                    printf("\nROI BLANC EN ECHEC\n");
+                    echec = 0;
                 }
-                if (echequier[moves[j]] == ROI+NOIR){ //si moves[j] contient roi noir et que j est une piece blanche
-                    fen.echec = 1;
+                if (tab[moves[j]] == ROI+NOIR){ //si moves[j] contient roi noir et que j est une piece blanche
+                    printf("\nROI NOIR EN ECHEC\n");
+                    echec = 1;
                 }
                 j++;
             }
@@ -947,8 +990,7 @@ FEN verifier_echec(FEN fen){
         free(moves);
         moves = NULL;
     }
-
-    return fen;
+    return echec;
 }
 
 //comtpe les nombres de moves du roi, si il n'y en a pas: echec et mat
@@ -980,14 +1022,18 @@ FEN update_fen(FEN fen)
         fen.tour = 1;
     }
 
-    fen = verifier_echec(fen); // modifie les valeurs de echec_blanc et echec_noir
+    int * tab = (int *)malloc(sizeof(int)*MAX);
+    tab = copie_echequier(tab);
+    fen.echec = verifier_echec(tab); // modifie les valeurs de echec_blanc et echec_noir
     
     if (fen.echec == 0) //roi blanc en echec
     {
+        printf("\nappel de echec_et_mat pour roi blanc\n");
         fen = echec_et_mat(fen, get_pos_roi(0));
     }
     if (fen.echec == 1) //roi noir en echec
     {
+        printf("\nappel de echec_et_mat pour roi noir\n");
         fen = echec_et_mat(fen, get_pos_roi(1));
     }
 
