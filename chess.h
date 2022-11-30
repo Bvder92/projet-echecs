@@ -72,13 +72,13 @@ int * get_legal_fou(int position, int * moves, int taille);
 
 int * get_legal_roi(int position, int * moves);
 
-int * get_legal_legal_roi(int position_roi);
-
 int * get_legal_reine(int position, int * moves, int taille);
 
 int get_taille_moves(int position);
 
 int * recuperer_moves(int position, int taille);
+
+int * supprimer_echec(int position_roi, int * moves_roi);
 
 int bouger(int position);
 

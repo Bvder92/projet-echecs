@@ -29,7 +29,7 @@ int main()
         
         echequier[move] = echequier[position];
         echequier[position] = VIDE;
-        //fen = update_fen(fen);
+        fen = update_fen(fen);
     }
 
     affichage_echequier();
