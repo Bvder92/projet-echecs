@@ -54,7 +54,7 @@ void print_name(int piece);
 
 void print_color(int position);
 
-int get_color(int position);
+int get_color(int position, int * tab);
 
 void debug_mode();
 
@@ -62,23 +62,23 @@ int select_piece();
 
 int * retirer_impossible(int * tab, int taille);
 
-int * get_legal_pion_blanc(int position, int * moves);
+int * get_legal_pion_blanc(int position, int * moves, int * tab);
 
-int * get_legal_pion_noir(int position, int * moves);
+int * get_legal_pion_noir(int position, int * moves, int * tab);
     
-int * get_legal_cavalier(int position, int * array);
+int * get_legal_cavalier(int position, int * moves, int * tab);
 
-int * get_legal_tour(int position, int * moves, int taille);
+int * get_legal_tour(int position, int * moves, int taille, int * tab);
 
-int * get_legal_fou(int position, int * moves, int taille);
+int * get_legal_fou(int position, int * moves, int taille, int * tab);
 
-int * get_legal_roi(int position, int * moves);
+int * get_legal_roi(int position, int * moves, int * tab);
 
-int * get_legal_reine(int position, int * moves, int taille);
+int * get_legal_reine(int position, int * moves, int taille, int * tab);
 
-int get_taille_moves(int position);
+int get_taille_moves(int position, int * tab);
 
-int * recuperer_moves(int position, int taille);
+int * recuperer_moves(int position, int taille, int * tab);
 
 int * retirer_echec(int position, int * moves);
 

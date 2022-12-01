@@ -175,7 +175,7 @@ int compter_blanc()
     int c = 0;
     for (int i = 0; i < MAX; i++)
     {
-        if (get_color(i) == 0)
+        if (get_color(i, echequier) == 0)
         {
             c++;
         }
@@ -189,7 +189,7 @@ int compter_noir()
     int c = 0;
     for (int i = 0; i < MAX; i++)
     {
-        if (get_color(i) == 1)
+        if (get_color(i, echequier) == 1)
         {
             c++;
         }
@@ -254,11 +254,11 @@ void print_color(int position)
 }
 
 //retourne 1 pour noir, 0 pour blanc, -1 pour vide
-int get_color(int position){
-    if (echequier[position] > 128){
+int get_color(int position, int * tab){
+    if (tab[position] > 128){
         return 1;
     }
-    else if (echequier[position] == VIDE){
+    else if (tab[position] == VIDE){
         return -1;
     }
     else return 0;
@@ -266,9 +266,9 @@ int get_color(int position){
 
 int get_nombre_moves(int position){
     int nombre_moves = 0;
-    int taille = get_taille_moves(position);
+    int taille = get_taille_moves(position, echequier);
     int * moves = (int *)malloc(sizeof(int)*taille);
-    moves = recuperer_moves(position, taille);
+    moves = recuperer_moves(position, taille, echequier);
     for(int i = 0; i<taille; i++){
         printf("\nmove[%d] = %d", i, moves[i]);
         if (moves[i] != -1){
@@ -354,9 +354,9 @@ int select_piece(int tour)
 
         position = get_pos(ligne, colonne);
 
-        if (get_color(position) != tour)
+        if (get_color(position, echequier) != tour)
             printf("\nChoisissez une piece de la bonne couleur!");
-    } while (get_color(position) != tour); // check couleur + vide ou pas
+    } while (get_color(position, echequier) != tour); // check couleur + vide ou pas
     return position;
 }
 
@@ -390,16 +390,16 @@ int *retirer_impossible(int *tab, int taille)
 MOVES LEGAUX - Les fontions retournent toutes un tableau contenant les indices des cases de l'echequier ou la piece passée en argument peut aller
 */
 
-int *get_legal_pion_blanc(int position, int *moves)
+int *get_legal_pion_blanc(int position, int *moves, int * tab)
 {
     moves[0] = moves[1] = moves[2] = moves[3] = -1;
 
     // si la case devant le pion est vide on peut avancer:
-    if (echequier[position - 8] == VIDE)
+    if (tab[position - 8] == VIDE)
         moves[0] = position - 8;
 
     // si les deux cases devant le pion sont vide et que le pion n'a jamais bougé on peut double avancer:
-    if ((echequier[position - 8] == VIDE) && (echequier[position - 16] == VIDE))
+    if ((tab[position - 8] == VIDE) && (tab[position - 16] == VIDE))
     {
         if (get_ligne(position) == 6)
         {
@@ -408,12 +408,12 @@ int *get_legal_pion_blanc(int position, int *moves)
     }
 
     // si la case en haut à droite/gauche contient un pion noir on peut y aller (capture):
-    if (get_color(position - 7) == 1)
+    if (get_color(position - 7, tab) == 1)
     {
         moves[2] = position - 7;
     }
 
-    if (get_color(position - 9) == 1)
+    if (get_color(position - 9, tab) == 1)
     {
         moves[3] = position - 9;
     }
@@ -421,14 +421,14 @@ int *get_legal_pion_blanc(int position, int *moves)
     return moves;
 }
 
-int *get_legal_pion_noir(int position, int *moves)
+int *get_legal_pion_noir(int position, int *moves, int * tab)
 {
     moves[0] = moves[1] = moves[2] = moves[3] = -1;
 
-    if (echequier[position + 8] == VIDE)
+    if (tab[position + 8] == VIDE)
         moves[0] = position + 8;
 
-    if ((echequier[position + 8] == VIDE) && (echequier[position + 16] == VIDE))
+    if ((tab[position + 8] == VIDE) && (tab[position + 16] == VIDE))
     {
         if (get_ligne(position) == 1)
         {
@@ -438,12 +438,12 @@ int *get_legal_pion_noir(int position, int *moves)
 
     // si la case en bas a droite/gauche contient un pion blanc on peut y aller
 
-    if (get_color(position + 7) == 0)
+    if (get_color(position + 7, tab) == 0)
     {
         moves[2] = position + 7;
     }
 
-    if (get_color(position + 9) == 0)
+    if (get_color(position + 9, tab) == 0)
     {
         moves[3] = position + 9;
     }
@@ -453,7 +453,7 @@ int *get_legal_pion_noir(int position, int *moves)
 
 /* Retourne un tableau contenant les moves possibles pour le cavalier, sans les captures
 Si la valeur est -1, le move est impossible car hors limite */
-int *get_legal_cavalier(int position, int *moves)
+int *get_legal_cavalier(int position, int *moves, int * tab)
 {
     int ligne = get_ligne(position);
     int colonne = get_colonne(position);
@@ -491,7 +491,7 @@ int *get_legal_cavalier(int position, int *moves)
 }
 
 // Retourne un tableau contenant les moves possibles pour la tour, sans les captures
-int *get_legal_tour(int position, int *moves, int taille)
+int *get_legal_tour(int position, int *moves, int taille, int * tab)
 {
     int ligne = get_ligne(position);
     int colonne = get_colonne(position);
@@ -502,7 +502,7 @@ int *get_legal_tour(int position, int *moves, int taille)
     { // ligne verticale vers le haut: on retire 8 à i tant qu'il ne sort pas du tableau (i >= 0)
         moves[j] = i;
         j++;
-        if (echequier[i] != VIDE)
+        if (tab[i] != VIDE)
         {
             break;
         }
@@ -512,7 +512,7 @@ int *get_legal_tour(int position, int *moves, int taille)
     { // ligne verticale vers le bas: on ajoute 8 à i tant qu'il ne sort pas du tableau (i < 64)
         moves[j] = i;
         j++;
-        if (echequier[i] != VIDE)
+        if (tab[i] != VIDE)
         {
             break;
         }
@@ -523,7 +523,7 @@ int *get_legal_tour(int position, int *moves, int taille)
     { // ligne horizontale vers la droite: on ajoute 1 à i tant qu'il ne change pas de ligne
         moves[j] = i;
         j++;
-        if (echequier[i] != VIDE)
+        if (tab[i] != VIDE)
         {
             break;
         }
@@ -535,7 +535,7 @@ int *get_legal_tour(int position, int *moves, int taille)
     { // ligne horizontale vers la gauche: on retire 1 à i tant qu'il ne change pas de ligne
         moves[j] = i;
         j++;
-        if (echequier[i] != VIDE)
+        if (tab[i] != VIDE)
         {
             break;
         }
@@ -552,7 +552,7 @@ int *get_legal_tour(int position, int *moves, int taille)
 }
 
 // retourne un tableau contenant les moves possibles pour le fou, sans captures
-int *get_legal_fou(int position, int *moves, int taille)
+int *get_legal_fou(int position, int *moves, int taille, int * tab)
 {
     int ligne = get_ligne(position);
     int colonne = get_colonne(position);
@@ -564,7 +564,7 @@ int *get_legal_fou(int position, int *moves, int taille)
     { // diagonale vers le haut gauche: on décrémente de 9 tant qu'on est dans l'échequier
         moves[j] = i;
         j++;
-        if (echequier[i] != VIDE)
+        if (tab[i] != VIDE)
         {
             break;
         }
@@ -575,7 +575,7 @@ int *get_legal_fou(int position, int *moves, int taille)
     { // diagonale vers le haut droit: on décrémente de 7 tant qu'on est dans l'échequier
         moves[j] = i;
         j++;
-        if (echequier[i] != VIDE)
+        if (tab[i] != VIDE)
         {
             break;
         }
@@ -586,7 +586,7 @@ int *get_legal_fou(int position, int *moves, int taille)
     { // diagonale vers le bas droit: on incrémente de 9 tant qu'on est dans l'échequier
         moves[j] = i;
         j++;
-        if (echequier[i] != VIDE)
+        if (tab[i] != VIDE)
         {
             break;
         }
@@ -597,7 +597,7 @@ int *get_legal_fou(int position, int *moves, int taille)
     { // diagonale vers le bas gauche: on incrémente de 7 tant qu'on est dans l'échequier
         moves[j] = i;
         j++;
-        if (echequier[i] != VIDE)
+        if (tab[i] != VIDE)
         {
             break;
         }
@@ -614,7 +614,7 @@ int *get_legal_fou(int position, int *moves, int taille)
 }
 
 // retourne un tableau contenant les moves légaux pour le roi, sans captures
-int *get_legal_roi(int position, int *moves)
+int *get_legal_roi(int position, int *moves, int * tab)
 {
     int ligne = get_ligne(position);
     int colonne = get_colonne(position);
@@ -650,7 +650,7 @@ int *get_legal_roi(int position, int *moves)
 }
 
 // fais appel a la fonction du fou et de la tour puis combine les 2 tableaux: faudra que je la réécrive en plus propre la c'est rude mais flemme
-int *get_legal_reine(int position, int *moves, int taille)
+int *get_legal_reine(int position, int *moves, int taille, int * tab)
 {
 
     int i = 0, a = 0, j;                   // i sert a incrémenter les boucles, j sert a garder l'indice de moves[] entre les boucles et a sert dans la dernière boucle
@@ -661,8 +661,8 @@ int *get_legal_reine(int position, int *moves, int taille)
     int *moves_fou = (int *)malloc(sizeof(int) * taille_fou);   // tableau qu'on va remplir avec les 13 moves dispo du fou
     int *moves_tour = (int *)malloc(sizeof(int) * taille_tour); // tableau qu'on va remplir avec les 4 moves restants pour la reine
 
-    moves_fou = get_legal_fou(position, moves_fou, taille_fou);
-    moves_tour = get_legal_tour(position, moves_tour, taille_tour);
+    moves_fou = get_legal_fou(position, moves_fou, taille_fou, tab);
+    moves_tour = get_legal_tour(position, moves_tour, taille_tour, tab);
 
     while (i < taille_fou)
     { // on remplit moves[] avec les valeurs de moves_fou[]
@@ -694,9 +694,9 @@ int *get_legal_reine(int position, int *moves, int taille)
 // détecte quelle pièce est présente dans la case "position" et appelle la fonction correspondante pour la déplacer puis retourne le déplacement choisi par l'utilisateur
 
 //retroune la taille du tableau de moves de la piece dans echequier[position]:
-int get_taille_moves(int position){
+int get_taille_moves(int position, int * tab){
     int taille;
-    switch (echequier[position])
+    switch (tab[position])
     {
     case PION:
     case PION + NOIR:
@@ -721,52 +721,52 @@ int get_taille_moves(int position){
         taille = 27;
         break;
     default:
-        fprintf(stderr, "ERREUR");
+        fprintf(stderr, "ERREUR GET_TAILLE_MOVES: PIECE INCONNUE, piece = %d\n");
         return 0;
     }
     return taille;
 }
 
 // retourne le tableau de moves legaux d'une piece(bouger sans la partie ou on choisit)
-int *recuperer_moves(int position, int taille)
+int *recuperer_moves(int position, int taille, int * tab)
 {
 
     int *moves;
     int i;
     moves = (int *)malloc(sizeof(int)*taille);
 
-    switch (echequier[position])
+    switch (tab[position])
     {
     case PION:
-        moves = get_legal_pion_blanc(position, moves);
+        moves = get_legal_pion_blanc(position, moves, tab);
         break;
     case PION + NOIR:
-        moves = get_legal_pion_noir(position, moves);
+        moves = get_legal_pion_noir(position, moves, tab);
         break;
     case CAVALIER:
     case CAVALIER + NOIR:
-        moves = get_legal_cavalier(position, moves);
+        moves = get_legal_cavalier(position, moves, tab);
         break;
     case FOU:
     case FOU + NOIR:
-        moves = get_legal_fou(position, moves, taille);
+        moves = get_legal_fou(position, moves, taille, tab);
         break;
     case TOUR:
     case TOUR + NOIR:
-        moves = get_legal_tour(position, moves, taille);
+        moves = get_legal_tour(position, moves, taille, tab);
         break;
     case REINE:
     case REINE + NOIR:
-        moves = get_legal_reine(position, moves, taille);
+        moves = get_legal_reine(position, moves, taille, tab);
         break;
     case ROI:
-        moves = get_legal_roi(position, moves);
+        moves = get_legal_roi(position, moves, tab);
         break;
     case ROI + NOIR:
-        moves = get_legal_roi(position, moves);
+        moves = get_legal_roi(position, moves, tab);
         break;
     default:
-        fprintf(stderr, "ERREUR");
+        fprintf(stderr, "ERREUR RECUP MOVES: PIECE INCONNUE\n");
         return NULL;
     }
 
@@ -782,7 +782,7 @@ int *recuperer_moves(int position, int taille)
 
     for (i = 0; i < taille; i++)
     {
-        if (get_color(moves[i]) == get_color(position))
+        if (get_color(moves[i], tab) == get_color(position, tab))
         { // si une case ou on peut aller est occupée par notre couleur, on l'enleve (on peut pas capturer ses pieces)
             moves[i] = -1;
         }
@@ -792,11 +792,10 @@ int *recuperer_moves(int position, int taille)
     /* ****************************************************
     SUPPRESSION DES MOVES QUI METTENT LE ROI EN ECHEC
     *******************************************************/
-    if ( echequier[position] == ROI || echequier[position] == ROI+NOIR){
-        //moves = supprimer_echec(position, moves);
-    }else{
-    moves = retirer_echec(position, moves);
+    if ( tab[position] == ROI || tab[position] == ROI+NOIR){
+        moves = supprimer_echec(position, moves);
     }
+    //moves = retirer_echec(position, moves);
 
     return moves;
 }
@@ -809,12 +808,13 @@ int * retirer_echec(int position, int * moves){
     echequier_tmp = (int *)malloc(sizeof(int)*MAX);
     echequier_tmp = copie_echequier(echequier_tmp);
     
-    couleur = get_color(position);
-    taille_moves = get_taille_moves(position);
+    couleur = get_color(position, echequier);
+    taille_moves = get_taille_moves(position, echequier);
     
     j = 0;
     while(moves[j] != -1 && j<taille_moves) //on va effectuer chaque move dans un echequier temporaire et regarder si le move crée un echec
     {
+        echequier_tmp = copie_echequier(echequier_tmp);
         echequier_tmp[moves[j]] = echequier_tmp[position];
         echequier_tmp[position] = VIDE;
                 
@@ -823,7 +823,6 @@ int * retirer_echec(int position, int * moves){
             moves[j] = -1;
         }
         j++;
-        echequier_tmp = copie_echequier(echequier_tmp);
     }
     free (echequier_tmp);
     echequier_tmp = NULL;
@@ -840,13 +839,13 @@ int * supprimer_echec(int position_roi, int * moves_roi){
     int taille_moves;
     int couleur_roi;
 
-    couleur_roi = get_color(position_roi);
+    couleur_roi = get_color(position_roi, echequier);
     if (couleur_roi != 1 && couleur_roi != 0){
         printf("\n COULEUR ROI ERREUR: %d", couleur_roi);
         return moves_roi;
     }
 
-    taille_moves_roi = get_taille_moves(position_roi);
+    taille_moves_roi = get_taille_moves(position_roi, echequier);
 
     for(int i = 0; i<taille_moves_roi; i++){
         if (moves[i] != -1){
@@ -856,11 +855,11 @@ int * supprimer_echec(int position_roi, int * moves_roi){
 
     for (i = 0; i<64; i++){
 
-        if ((echequier[i] != VIDE) && (get_color(i) != couleur_roi) && (nombre_moves_roi != 0) && (echequier[i]!=ROI) && (echequier[i]!=ROI+NOIR)) //si echequier[i] contient une piece ennemie au roi
+        if ((echequier[i] != VIDE) && (get_color(i, echequier) != couleur_roi) && (nombre_moves_roi != 0) && (echequier[i]!=ROI) && (echequier[i]!=ROI+NOIR)) //si echequier[i] contient une piece ennemie au roi
         {
-            taille_moves = get_taille_moves(i);
+            taille_moves = get_taille_moves(i, echequier);
             moves = (int *)malloc(sizeof(int)*taille_moves);
-            moves = recuperer_moves(i, taille_moves);
+            moves = recuperer_moves(i, taille_moves, echequier);
             if (moves == NULL){
                 fprintf(stderr, "ERREUR RECUP MOVES FONCTION SUPPRIMER_ECHEC");
                 return moves_roi;
@@ -898,7 +897,7 @@ int bouger(int position)
     int i, taille, rep = -1;
     int capture = 0;
     int *moves;
-    taille = get_taille_moves(position);
+    taille = get_taille_moves(position, echequier);
     printf("\n\t**Piece Selectionnee: ");
     print_name(position);
     print_color(position);
@@ -908,7 +907,8 @@ int bouger(int position)
         fprintf(stderr, "erreur malloc bouger_alt");
         return 0;
     }
-    moves = recuperer_moves(position,taille);
+    moves = recuperer_moves(position,taille, echequier);
+    moves = retirer_echec(position, moves);
 
     /* ******************************************************
     AFFICHAGE:
@@ -938,7 +938,7 @@ int bouger(int position)
     // on regarde si le move choisi est une capture ou non
     if (moves[rep] != VIDE)
     {
-        if (get_color(moves[rep]) == get_color(position))
+        if (get_color(moves[rep], echequier) == get_color(position, echequier))
         { // ca devrait pas arriver vu qu'on la check juste au dessus
             printf("\nCAPTURE PIECE ALLIEE");
         }
@@ -965,12 +965,12 @@ int verifier_echec(int * tab){
     for (i = 0; i<MAX; i++){
 
         if ((tab[i] != VIDE) && (tab[i] != ROI) && (tab[i] != ROI+NOIR)){
-            taille_moves = get_taille_moves(i);
+            taille_moves = get_taille_moves(i, tab);
             moves = (int *)malloc(sizeof(int)*taille_moves);
-            moves = recuperer_moves(i, taille_moves);
+            moves = recuperer_moves(i, taille_moves, tab);
 
             if (moves == NULL){
-                fprintf(stderr, "erreur recup moves");
+                fprintf(stderr, "\nVERIFIER ECHEC: TABLEAU DE MOVES NULL\n");
                 return -1;
             }
 
@@ -998,8 +998,9 @@ int verifier_echec(int * tab){
 FEN echec_et_mat(FEN fen, int position_roi){
 
     int nombre_moves_roi = get_nombre_moves(position_roi);
+    //printf("\nNombre moves roi:%d\n", nombre_moves_roi);
     if (nombre_moves_roi == 0){
-        fen.echec_et_mat = get_color(position_roi);
+        fen.echec_et_mat = get_color(position_roi, echequier);
     }
     return fen;
 }
