@@ -58,7 +58,9 @@ int get_color(int position, int * tab);
 
 void debug_mode();
 
-int select_piece();
+int select_piece(int tour);
+
+int select_piece_mieux(int couleur);
 
 int * retirer_impossible(int * tab, int taille);
 
@@ -81,6 +83,8 @@ int get_taille_moves(int position, int * tab);
 int * recuperer_moves(int position, int taille, int * tab);
 
 int * retirer_echec(int position, int * moves);
+
+int * liste_moves(int couleur, int * liste_pieces, int taille_liste);
 
 int * supprimer_echec(int position_roi, int * moves_roi);
 

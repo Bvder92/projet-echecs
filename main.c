@@ -24,7 +24,13 @@ int main()
         {
             printf("\nTour des Noirs:\n");
         }
-        position = select_piece(fen.tour);
+        
+        do{
+            position = select_piece_mieux(fen.tour);
+            if (position == -1){
+                printf("\nCette piece ne peut pas bouger!\n");
+            }
+        } while(position == -1);
         move = bouger(position);
         
         echequier[move] = echequier[position];
