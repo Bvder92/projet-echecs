@@ -320,7 +320,7 @@ void debug_mode()
 
         position = get_pos(ligne, colonne);
 
-        move = bouger(position); // on vérifie que le move est legit?? et on modifie l'echequier
+        move = bouger(position, fen); // on vérifie que le move est legit?? et on modifie l'echequier
         if ((move < 64) && (move >= 0))
         {
             echequier[move] = echequier[position];
@@ -660,6 +660,8 @@ int *get_legal_roi(int position, int *moves, int * tab)
     moves[5] = position + 7;
     moves[6] = position + 8;
     moves[7] = position + 9;
+    moves[8] = -1;
+    moves[9] = -1;
 
     // elimination des moves qui sortent de l'echequier
     if ((colonne == 0)) // colonne 0 -> on peut pas aller en -9, -1 ou 7
@@ -739,11 +741,13 @@ int get_taille_moves(int position, int * tab){
         break;
     case CAVALIER:
     case CAVALIER + NOIR:
+        taille = 8;
+        break;
     case ROI:
     case ROI + SPECIAL:
     case ROI + NOIR + SPECIAL:
     case ROI + NOIR:
-        taille = 8;
+        taille = 10;
         break;
     case FOU:
     case FOU + NOIR:
@@ -829,15 +833,32 @@ int *recuperer_moves(int position, int taille, int * tab)
         }
     }
     moves = retirer_impossible(moves, taille);
+    return moves;
+}
 
-    /* ****************************************************
-    SUPPRESSION DES MOVES QUI METTENT LE ROI EN ECHEC
-    *******************************************************/
-    //if ( tab[position] == ROI || tab[position] == ROI+NOIR){
-      //  moves = supprimer_echec(position, moves);
-    //}
-    //moves = retirer_echec(position, moves);
+//ajoute les 2 castle a la fin du tableau de moves: moves[8] = côté reine, moves[9] = côté roi
+int * ajouter_castle(int couleur, int * moves, FEN fen){
 
+    if (couleur == 1){
+        if (fen.castleb[0] == 1){
+            moves[8] = 2;
+        }
+        if (fen.castleb[1] == 1){
+            moves[9] = 6;
+        }
+    }
+    else if (couleur == 0)
+    {
+        if (fen.castlew[0] == 1){
+            moves[8] = 58;
+        }
+        if (fen.castlew[1] == 1){
+            moves[9] = 62;
+        }
+    }
+    else{
+        fprintf(stderr,"ERREUR FONCTION AJOUT CASTLE");
+    }
     return moves;
 }
 
@@ -912,64 +933,7 @@ int * liste_moves(int couleur, int * liste_pieces, int taille_liste){
     return liste_pieces;
 }
 
-//retourne le tableau de moves du roi sans les moves qui le mettraient en echec:
-int * supprimer_echec(int position_roi, int * moves_roi){
-    int i, k, j;
-    int * moves; //moves de la piece etudiee (ça va etre toutes les pieces ennemies au roi)
-    int taille_moves_roi;
-    int nombre_moves_roi = 0;
-    int taille_moves;
-    int couleur_roi;
-
-    couleur_roi = get_color(position_roi, echequier);
-    if (couleur_roi != 1 && couleur_roi != 0){
-        printf("\n COULEUR ROI ERREUR: %d", couleur_roi);
-        return moves_roi;
-    }
-
-    taille_moves_roi = get_taille_moves(position_roi, echequier);
-
-    for(int i = 0; i<taille_moves_roi; i++){
-        if (moves[i] != -1){
-            nombre_moves_roi++;
-        }
-    }
-
-    for (i = 0; i<64; i++){
-
-        if ((echequier[i] != VIDE) && (get_color(i, echequier) != couleur_roi) && (nombre_moves_roi != 0) && (echequier[i]!=ROI) && (echequier[i]!=ROI+NOIR)) //si echequier[i] contient une piece ennemie au roi
-        {
-            taille_moves = get_taille_moves(i, echequier);
-            moves = (int *)malloc(sizeof(int)*taille_moves);
-            moves = recuperer_moves(i, taille_moves, echequier);
-            if (moves == NULL){
-                fprintf(stderr, "ERREUR RECUP MOVES FONCTION SUPPRIMER_ECHEC");
-                return moves_roi;
-            }
-
-            j=0;
-            //on parcours tous les moves de la piece actuelle:
-            while (moves[j] != -1 && j<taille_moves){
-                
-                for (k = 0; k<taille_moves_roi; k++)
-                {
-                    if (moves[j] == moves_roi[k])
-                    {
-                        moves_roi[k] = -1;
-                        nombre_moves_roi--;
-                    }
-                }
-                j++;
-            }
-        }
-        free(moves);
-        moves = NULL;
-    }
-
-    return moves_roi;
-}
-
-int bouger(int position)
+int bouger(int position, FEN fen)
 {
     printf("\n\t**Piece Selectionnee: ");
     print_name(position);
@@ -990,8 +954,12 @@ int bouger(int position)
         fprintf(stderr, "erreur malloc bouger_alt");
         return 0;
     }
+
     moves = recuperer_moves(position,taille, echequier);
     moves = retirer_echec(position, moves);
+    if (echequier[position] == ROI || echequier[position] == ROI+NOIR){
+        moves = ajouter_castle(get_color(position, echequier), moves, fen);
+    }
     moves = retirer_impossible(moves, taille);
 
     /* *****************************************************

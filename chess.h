@@ -89,7 +89,7 @@ int * liste_moves(int couleur, int * liste_pieces, int taille_liste);
 
 int * supprimer_echec(int position_roi, int * moves_roi);
 
-int bouger(int position);
+int bouger(int position, FEN fen);
 
 int verifier_echec(int * tab);
 

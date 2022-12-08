@@ -31,14 +31,42 @@ int main()
                 printf("\nCette piece ne peut pas bouger!\n");
             }
         } while(position == -1);
-        move = bouger(position);
+        move = bouger(position, fen);
+        printf("\nMove = %d\n", move);
         
+        if (echequier[position] == ROI){
+            if (move == 62){
+                echequier[61] = echequier[63];
+                echequier[63] = VIDE;
+            }
+            if (move == 58){
+                echequier[59] = echequier[56];
+                echequier[56] = VIDE;
+            }
+        }
+
+        if (echequier[position] == ROI+NOIR){
+            if (move == position+2){
+                echequier[5] = echequier[7];
+                echequier[7] = VIDE;
+            }
+            if (move == position - 2){
+                echequier[3] = echequier[0];
+                echequier[0] = VIDE;
+            }
+        }
+
         echequier[move] = echequier[position];
         echequier[position] = VIDE;
-        printf("\navant update\n");
+
         fen = update_fen(fen);
-        printf("\ncastleb: %d %d", fen.castleb[0], fen.castleb[1]);
-        printf("\ncastlew: %d %d\n", fen.castlew[0], fen.castlew[1]);
+        if (fen.castleb != NULL){
+            printf("\ncastleb: %d %d", fen.castleb[0], fen.castleb[1]);
+        }
+        if (fen.castlew != NULL){
+            printf("\ncastlew: %d %d", fen.castlew[0], fen.castlew[1]);
+        }
+        printf("\n");
     }
 
     affichage_echequier();
