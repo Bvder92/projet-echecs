@@ -377,12 +377,17 @@ int select_piece_mieux(int couleur){
     }
     liste_pieces = liste_moves(couleur, liste_pieces, taille_liste);
 
+    printf("\nPieces pouvant bouger: ");
+    for (i = 0; i < taille_liste; i++){
+        printf(" %d", liste_pieces[i]);
+    }
+
     int position = select_piece(couleur);
     
     for (i = 0; i < taille_liste; i++){
         if (liste_pieces[i] == position){
             valide = 1;
-            break;
+            //break;
         }
     }
 
@@ -1088,6 +1093,7 @@ FEN echec_et_mat(FEN fen, int position_roi, int couleur){
     }
     liste_pieces = liste_moves(couleur, liste_pieces, taille_liste);
 
+    printf("\nFONCTION ECEHC ET MAT ROI %d, LISTE PIECES:\n", couleur);
     for (int j = 0; j<taille_liste; j++){
         printf("%d, ", liste_pieces[j]);
     }
@@ -1125,12 +1131,12 @@ FEN update_fen(FEN fen)
     
     if (fen.echec == 0) //roi blanc en echec
     {
-        //printf("\nappel de echec_et_mat pour roi blanc\n");
+        printf("\nappel de echec_et_mat pour roi blanc\n");
         fen = echec_et_mat(fen, get_pos_roi(0), 0);
     }
     if (fen.echec == 1) //roi noir en echec
     {
-        //printf("\nappel de echec_et_mat pour roi noir\n");
+        printf("\nappel de echec_et_mat pour roi noir\n");
         fen = echec_et_mat(fen, get_pos_roi(1), 1);
     }
 
