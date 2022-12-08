@@ -198,38 +198,39 @@ int compter_noir()
 }
 
 // affiche le nom de la piece dont la valeur est passée en argument
-void print_name(int position)
+void print_name(int position) // pas besoin de créer une variable a tu peuc juste changer le case
 {
-    int a;
-    if (echequier[position] < 128)
-    {
-        a = 0;
-    }
-    else
-    {
-        a = 128;
-    }
-    switch (echequier[position] - a)
+    switch (echequier[position])
     {
     case VIDE:
         printf("Vide");
         break;
     case PION:
+    case PION + SPECIAL:
+    case PION + NOIR + SPECIAL:
+    case PION + NOIR:
         printf("Pion");
         break;
     case CAVALIER:
+    case CAVALIER + NOIR:
         printf("Cavalier");
         break;
     case FOU:
+    case FOU + NOIR:
         printf("Fou");
         break;
     case TOUR:
+    case TOUR + NOIR:
         printf("Tour");
         break;
     case REINE:
+    case REINE + NOIR:
         printf("Reine");
         break;
     case ROI:
+    case ROI + SPECIAL:
+    case ROI + NOIR + SPECIAL:
+    case ROI + NOIR:
         printf("Roi");
         break;
     default:
@@ -376,18 +377,13 @@ int select_piece_mieux(int couleur){
         return -1;
     }
     liste_pieces = liste_moves(couleur, liste_pieces, taille_liste);
-
-    printf("\nPieces pouvant bouger: ");
-    for (i = 0; i < taille_liste; i++){
-        printf(" %d", liste_pieces[i]);
-    }
-
+    
     int position = select_piece(couleur);
     
     for (i = 0; i < taille_liste; i++){
         if (liste_pieces[i] == position){
             valide = 1;
-            //break;
+            break;
         }
     }
 
@@ -736,12 +732,16 @@ int get_taille_moves(int position, int * tab){
     switch (tab[position])
     {
     case PION:
+    case PION + SPECIAL:
     case PION + NOIR:
+    case PION + NOIR + SPECIAL:
         taille = 4;
         break;
     case CAVALIER:
     case CAVALIER + NOIR:
     case ROI:
+    case ROI + SPECIAL:
+    case ROI + NOIR + SPECIAL:
     case ROI + NOIR:
         taille = 8;
         break;
@@ -775,9 +775,11 @@ int *recuperer_moves(int position, int taille, int * tab)
     switch (tab[position])
     {
     case PION:
+    case PION+SPECIAL:
         moves = get_legal_pion_blanc(position, moves, tab);
         break;
     case PION + NOIR:
+    case PION + NOIR + SPECIAL:
         moves = get_legal_pion_noir(position, moves, tab);
         break;
     case CAVALIER:
@@ -797,9 +799,11 @@ int *recuperer_moves(int position, int taille, int * tab)
         moves = get_legal_reine(position, moves, taille, tab);
         break;
     case ROI:
+    case ROI + SPECIAL:
         moves = get_legal_roi(position, moves, tab);
         break;
     case ROI + NOIR:
+    case ROI + NOIR + SPECIAL:
         moves = get_legal_roi(position, moves, tab);
         break;
     default:
@@ -990,6 +994,19 @@ int bouger(int position)
     moves = retirer_echec(position, moves);
     moves = retirer_impossible(moves, taille);
 
+    /* *****************************************************
+    INCREMENTER COUP SPECIAL :
+    *******************************************************/
+    if (echequier[position] == ROI || echequier[position] == ROI + NOIR)
+    {
+        echequier[position] += SPECIAL;
+    }
+
+    if (echequier[position] == PION || echequier[position] == PION + NOIR)
+    {
+        echequier[position] += SPECIAL;
+    }
+
     /* ******************************************************
     AFFICHAGE:
     *********************************************************/
@@ -1093,15 +1110,8 @@ FEN echec_et_mat(FEN fen, int position_roi, int couleur){
     }
     liste_pieces = liste_moves(couleur, liste_pieces, taille_liste);
 
-    printf("\nFONCTION ECEHC ET MAT ROI %d, LISTE PIECES:\n", couleur);
-    for (int j = 0; j<taille_liste; j++){
-        printf("%d, ", liste_pieces[j]);
-    }
-    printf("\n");
-
     if (liste_pieces[0] == -1){
         fen.echec_et_mat = couleur;
-        printf("\ni=0 -> echec_et_mat = %d\n", couleur);
     }
         
     return fen;
@@ -1125,20 +1135,151 @@ FEN update_fen(FEN fen)
         fen.tour = 1;
     }
 
-    int * tab = (int *)malloc(sizeof(int)*MAX);
-    tab = copie_echequier(tab);
-    fen.echec = verifier_echec(tab); // modifie les valeurs de echec_blanc et echec_noir
+
+    if (echequier[4] == ROI+NOIR)
+    {
+        printf("\nAPPEL CASTLE(4)\n");
+        fen.castleb = castle(4);
+    }
+    else
+    {
+        printf("\n PAS D'APPEL CASTLE(4)\n");
+        fen.castleb = NULL;
+    }
+
+    if (echequier[60] == ROI)
+    {
+        printf("\nAPPEL CASTLE(60)\n");
+        fen.castlew = castle(60);
+    }
+    else //si echequier[60] contient un roi qui n'a jamais bougé:
+    {
+        printf("\nPAS D'APPEL CASTLE(60)\n");
+        fen.castlew = NULL;
+    }
+
+    /*int * tabb = (int *)malloc(sizeof(int)*MAX);
+    tabb = copie_echequier(tabb);*/
+    fen.echec = verifier_echec(echequier); // modifie les valeurs de echec_blanc et echec_noir
     
     if (fen.echec == 0) //roi blanc en echec
     {
-        printf("\nappel de echec_et_mat pour roi blanc\n");
+        //printf("\nappel de echec_et_mat pour roi blanc\n");
         fen = echec_et_mat(fen, get_pos_roi(0), 0);
     }
     if (fen.echec == 1) //roi noir en echec
     {
-        printf("\nappel de echec_et_mat pour roi noir\n");
+        //printf("\nappel de echec_et_mat pour roi noir\n");
         fen = echec_et_mat(fen, get_pos_roi(1), 1);
     }
 
     return fen;
+}
+
+int empty(int a, int b)
+{
+    for (int i = a; i < b; ++i)
+    {
+        if (echequier[i] != VIDE)
+            return 0;
+    }
+    return 1;
+}
+
+// pour les fonctions castle on part du principe que le roi n'a jamais bougé !!
+//retourne un tableau de 2 cases: moves[0] pour castle côté reine et moves[1] pour castle côté roi
+int *castle(int position)
+{
+    int i = 0, pos_tour1 = -1, pos_tour2 = -1, nb_tour = 0; // pos_tour est initialisé a -1 pour preciser qu'on a pas encore de Tour
+    int *moves = (int *)malloc(sizeof(int) * 2);
+    // on cherche si on a une tour sur la ligne du roi
+    if (get_color(position, echequier) == 1)
+    {
+        for (i = 0; i < 8; ++i)
+        {
+            if (echequier[i] == TOUR + NOIR && nb_tour == 0)
+            {
+                pos_tour1 = i;
+                nb_tour += 1;
+            }
+            else
+            {
+                if (echequier[i] == TOUR + NOIR && nb_tour > 0)
+                {
+                    pos_tour2 = i;
+                    nb_tour += 1;
+                }
+            }
+        }
+    }
+    else
+    {
+        for (i = 56; i < 64; ++i)
+        {
+            if (echequier[i] == TOUR && nb_tour == 0)
+            {
+                pos_tour1 = i;
+                nb_tour += 1;
+            }
+            else
+            {
+                if (echequier[i] == TOUR && nb_tour > 0)
+                {
+                    pos_tour2 = i;
+                    nb_tour += 1;
+                }
+            }
+        }
+    }
+
+    if (nb_tour == 0) return 0; // pas de tour sur la premiere ligne, donc pas de CASTLE, on sort de la fonction
+
+    if (nb_tour == 1) //on a qu'une tour
+    {
+        if (pos_tour1 < position) // tour placé avant le roi
+        { 
+            // si coté reine
+            if (empty(pos_tour1 + 1, position) == 0)
+            {
+                moves[0] = -1; // pas de castle coté reine car pas vide
+            }
+            else
+            {
+                moves[0] = 1;
+            }
+        }
+        else
+        {
+            // si coté roi
+            if (empty(position + 1, pos_tour1) == 0)
+            {
+                moves[1] = -1; // pas de castle coté roi car pas vide
+            }
+            else
+            {
+                moves[1] = 1;
+            }
+        }
+    }
+    else //on a 2 tours
+    {
+        if (empty(pos_tour1 + 1, position) == 0)
+        {
+            moves[0] = -1; // pas de castle coté reine car pas vide
+        }
+        else
+        {
+            moves[0] = 1;
+        }
+        if (empty(position + 1, pos_tour2) == 0)
+        {
+            moves[1] = -1; // pas de castle coté roi car pas vide
+        }
+        else
+        {
+            moves[1] = 1;
+        }
+    }
+
+    return moves;
 }

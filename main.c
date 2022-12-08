@@ -35,7 +35,10 @@ int main()
         
         echequier[move] = echequier[position];
         echequier[position] = VIDE;
+        printf("\navant update\n");
         fen = update_fen(fen);
+        printf("\ncastleb: %d %d", fen.castleb[0], fen.castleb[1]);
+        printf("\ncastlew: %d %d\n", fen.castlew[0], fen.castlew[1]);
     }
 
     affichage_echequier();

@@ -12,6 +12,7 @@
 #define REINE 5
 #define ROI 6
 #define NOIR 128
+#define SPECIAL 100
 
 struct FEN{
     int tab[MAX]; //echequier
@@ -93,6 +94,8 @@ int bouger(int position);
 int verifier_echec(int * tab);
 
 FEN update_fen(FEN fen);
+
+int * castle(int position);
 
 
 #endif
