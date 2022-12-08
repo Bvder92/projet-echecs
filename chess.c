@@ -445,12 +445,12 @@ int *get_legal_pion_blanc(int position, int *moves, int * tab)
     }
 
     // si la case en haut à droite/gauche contient un pion noir on peut y aller (capture):
-    if (get_color(position - 7, tab) == 1)
+    if ((get_colonne(position) != 7) && (get_color(position - 7, tab) == 1))
     {
         moves[2] = position - 7;
     }
 
-    if (get_color(position - 9, tab) == 1)
+    if ((get_colonne(position) != 0) && (get_color(position - 9, tab) == 1))
     {
         moves[3] = position - 9;
     }
@@ -475,12 +475,12 @@ int *get_legal_pion_noir(int position, int *moves, int * tab)
 
     // si la case en bas a droite/gauche contient un pion blanc on peut y aller
 
-    if (get_color(position + 7, tab) == 0)
+    if ((get_colonne(position) != 0 ) && (get_color(position + 7, tab) == 0))
     {
         moves[2] = position + 7;
     }
 
-    if (get_color(position + 9, tab) == 0)
+    if ((get_colonne(position) != 7) && (get_color(position + 9, tab) == 0))
     {
         moves[3] = position + 9;
     }
@@ -1093,14 +1093,17 @@ FEN echec_et_mat(FEN fen, int position_roi, int couleur){
     }
     liste_pieces = liste_moves(couleur, liste_pieces, taille_liste);
 
-    while (liste_pieces[i] != -1){
-        i++;
+    printf("\nFONCTION ECEHC ET MAT ROI %d, LISTE PIECES:\n", couleur);
+    for (int j = 0; j<taille_liste; j++){
+        printf("%d, ", liste_pieces[j]);
     }
-    if (i = 0) //on a fait aucun i++ donc liste_moves est remplie de -1 => echec et mat
-    {
-        fen.echec_et_mat = couleur;
-    }
+    printf("\n");
 
+    if (liste_pieces[0] == -1){
+        fen.echec_et_mat = couleur;
+        printf("\ni=0 -> echec_et_mat = %d\n", couleur);
+    }
+        
     return fen;
 }
 
