@@ -14,12 +14,12 @@
 #define NOIR 128
 #define SPECIAL 100
 
-#define VALEUR_PION 1
-#define VALEUR_CAVALIER 3
-#define VALEUR_FOU 3
-#define VALEUR_TOUR 5
-#define VALEUR_REINE 9
-#define VALEUR_ROI 1000000
+#define VALEUR_PION 10
+#define VALEUR_CAVALIER 30
+#define VALEUR_FOU 30
+#define VALEUR_TOUR 50
+#define VALEUR_REINE 90
+#define VALEUR_ROI 900
 
 struct FEN{
     int tab[MAX]; //echequier
@@ -33,6 +33,13 @@ struct FEN{
     int echec_et_mat; //-1 defaut, prend la couleur du perdant
 }; 
 typedef struct FEN FEN; 
+
+struct AI{
+    int plateau_prev[MAX]; //echequier du tour precendent
+    int maximizer; //couleur qui maximize
+    int maximizer_score; // score de la couleur qui maximize
+};
+typedef struct AI AI;
 
 extern int echequier[MAX];
 
@@ -94,7 +101,7 @@ int * retirer_echec(int position, int * moves);
 
 int * liste_moves(int couleur, int * liste_pieces, int taille_liste);
 
-int * supprimer_echec(int position_roi, int * moves_roi);
+int * get_moves_total(int * moves, int taille, int position, FEN fen);
 
 int bouger(int position, FEN fen);
 
@@ -104,7 +111,7 @@ FEN update_fen(FEN fen);
 
 int * castle(int position);
 
-
+void bouger_tour_castle(int position, int move);
 
 //minimax:
 
@@ -114,5 +121,10 @@ int get_valeur_total(int couleur, int *tab);
 
 int get_score(int couleur, int * tab);
 
+int get_score_move(int position, int move);
+
+int * get_score_all_moves(int position, FEN fen);
+
+int minimax(int position, int profondeur, int couleur_maximizer);
 
 #endif

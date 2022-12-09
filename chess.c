@@ -10,7 +10,7 @@ int get_pos(int ligne, int colonne)
     return i + (colonne);
 }
 
-//affiche l'initiale d'une piece, utilisée pour affichage_echequier
+// affiche l'initiale d'une piece, utilisée pour affichage_echequier
 char int_to_piece(int position)
 {
     char c;
@@ -161,9 +161,11 @@ int get_colonne(int position)
     return (position - (get_ligne(position) * 8));
 }
 
-//copie l'echequier dans un tableau passé en argument
-int * copie_echequier(int * tab){
-    for (int i = 0; i<MAX; i++){
+// copie l'echequier dans un tableau passé en argument
+int *copie_echequier(int *tab)
+{
+    for (int i = 0; i < MAX; i++)
+    {
         tab[i] = echequier[i];
     }
     return tab;
@@ -254,54 +256,69 @@ void print_color(int position)
     }
 }
 
-//retourne 1 pour noir, 0 pour blanc, -1 pour vide
-int get_color(int position, int * tab){
-    if (tab[position] > 128){
+// retourne 1 pour noir, 0 pour blanc, -1 pour vide
+int get_color(int position, int *tab)
+{
+    if (tab[position] > 128)
+    {
         return 1;
     }
-    else if (tab[position] == VIDE){
+    else if (tab[position] == VIDE)
+    {
         return -1;
     }
-    else return 0;
+    else
+        return 0;
 }
 
-//retourne le nombre de valeurs d'un tableau de moves (sans les -1 du coup)
-int get_nombre_moves(int * moves, int taille){
+// retourne le nombre de valeurs d'un tableau de moves (sans les -1 du coup)
+int get_nombre_moves(int *moves, int taille)
+{
     int nombre_moves = 0;
-    for (int i = 0; i<taille; i++){
-        if (moves[i] != -1){
+    for (int i = 0; i < taille; i++)
+    {
+        if (moves[i] != -1)
+        {
             nombre_moves++;
         }
     }
     return nombre_moves;
 }
 
-int get_pos_roi(int couleur){
+int get_pos_roi(int couleur)
+{
     int i = 0;
     int pos_roi;
-    if (couleur == 1){
-        while(i<MAX){
-            if (echequier[i] == ROI+NOIR){
+    if (couleur == 1)
+    {
+        while (i < MAX)
+        {
+            if (echequier[i] == ROI + NOIR)
+            {
                 pos_roi = i;
             }
             i++;
         }
     }
-    else if (couleur == 0){
-        while(i<MAX){
-            if (echequier[i] == ROI){
+    else if (couleur == 0)
+    {
+        while (i < MAX)
+        {
+            if (echequier[i] == ROI)
+            {
                 pos_roi = i;
             }
             i++;
         }
     }
-    else{
+    else
+    {
         return -1;
     }
     return pos_roi;
 }
 
-//version alternative du jeu avec des printf etc
+// version alternative du jeu avec des printf etc
 void debug_mode()
 {
     int ligne, colonne, position, rep = 0;
@@ -332,7 +349,7 @@ void debug_mode()
     }
 }
 
-//demande a l'utilisateur de selectionner une piece de la bonne couleur
+// demande a l'utilisateur de selectionner une piece de la bonne couleur
 int select_piece(int tour)
 {
     int ligne, colonne, position = -1;
@@ -352,42 +369,50 @@ int select_piece(int tour)
 
         position = get_pos(ligne, colonne);
 
-        if (get_color(position, echequier) != tour){
+        if (get_color(position, echequier) != tour)
+        {
             printf("\nChoisissez une piece de la bonne couleur!");
         }
     } while (get_color(position, echequier) != tour); // check couleur + vide ou pas
     return position;
 }
 
-//verifie si la piece selectionee par l'utilisateur peut bouger
-int select_piece_mieux(int couleur){
+// verifie si la piece selectionee par l'utilisateur peut bouger
+int select_piece_mieux(int couleur)
+{
     int i, taille_liste, valide = 0;
-    int * liste_pieces;
+    int *liste_pieces;
 
-    if (couleur == 0){ 
+    if (couleur == 0)
+    {
         taille_liste = compter_blanc();
     }
-    else{
+    else
+    {
         taille_liste = compter_noir();
     }
 
-    liste_pieces = (int *)malloc(sizeof(int)*taille_liste);
-    if (liste_pieces == NULL){
+    liste_pieces = (int *)malloc(sizeof(int) * taille_liste);
+    if (liste_pieces == NULL)
+    {
         fprintf(stderr, "\nSELECT PIECE: ECHEC MALLOC LISTE_PIECES\n");
         return -1;
     }
     liste_pieces = liste_moves(couleur, liste_pieces, taille_liste);
-    
+
     int position = select_piece(couleur);
-    
-    for (i = 0; i < taille_liste; i++){
-        if (liste_pieces[i] == position){
+
+    for (i = 0; i < taille_liste; i++)
+    {
+        if (liste_pieces[i] == position)
+        {
             valide = 1;
             break;
         }
     }
 
-    if (valide == 1){
+    if (valide == 1)
+    {
         return position;
     }
     return -1;
@@ -423,7 +448,7 @@ int *retirer_impossible(int *tab, int taille)
 MOVES LEGAUX - Les fontions retournent toutes un tableau contenant les indices des cases de l'echequier ou la piece passée en argument peut aller
 */
 
-int *get_legal_pion_blanc(int position, int *moves, int * tab)
+int *get_legal_pion_blanc(int position, int *moves, int *tab)
 {
     moves[0] = moves[1] = moves[2] = moves[3] = -1;
 
@@ -454,7 +479,7 @@ int *get_legal_pion_blanc(int position, int *moves, int * tab)
     return moves;
 }
 
-int *get_legal_pion_noir(int position, int *moves, int * tab)
+int *get_legal_pion_noir(int position, int *moves, int *tab)
 {
     moves[0] = moves[1] = moves[2] = moves[3] = -1;
 
@@ -471,7 +496,7 @@ int *get_legal_pion_noir(int position, int *moves, int * tab)
 
     // si la case en bas a droite/gauche contient un pion blanc on peut y aller
 
-    if ((get_colonne(position) != 0 ) && (get_color(position + 7, tab) == 0))
+    if ((get_colonne(position) != 0) && (get_color(position + 7, tab) == 0))
     {
         moves[2] = position + 7;
     }
@@ -486,7 +511,7 @@ int *get_legal_pion_noir(int position, int *moves, int * tab)
 
 /* Retourne un tableau contenant les moves possibles pour le cavalier, sans les captures
 Si la valeur est -1, le move est impossible car hors limite */
-int *get_legal_cavalier(int position, int *moves, int * tab)
+int *get_legal_cavalier(int position, int *moves, int *tab)
 {
     int ligne = get_ligne(position);
     int colonne = get_colonne(position);
@@ -524,7 +549,7 @@ int *get_legal_cavalier(int position, int *moves, int * tab)
 }
 
 // Retourne un tableau contenant les moves possibles pour la tour, sans les captures
-int *get_legal_tour(int position, int *moves, int taille, int * tab)
+int *get_legal_tour(int position, int *moves, int taille, int *tab)
 {
     int ligne = get_ligne(position);
     int colonne = get_colonne(position);
@@ -585,7 +610,7 @@ int *get_legal_tour(int position, int *moves, int taille, int * tab)
 }
 
 // retourne un tableau contenant les moves possibles pour le fou, sans captures
-int *get_legal_fou(int position, int *moves, int taille, int * tab)
+int *get_legal_fou(int position, int *moves, int taille, int *tab)
 {
     int ligne = get_ligne(position);
     int colonne = get_colonne(position);
@@ -647,7 +672,7 @@ int *get_legal_fou(int position, int *moves, int taille, int * tab)
 }
 
 // retourne un tableau contenant les moves légaux pour le roi, sans captures
-int *get_legal_roi(int position, int *moves, int * tab)
+int *get_legal_roi(int position, int *moves, int *tab)
 {
     int ligne = get_ligne(position);
     int colonne = get_colonne(position);
@@ -685,7 +710,7 @@ int *get_legal_roi(int position, int *moves, int * tab)
 }
 
 // fais appel a la fonction du fou et de la tour puis combine les 2 tableaux: faudra que je la réécrive en plus propre la c'est rude mais flemme
-int *get_legal_reine(int position, int *moves, int taille, int * tab)
+int *get_legal_reine(int position, int *moves, int taille, int *tab)
 {
 
     int i = 0, a = 0, j;                   // i sert a incrémenter les boucles, j sert a garder l'indice de moves[] entre les boucles et a sert dans la dernière boucle
@@ -728,8 +753,9 @@ int *get_legal_reine(int position, int *moves, int taille, int * tab)
 
 // détecte quelle pièce est présente dans la case "position" et appelle la fonction correspondante pour la déplacer puis retourne le déplacement choisi par l'utilisateur
 
-//retroune la taille du tableau de moves de la piece dans echequier[position]:
-int get_taille_moves(int position, int * tab){
+// retroune la taille du tableau de moves de la piece dans echequier[position]:
+int get_taille_moves(int position, int *tab)
+{
     int taille;
     switch (tab[position])
     {
@@ -769,17 +795,17 @@ int get_taille_moves(int position, int * tab){
 }
 
 // retourne le tableau de moves legaux d'une piece(bouger sans la partie ou on choisit)
-int *recuperer_moves(int position, int taille, int * tab)
+int *recuperer_moves(int position, int taille, int *tab)
 {
 
     int *moves;
     int i;
-    moves = (int *)malloc(sizeof(int)*taille);
+    moves = (int *)malloc(sizeof(int) * taille);
 
     switch (tab[position])
     {
     case PION:
-    case PION+SPECIAL:
+    case PION + SPECIAL:
         moves = get_legal_pion_blanc(position, moves, tab);
         break;
     case PION + NOIR:
@@ -836,87 +862,99 @@ int *recuperer_moves(int position, int taille, int * tab)
     return moves;
 }
 
-//ajoute les 2 castle a la fin du tableau de moves: moves[8] = côté reine, moves[9] = côté roi
-int * ajouter_castle(int couleur, int * moves, FEN fen){
+// ajoute les 2 castle a la fin du tableau de moves: moves[8] = côté reine, moves[9] = côté roi
+int *ajouter_castle(int couleur, int *moves, FEN fen)
+{
 
-    if (couleur == 1){
-        if (fen.castleb[0] == 1){
+    if (couleur == 1)
+    {
+        if (fen.castleb[0] == 1)
+        {
             moves[8] = 2;
         }
-        if (fen.castleb[1] == 1){
+        if (fen.castleb[1] == 1)
+        {
             moves[9] = 6;
         }
     }
     else if (couleur == 0)
     {
-        if (fen.castlew[0] == 1){
+        if (fen.castlew[0] == 1)
+        {
             moves[8] = 58;
         }
-        if (fen.castlew[1] == 1){
+        if (fen.castlew[1] == 1)
+        {
             moves[9] = 62;
         }
     }
-    else{
-        fprintf(stderr,"ERREUR FONCTION AJOUT CASTLE");
+    else
+    {
+        fprintf(stderr, "ERREUR FONCTION AJOUT CASTLE");
     }
     return moves;
 }
 
-//retire tous les moves qui vont entrainer un echec
-int * retirer_echec(int position, int * moves){
+// retire tous les moves qui vont entrainer un echec
+int *retirer_echec(int position, int *moves)
+{
     int j, couleur, taille_moves;
-    int * echequier_tmp;
-    
-    echequier_tmp = (int *)malloc(sizeof(int)*MAX);
+    int *echequier_tmp;
+
+    echequier_tmp = (int *)malloc(sizeof(int) * MAX);
     echequier_tmp = copie_echequier(echequier_tmp);
-    
+
     couleur = get_color(position, echequier);
     taille_moves = get_taille_moves(position, echequier);
-    
+
     j = 0;
-    while(moves[j] != -1 && j<taille_moves) //on va effectuer chaque move dans un echequier temporaire et regarder si le move crée un echec
+    while (moves[j] != -1 && j < taille_moves) // on va effectuer chaque move dans un echequier temporaire et regarder si le move crée un echec
     {
         echequier_tmp = copie_echequier(echequier_tmp);
         echequier_tmp[moves[j]] = echequier_tmp[position];
         echequier_tmp[position] = VIDE;
-                
+
         if (verifier_echec(echequier_tmp) == couleur)
         {
             moves[j] = -1;
         }
         j++;
     }
-    free (echequier_tmp);
+    free(echequier_tmp);
     echequier_tmp = NULL;
 
     return moves;
 }
 
-//retourne un tableau contenant la position de toutes les pieces pouvant bouger: si il n'y en a aucune, echec et mat
-int * liste_moves(int couleur, int * liste_pieces, int taille_liste){
-    
-    int i, j = 0, taille_moves;
-    int * moves; //liste = liste de pieces qu'on va retourner, moves = moves de chaque piece étudiée
+// retourne un tableau contenant la position de toutes les pieces pouvant bouger: si il n'y en a aucune, echec et mat
+int *liste_moves(int couleur, int *liste_pieces, int taille_liste)
+{
 
-    //on parcours tout l'echequier:
-    for (i = 0; i<MAX; i++){
-        //on regarde les moves dispo pour chaque piece alliée qu'on trouve
-        if ((echequier[i] != VIDE) && (get_color(i, echequier) == couleur)){
-            
+    int i, j = 0, taille_moves;
+    int *moves; // liste = liste de pieces qu'on va retourner, moves = moves de chaque piece étudiée
+
+    // on parcours tout l'echequier:
+    for (i = 0; i < MAX; i++)
+    {
+        // on regarde les moves dispo pour chaque piece alliée qu'on trouve
+        if ((echequier[i] != VIDE) && (get_color(i, echequier) == couleur))
+        {
+
             taille_moves = get_taille_moves(i, echequier);
-            moves = (int *)malloc(sizeof(int)*taille_moves);
-            if (moves == NULL){
+            moves = (int *)malloc(sizeof(int) * taille_moves);
+            if (moves == NULL)
+            {
                 fprintf(stderr, "\nFONTION LISTE_MOVES: ECHEC MALLOC MOVES\n");
                 return NULL;
             }
             moves = recuperer_moves(i, taille_moves, echequier);
 
-            if (get_nombre_moves(moves, taille_moves) != 0) //si la piece en position i peut bouger
+            if (get_nombre_moves(moves, taille_moves) != 0) // si la piece en position i peut bouger
             {
-                moves = retirer_echec(i, moves); //on verifie qu'elle puisse bouger sans generer d'echec
-                if (get_nombre_moves(moves, taille_moves) != 0) //si oui
+                moves = retirer_echec(i, moves);                // on verifie qu'elle puisse bouger sans generer d'echec
+                if (get_nombre_moves(moves, taille_moves) != 0) // si oui
                 {
-                    liste_pieces[j] = i; //on ajoute la piece de la case i a la liste de pieces pouvant bouger
+                    liste_pieces[j] = i; // on ajoute la piece de la case i a la liste de pieces pouvant bouger
                     j++;
                 }
             }
@@ -925,12 +963,28 @@ int * liste_moves(int couleur, int * liste_pieces, int taille_liste){
         moves = NULL;
     }
 
-    //on remplit le reste de la liste avec des -1:
-    while (j < taille_liste){
+    // on remplit le reste de la liste avec des -1:
+    while (j < taille_liste)
+    {
         liste_pieces[j] = -1;
         j++;
     }
     return liste_pieces;
+}
+
+// retourne le tableau de moves trié d'une piece, avec castle et sans echecs:
+int *get_moves_total(int *moves, int taille, int position, FEN fen)
+{
+
+    moves = recuperer_moves(position, taille, echequier);
+    moves = retirer_echec(position, moves);
+    if (echequier[position] == ROI || echequier[position] == ROI + NOIR)
+    {
+        moves = ajouter_castle(get_color(position, echequier), moves, fen);
+    }
+    moves = retirer_impossible(moves, taille);
+
+    return moves;
 }
 
 int bouger(int position, FEN fen)
@@ -947,21 +1001,16 @@ int bouger(int position, FEN fen)
     int capture = 0;
     int couleur = get_color(position, echequier);
     int *moves;
-    
+
     taille = get_taille_moves(position, echequier);
-    moves = (int *)malloc(sizeof(int)*taille);
-    if (moves == NULL){
+    moves = (int *)malloc(sizeof(int) * taille);
+    if (moves == NULL)
+    {
         fprintf(stderr, "erreur malloc bouger_alt");
         return 0;
     }
 
-    moves = recuperer_moves(position,taille, echequier);
-    moves = retirer_echec(position, moves);
-    if (echequier[position] == ROI || echequier[position] == ROI+NOIR){
-        moves = ajouter_castle(get_color(position, echequier), moves, fen);
-    }
-    moves = retirer_impossible(moves, taille);
-
+    moves = get_moves_total(moves, taille, position, fen);
 
     /* ******************************************************
     AFFICHAGE:
@@ -970,7 +1019,8 @@ int bouger(int position, FEN fen)
     printf("\n");
 
     i = 0;
-    while (i<taille && moves[i] != -1){
+    while (i < taille && moves[i] != -1)
+    {
         printf("%d: (%d,%d) ", i, get_colonne(moves[i]), get_ligne(moves[i]));
         i++;
     }
@@ -1008,33 +1058,40 @@ int bouger(int position, FEN fen)
     return rep;
 }
 
-//regarde les moves de toutes les pieces ennemies: si une des pieces ennemies a le roi dans ses moves: echec pour ce roi
-int verifier_echec(int * tab){
-    int i, j=0, echec = -1;
-    int * moves = NULL;
+// regarde les moves de toutes les pieces ennemies: si une des pieces ennemies a le roi dans ses moves: echec pour ce roi
+int verifier_echec(int *tab)
+{
+    int i, j = 0, echec = -1;
+    int *moves = NULL;
     int taille_moves;
 
-    //printf("\navant verif echec\n");
-    for (i = 0; i<MAX; i++){
+    // printf("\navant verif echec\n");
+    for (i = 0; i < MAX; i++)
+    {
 
-        if ((tab[i] != VIDE) && (tab[i] != ROI) && (tab[i] != ROI+NOIR)){
+        if ((tab[i] != VIDE) && (tab[i] != ROI) && (tab[i] != ROI + NOIR))
+        {
             taille_moves = get_taille_moves(i, tab);
-            moves = (int *)malloc(sizeof(int)*taille_moves);
+            moves = (int *)malloc(sizeof(int) * taille_moves);
             moves = recuperer_moves(i, taille_moves, tab);
 
-            if (moves == NULL){
+            if (moves == NULL)
+            {
                 fprintf(stderr, "\nVERIFIER ECHEC: TABLEAU DE MOVES NULL\n");
                 return -1;
             }
 
-            j=0;
-            while ( j<taille_moves){
-                if (tab[moves[j]] == ROI){ //si moves[j] contient roi blanc et que j est une piece noire
-                    //printf("\nROI BLANC EN ECHEC\n");
+            j = 0;
+            while (j < taille_moves)
+            {
+                if (tab[moves[j]] == ROI)
+                { // si moves[j] contient roi blanc et que j est une piece noire
+                    // printf("\nROI BLANC EN ECHEC\n");
                     echec = 0;
                 }
-                if (tab[moves[j]] == ROI+NOIR){ //si moves[j] contient roi noir et que j est une piece blanche
-                    //printf("\nROI NOIR EN ECHEC\n");
+                if (tab[moves[j]] == ROI + NOIR)
+                { // si moves[j] contient roi noir et que j est une piece blanche
+                    // printf("\nROI NOIR EN ECHEC\n");
                     echec = 1;
                 }
                 j++;
@@ -1046,30 +1103,35 @@ int verifier_echec(int * tab){
     return echec;
 }
 
-//compte le nombre de pieces pouvant bouger, si il n'y en a pas: echec et mat
-FEN echec_et_mat(FEN fen, int position_roi, int couleur){
+// compte le nombre de pieces pouvant bouger, si il n'y en a pas: echec et mat
+FEN echec_et_mat(FEN fen, int position_roi, int couleur)
+{
 
     int i = 0, taille_liste;
-    int * liste_pieces;
+    int *liste_pieces;
 
-    if (couleur == 0){ 
+    if (couleur == 0)
+    {
         taille_liste = compter_blanc();
     }
-    else{
+    else
+    {
         taille_liste = compter_noir();
     }
 
-    liste_pieces = (int *)malloc(sizeof(int)*taille_liste);
-    if (liste_pieces == NULL){
+    liste_pieces = (int *)malloc(sizeof(int) * taille_liste);
+    if (liste_pieces == NULL)
+    {
         fprintf(stderr, "\nUPDATE FEN: ECHEC MALLOC LISTE_PIECES -> ECHEC ET MAT NON  VERIFIE\n");
         return fen;
     }
     liste_pieces = liste_moves(couleur, liste_pieces, taille_liste);
 
-    if (liste_pieces[0] == -1){
+    if (liste_pieces[0] == -1)
+    {
         fen.echec_et_mat = couleur;
     }
-        
+
     return fen;
 }
 
@@ -1091,41 +1153,36 @@ FEN update_fen(FEN fen)
         fen.tour = 1;
     }
 
-
-    if (echequier[4] == ROI+NOIR)
+    if (echequier[4] == ROI + NOIR)
     {
-        printf("\nAPPEL CASTLE(4)\n");
         fen.castleb = castle(4);
     }
     else
     {
-        printf("\n PAS D'APPEL CASTLE(4)\n");
         fen.castleb = NULL;
     }
 
     if (echequier[60] == ROI)
     {
-        printf("\nAPPEL CASTLE(60)\n");
         fen.castlew = castle(60);
     }
-    else //si echequier[60] contient un roi qui n'a jamais bougé:
+    else // si echequier[60] contient un roi qui n'a jamais bougé:
     {
-        printf("\nPAS D'APPEL CASTLE(60)\n");
         fen.castlew = NULL;
     }
 
     /*int * tabb = (int *)malloc(sizeof(int)*MAX);
     tabb = copie_echequier(tabb);*/
     fen.echec = verifier_echec(echequier); // modifie les valeurs de echec_blanc et echec_noir
-    
-    if (fen.echec == 0) //roi blanc en echec
+
+    if (fen.echec == 0) // roi blanc en echec
     {
-        //printf("\nappel de echec_et_mat pour roi blanc\n");
+        // printf("\nappel de echec_et_mat pour roi blanc\n");
         fen = echec_et_mat(fen, get_pos_roi(0), 0);
     }
-    if (fen.echec == 1) //roi noir en echec
+    if (fen.echec == 1) // roi noir en echec
     {
-        //printf("\nappel de echec_et_mat pour roi noir\n");
+        // printf("\nappel de echec_et_mat pour roi noir\n");
         fen = echec_et_mat(fen, get_pos_roi(1), 1);
     }
 
@@ -1143,7 +1200,7 @@ int empty(int a, int b)
 }
 
 // pour les fonctions castle on part du principe que le roi n'a jamais bougé !!
-//retourne un tableau de 2 cases: moves[0] pour castle côté reine et moves[1] pour castle côté roi
+// retourne un tableau de 2 cases: moves[0] pour castle côté reine et moves[1] pour castle côté roi
 int *castle(int position)
 {
     int i = 0, pos_tour1 = -1, pos_tour2 = -1, nb_tour = 0; // pos_tour est initialisé a -1 pour preciser qu'on a pas encore de Tour
@@ -1188,12 +1245,13 @@ int *castle(int position)
         }
     }
 
-    if (nb_tour == 0) return 0; // pas de tour sur la premiere ligne, donc pas de CASTLE, on sort de la fonction
+    if (nb_tour == 0)
+        return 0; // pas de tour sur la premiere ligne, donc pas de CASTLE, on sort de la fonction
 
-    if (nb_tour == 1) //on a qu'une tour
+    if (nb_tour == 1) // on a qu'une tour
     {
         if (pos_tour1 < position) // tour placé avant le roi
-        { 
+        {
             // si coté reine
             if (empty(pos_tour1 + 1, position) == 0)
             {
@@ -1217,7 +1275,7 @@ int *castle(int position)
             }
         }
     }
-    else //on a 2 tours
+    else // on a 2 tours
     {
         if (empty(pos_tour1 + 1, position) == 0)
         {
@@ -1238,4 +1296,29 @@ int *castle(int position)
     }
 
     return moves;
+}
+
+// fonction appelée par main si on bouge un roi pour la premiere fois
+void bouger_tour_castle(int position, int move)
+{
+    if (move == 62) // 62 correspond au castle côté roi blanc -> on bouge la tour droite
+    {
+        echequier[61] = echequier[63];
+        echequier[63] = VIDE;
+    }
+    if (move == 58) // 58 correspond au castle côté reine blanche -> on bouge la tour gauche
+    {
+        echequier[59] = echequier[56];
+        echequier[56] = VIDE;
+    }
+    if (move == 6) //6 = castle côté roi noir
+    {
+        echequier[5] = echequier[7];
+        echequier[7] = VIDE;
+    }
+    if (move == 2) //2 = castle côté reine noire
+    {
+        echequier[3] = echequier[0];
+        echequier[0] = VIDE;
+    }
 }

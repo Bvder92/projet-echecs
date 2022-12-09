@@ -36,44 +36,19 @@ int main()
         move = bouger(position, fen);
 
         /* **Si le mouvement est un castle, on bouge la tour** */
-        if (echequier[position] == ROI) //si la piece qu'on bouge est un roi qui a jamais bougé
+        if (echequier[position] == ROI || echequier[position] == ROI+NOIR)//on bouge un roi pour la 1ere fois
         {
-            if (move == 62) //62 correspond au castle côté roi blanc -> on bouge la tour droite
-            {
-                echequier[61] = echequier[63];
-                echequier[63] = VIDE;
-            }
-            if (move == 58) //58 correspond au castle côté reine blanche -> on bouge la tour gauche
-            {
-                echequier[59] = echequier[56];
-                echequier[56] = VIDE;
-            }
-        }
-        if (echequier[position] == ROI + NOIR) //même chose pour côté noir
-        {
-            if (move == position + 2)
-            {
-                echequier[5] = echequier[7];
-                echequier[7] = VIDE;
-            }
-            if (move == position - 2)
-            {
-                echequier[3] = echequier[0];
-                echequier[0] = VIDE;
-            }
+            bouger_tour_castle(position, move); //si le move est un castle, on bouge la tour au bon endroit
+            echequier[position] += SPECIAL; // on vient de bouger un roi donc on incremente
         }
 
         /* **Incrémentation des pions et rois de SPECIAL** */
-        if (echequier[position] == ROI || echequier[position] == ROI + NOIR)
-        {
-            echequier[position] += SPECIAL;
-        }
-
         if (echequier[position] == PION || echequier[position] == PION + NOIR)
         {
             echequier[position] += SPECIAL;
         }
 
+        printf("\nBest possible score: %d \n", minimax(position, 2, fen.tour));
 
         /* **On effectue le mouvement et update le fen** */
         echequier[move] = echequier[position];
@@ -81,7 +56,7 @@ int main()
 
         fen = update_fen(fen);
         printf("\nSCORE BLANC: %d\n", get_score(0, echequier));
-        printf("SCORE NOIR: %d\n", get_score(1, echequier));
+        //printf("SCORE NOIR: %d\n", get_score(1, echequier));
 
     }
 
