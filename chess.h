@@ -14,6 +14,13 @@
 #define NOIR 128
 #define SPECIAL 100
 
+#define VALEUR_PION 1
+#define VALEUR_CAVALIER 3
+#define VALEUR_FOU 3
+#define VALEUR_TOUR 5
+#define VALEUR_REINE 9
+#define VALEUR_ROI 1000000
+
 struct FEN{
     int tab[MAX]; //echequier
     int tour; //0 si blanc, 1 si noir (un int c'est mieux qu'un booléen)
@@ -96,6 +103,16 @@ int verifier_echec(int * tab);
 FEN update_fen(FEN fen);
 
 int * castle(int position);
+
+
+
+//minimax:
+
+int get_valeur(int position, int * tab);
+
+int get_valeur_total(int couleur, int *tab);
+
+int get_score(int couleur, int * tab);
 
 
 #endif

@@ -80,15 +80,9 @@ int main()
         echequier[position] = VIDE;
 
         fen = update_fen(fen);
-        if (fen.castleb != NULL)
-        {
-            printf("\ncastleb: %d %d", fen.castleb[0], fen.castleb[1]);
-        }
-        if (fen.castlew != NULL)
-        {
-            printf("\ncastlew: %d %d", fen.castlew[0], fen.castlew[1]);
-        }
-        printf("\n");
+        printf("\nSCORE BLANC: %d\n", get_score(0, echequier));
+        printf("SCORE NOIR: %d\n", get_score(1, echequier));
+
     }
 
     affichage_echequier();
