@@ -962,18 +962,6 @@ int bouger(int position, FEN fen)
     }
     moves = retirer_impossible(moves, taille);
 
-    /* *****************************************************
-    INCREMENTER COUP SPECIAL :
-    *******************************************************/
-    if (echequier[position] == ROI || echequier[position] == ROI + NOIR)
-    {
-        echequier[position] += SPECIAL;
-    }
-
-    if (echequier[position] == PION || echequier[position] == PION + NOIR)
-    {
-        echequier[position] += SPECIAL;
-    }
 
     /* ******************************************************
     AFFICHAGE:

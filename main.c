@@ -24,46 +24,68 @@ int main()
         {
             printf("\nTour des Noirs:\n");
         }
-        
-        do{
+
+        do
+        {
             position = select_piece_mieux(fen.tour);
-            if (position == -1){
+            if (position == -1)
+            {
                 printf("\nCette piece ne peut pas bouger!\n");
             }
-        } while(position == -1);
+        } while (position == -1);
         move = bouger(position, fen);
-        printf("\nMove = %d\n", move);
-        
-        if (echequier[position] == ROI){
-            if (move == 62){
+
+        /* **Si le mouvement est un castle, on bouge la tour** */
+        if (echequier[position] == ROI) //si la piece qu'on bouge est un roi qui a jamais bougé
+        {
+            if (move == 62) //62 correspond au castle côté roi blanc -> on bouge la tour droite
+            {
                 echequier[61] = echequier[63];
                 echequier[63] = VIDE;
             }
-            if (move == 58){
+            if (move == 58) //58 correspond au castle côté reine blanche -> on bouge la tour gauche
+            {
                 echequier[59] = echequier[56];
                 echequier[56] = VIDE;
             }
         }
-
-        if (echequier[position] == ROI+NOIR){
-            if (move == position+2){
+        if (echequier[position] == ROI + NOIR) //même chose pour côté noir
+        {
+            if (move == position + 2)
+            {
                 echequier[5] = echequier[7];
                 echequier[7] = VIDE;
             }
-            if (move == position - 2){
+            if (move == position - 2)
+            {
                 echequier[3] = echequier[0];
                 echequier[0] = VIDE;
             }
         }
 
+        /* **Incrémentation des pions et rois de SPECIAL** */
+        if (echequier[position] == ROI || echequier[position] == ROI + NOIR)
+        {
+            echequier[position] += SPECIAL;
+        }
+
+        if (echequier[position] == PION || echequier[position] == PION + NOIR)
+        {
+            echequier[position] += SPECIAL;
+        }
+
+
+        /* **On effectue le mouvement et update le fen** */
         echequier[move] = echequier[position];
         echequier[position] = VIDE;
 
         fen = update_fen(fen);
-        if (fen.castleb != NULL){
+        if (fen.castleb != NULL)
+        {
             printf("\ncastleb: %d %d", fen.castleb[0], fen.castleb[1]);
         }
-        if (fen.castlew != NULL){
+        if (fen.castlew != NULL)
+        {
             printf("\ncastlew: %d %d", fen.castlew[0], fen.castlew[1]);
         }
         printf("\n");
@@ -71,10 +93,12 @@ int main()
 
     affichage_echequier();
     printf("\nECHEC ET MAT: VICTOIRE DES ");
-    if (fen.echec_et_mat == 1){
+    if (fen.echec_et_mat == 1)
+    {
         printf("BLANCS\n");
     }
-    else{
+    else
+    {
         printf("NOIRS\n");
     }
     return 0;
