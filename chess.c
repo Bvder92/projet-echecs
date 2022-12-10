@@ -1012,6 +1012,13 @@ int bouger(int position, FEN fen)
 
     moves = get_moves_total(moves, taille, position, fen);
 
+    int * scores = (int *)malloc(sizeof(int)*taille);
+    scores = get_score_all_moves(position, fen);
+    if (scores == NULL){
+        fprintf(stderr, "SCORES NULL");
+        return 0;
+    }
+
     /* ******************************************************
     AFFICHAGE:
     *********************************************************/
@@ -1021,10 +1028,10 @@ int bouger(int position, FEN fen)
     i = 0;
     while (i < taille && moves[i] != -1)
     {
-        printf("%d: (%d,%d) ", i, get_colonne(moves[i]), get_ligne(moves[i]));
+        printf("%d: (%d,%d) -Score = %d\n", i, get_colonne(moves[i]), get_ligne(moves[i]), scores[i]);
         i++;
     }
-
+    
     /* ******************************************************
     SELECTION DU MOVE PAR L'UTILISATEUR:
     *********************************************************/
@@ -1103,8 +1110,8 @@ int verifier_echec(int *tab)
     return echec;
 }
 
-// compte le nombre de pieces pouvant bouger, si il n'y en a pas: echec et mat
-FEN echec_et_mat(FEN fen, int position_roi, int couleur)
+//regarde le nombre de pieces pouvant bouger => retourne la couleur du camp perdant ou -1 si personne per
+int echec_et_mat(int couleur)
 {
 
     int i = 0, taille_liste;
@@ -1123,16 +1130,16 @@ FEN echec_et_mat(FEN fen, int position_roi, int couleur)
     if (liste_pieces == NULL)
     {
         fprintf(stderr, "\nUPDATE FEN: ECHEC MALLOC LISTE_PIECES -> ECHEC ET MAT NON  VERIFIE\n");
-        return fen;
+        return -1;
     }
     liste_pieces = liste_moves(couleur, liste_pieces, taille_liste);
 
     if (liste_pieces[0] == -1)
     {
-        fen.echec_et_mat = couleur;
+        return couleur;
     }
 
-    return fen;
+    return -1;
 }
 
 FEN update_fen(FEN fen)
@@ -1178,12 +1185,12 @@ FEN update_fen(FEN fen)
     if (fen.echec == 0) // roi blanc en echec
     {
         // printf("\nappel de echec_et_mat pour roi blanc\n");
-        fen = echec_et_mat(fen, get_pos_roi(0), 0);
+        fen.echec_et_mat = echec_et_mat(0);
     }
     if (fen.echec == 1) // roi noir en echec
     {
         // printf("\nappel de echec_et_mat pour roi noir\n");
-        fen = echec_et_mat(fen, get_pos_roi(1), 1);
+        fen.echec_et_mat = echec_et_mat(1);
     }
 
     return fen;

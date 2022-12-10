@@ -107,6 +107,8 @@ int bouger(int position, FEN fen);
 
 int verifier_echec(int * tab);
 
+int echec_et_mat(int couleur);
+
 FEN update_fen(FEN fen);
 
 int * castle(int position);
@@ -126,5 +128,7 @@ int get_score_move(int position, int move);
 int * get_score_all_moves(int position, FEN fen);
 
 int minimax(int position, int profondeur, int couleur_maximizer);
+
+int minimaxx(int position, int maximizer, int profondeur);
 
 #endif

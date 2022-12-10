@@ -10,6 +10,7 @@ int main()
 {
     int position, rep = 0;
     int move;
+    int maximizer;
 
     initialiser_jeu();
     fen = initialiser_fen(fen);
@@ -33,6 +34,10 @@ int main()
                 printf("\nCette piece ne peut pas bouger!\n");
             }
         } while (position == -1);
+
+        if (fen.tour == 1){
+            printf("\nBest score: %d\n", minimaxx(position, 1, 2));
+        }
         move = bouger(position, fen);
 
         /* **Si le mouvement est un castle, on bouge la tour** */
@@ -48,14 +53,12 @@ int main()
             echequier[position] += SPECIAL;
         }
 
-        printf("\nBest possible score: %d \n", minimax(position, 2, fen.tour));
-
         /* **On effectue le mouvement et update le fen** */
         echequier[move] = echequier[position];
         echequier[position] = VIDE;
 
         fen = update_fen(fen);
-        printf("\nSCORE BLANC: %d\n", get_score(0, echequier));
+        printf("\nSCORE NOIR: %d\n", get_score(0, echequier));
         //printf("SCORE NOIR: %d\n", get_score(1, echequier));
 
     }

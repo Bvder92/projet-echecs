@@ -7,7 +7,7 @@
 int get_valeur(int position, int *tab)
 {
     int valeur;
-    switch (echequier[position])
+    switch (tab[position])
     {
     case VIDE:
         valeur = 0;
@@ -100,7 +100,7 @@ int get_score(int couleur, int *tab)
         fprintf(stderr, "\nERREUR FONCTION GET_SCORE: COULEUR INVALIDE\n");
         return -1;
     }*/
-    return get_valeur_total(0, tab) + (1290-get_valeur_total(1, tab));
+    return get_valeur_total(1, tab) + (1290 - get_valeur_total(0, tab));
 }
 
 // retourne "la valeur" d'un move: la différence entre le score de l'echequier après ce move et le score de l'echequier avant
@@ -145,12 +145,13 @@ int *get_score_all_moves(int position, FEN fen)
         return NULL;
     }
 
-    // calcul taille scores puis allocation:
+    /* calcul taille scores puis allocation:
     while (moves[i] != -1 && i < taille_moves)
     {
         taille_scores++;
         i++;
-    }
+    }*/
+    taille_scores = taille_moves;
     scores = (int *)malloc(sizeof(int) * taille_scores);
     if (moves == NULL)
     {
@@ -160,9 +161,15 @@ int *get_score_all_moves(int position, FEN fen)
 
     // remplissage de scores:
     i = 0;
-    while (i < taille_scores)
+    while (i < taille_scores && moves[i] != -1)
     {
         scores[i] = get_score_move(position, moves[i]);
+        i++;
+    }
+
+    while (i < taille_moves)
+    {
+        scores[i] = moves[i];
         i++;
     }
 
@@ -245,6 +252,70 @@ int minimax(int position, int profondeur, int couleur_maximizer)
             eval = minimax(i, profondeur - 1, couleur_maximizer);
             min_eval = get_min(min_eval, eval);
         }
+        return min_eval;
+    }
+}
+
+int minimaxx(int position, int maximizer, int profondeur)
+{
+    int couleur = get_color(position, echequier);
+    if ((profondeur == 0))
+    {
+        return get_score(couleur, echequier);
+    }
+
+    int *liste_pieces;
+    int taille_liste_pieces, minimizer, eval, max_eval, min_eval, i;
+
+    if (maximizer == 1)
+    {
+        minimizer = 0;
+    }
+    else
+    {
+        minimizer = 1;
+    }
+
+    if (couleur == 1)
+    {
+        taille_liste_pieces = compter_noir();
+    }
+    else if (couleur == 0)
+    {
+        taille_liste_pieces = compter_blanc();
+    }
+
+    liste_pieces = (int *)malloc(sizeof(int)*taille_liste_pieces);
+    if (liste_pieces == NULL)
+    {
+        fprintf(stderr, "erreur minimax");
+        return INT_MIN;
+    }
+    liste_pieces = liste_moves(couleur, liste_pieces, taille_liste_pieces);
+    
+    if (maximizer == 1) // on cherche a maximizer le score (calculé par rapport aux noirs):
+    {
+        max_eval = INT_MIN;
+        for (i = 0; i < taille_liste_pieces; i++) // pour chaque piece de notre couleur pouvant bouger:
+        {
+            eval = minimaxx(i, minimizer, profondeur - 1); // on cherche a minimizer notre score
+            max_eval = get_max(max_eval, eval);            // on conserve le score qui nous arrange le plus parmi les scores minimizés
+        }
+        free(liste_pieces);
+        liste_pieces == NULL;
+        return max_eval;
+    }
+
+    else // on cherche a minimizer le score:
+    {
+        min_eval = INT_MAX;
+        for (i = 0; i < taille_liste_pieces; i++) // pour chaque piece de notre couleur
+        {
+            eval = minimaxx(i, maximizer, profondeur - 1); // on cherhce a maximizer le score
+            min_eval = get_min(min_eval, eval);            // on garde le score maximizé minimum
+        }
+        free(liste_pieces);
+        liste_pieces == NULL;
         return min_eval;
     }
 }
