@@ -86,11 +86,11 @@ void affichage_echequier()
 // met tout à 0, on verra plus tard pour les castle
 FEN initialiser_fen(FEN fen)
 {
-    int i;
-    for (i = 0; i < 64; i++)
+    //int i;
+    /*for (i = 0; i < 64; i++)
     {
         fen.tab[i] = echequier[i];
-    }
+    }*/
     fen.tour = 0;
     fen.castlew = fen.castleb = NULL;
     fen.half_move = 0;
@@ -161,12 +161,12 @@ int get_colonne(int position)
     return (position - (get_ligne(position) * 8));
 }
 
-// copie l'echequier dans un tableau passé en argument
-int *copie_echequier(int *tab)
+// copie le plateau dans un tableau passé en argument
+int *copie_echequier(int * plateau, int *tab)
 {
     for (int i = 0; i < MAX; i++)
     {
-        tab[i] = echequier[i];
+        tab[i] = plateau[i];
     }
     return tab;
 }
@@ -195,6 +195,19 @@ int compter_noir()
         {
             c++;
         }
+    }
+    return c;
+}
+
+// retourne le nombre de pièces de "couleur"
+int compter(int couleur, int * plateau){
+    int c = 0;
+    int i = 0;
+    while (i < MAX && c < 16){
+        if (get_color(i, plateau) == couleur){
+            c++;
+        }
+        i++;
     }
     return c;
 }
@@ -398,7 +411,7 @@ int select_piece_mieux(int couleur)
         fprintf(stderr, "\nSELECT PIECE: ECHEC MALLOC LISTE_PIECES\n");
         return -1;
     }
-    liste_pieces = liste_moves(couleur, liste_pieces, taille_liste);
+    liste_pieces = liste_moves(couleur, liste_pieces, taille_liste, echequier);
 
     int position = select_piece(couleur);
 
@@ -863,27 +876,27 @@ int *recuperer_moves(int position, int taille, int *tab)
 }
 
 // ajoute les 2 castle a la fin du tableau de moves: moves[8] = côté reine, moves[9] = côté roi
-int *ajouter_castle(int couleur, int *moves, FEN fen)
+int *ajouter_castle(int couleur, int *moves, int * castleb, int * castlew)
 {
 
     if (couleur == 1)
     {
-        if (fen.castleb[0] == 1)
+        if (castleb[0] == 1)
         {
             moves[8] = 2;
         }
-        if (fen.castleb[1] == 1)
+        if (castleb[1] == 1)
         {
             moves[9] = 6;
         }
     }
     else if (couleur == 0)
     {
-        if (fen.castlew[0] == 1)
+        if (castlew[0] == 1)
         {
             moves[8] = 58;
         }
-        if (fen.castlew[1] == 1)
+        if (castlew[1] == 1)
         {
             moves[9] = 62;
         }
@@ -896,13 +909,12 @@ int *ajouter_castle(int couleur, int *moves, FEN fen)
 }
 
 // retire tous les moves qui vont entrainer un echec
-int *retirer_echec(int position, int *moves)
+int *retirer_echec(int position, int *moves, int * plateau)
 {
     int j, couleur, taille_moves;
     int *echequier_tmp;
 
     echequier_tmp = (int *)malloc(sizeof(int) * MAX);
-    echequier_tmp = copie_echequier(echequier_tmp);
 
     couleur = get_color(position, echequier);
     taille_moves = get_taille_moves(position, echequier);
@@ -910,7 +922,7 @@ int *retirer_echec(int position, int *moves)
     j = 0;
     while (moves[j] != -1 && j < taille_moves) // on va effectuer chaque move dans un echequier temporaire et regarder si le move crée un echec
     {
-        echequier_tmp = copie_echequier(echequier_tmp);
+        echequier_tmp = copie_echequier(plateau, echequier_tmp);
         echequier_tmp[moves[j]] = echequier_tmp[position];
         echequier_tmp[position] = VIDE;
 
@@ -927,7 +939,7 @@ int *retirer_echec(int position, int *moves)
 }
 
 // retourne un tableau contenant la position de toutes les pieces pouvant bouger: si il n'y en a aucune, echec et mat
-int *liste_moves(int couleur, int *liste_pieces, int taille_liste)
+int *liste_moves(int couleur, int *liste_pieces, int taille_liste, int * plateau)
 {
 
     int i, j = 0, taille_moves;
@@ -937,21 +949,21 @@ int *liste_moves(int couleur, int *liste_pieces, int taille_liste)
     for (i = 0; i < MAX; i++)
     {
         // on regarde les moves dispo pour chaque piece alliée qu'on trouve
-        if ((echequier[i] != VIDE) && (get_color(i, echequier) == couleur))
+        if ((plateau[i] != VIDE) && (get_color(i, plateau) == couleur))
         {
 
-            taille_moves = get_taille_moves(i, echequier);
+            taille_moves = get_taille_moves(i, plateau);
             moves = (int *)malloc(sizeof(int) * taille_moves);
             if (moves == NULL)
             {
                 fprintf(stderr, "\nFONTION LISTE_MOVES: ECHEC MALLOC MOVES\n");
                 return NULL;
             }
-            moves = recuperer_moves(i, taille_moves, echequier);
+            moves = recuperer_moves(i, taille_moves, plateau);
 
             if (get_nombre_moves(moves, taille_moves) != 0) // si la piece en position i peut bouger
             {
-                moves = retirer_echec(i, moves);                // on verifie qu'elle puisse bouger sans generer d'echec
+                moves = retirer_echec(i, moves, plateau);                // on verifie qu'elle puisse bouger sans generer d'echec
                 if (get_nombre_moves(moves, taille_moves) != 0) // si oui
                 {
                     liste_pieces[j] = i; // on ajoute la piece de la case i a la liste de pieces pouvant bouger
@@ -973,14 +985,14 @@ int *liste_moves(int couleur, int *liste_pieces, int taille_liste)
 }
 
 // retourne le tableau de moves trié d'une piece, avec castle et sans echecs:
-int *get_moves_total(int *moves, int taille, int position, FEN fen)
+int *get_moves_total(int *moves, int taille, int position, int * castleb, int * castlew, int * plateau)
 {
 
-    moves = recuperer_moves(position, taille, echequier);
-    moves = retirer_echec(position, moves);
-    if (echequier[position] == ROI || echequier[position] == ROI + NOIR)
+    moves = recuperer_moves(position, taille, plateau);
+    moves = retirer_echec(position, moves, plateau);
+    if (plateau[position] == ROI || plateau[position] == ROI + NOIR)
     {
-        moves = ajouter_castle(get_color(position, echequier), moves, fen);
+        moves = ajouter_castle(get_color(position, plateau), moves, castleb, castlew);
     }
     moves = retirer_impossible(moves, taille);
 
@@ -1010,14 +1022,14 @@ int bouger(int position, FEN fen)
         return 0;
     }
 
-    moves = get_moves_total(moves, taille, position, fen);
+    moves = get_moves_total(moves, taille, position, fen.castleb, fen.castlew, echequier);
 
-    int * scores = (int *)malloc(sizeof(int)*taille);
+    /*int * scores = (int *)malloc(sizeof(int)*taille);
     scores = get_score_all_moves(position, fen);
     if (scores == NULL){
         fprintf(stderr, "SCORES NULL");
         return 0;
-    }
+    }*/
 
     /* ******************************************************
     AFFICHAGE:
@@ -1028,7 +1040,7 @@ int bouger(int position, FEN fen)
     i = 0;
     while (i < taille && moves[i] != -1)
     {
-        printf("%d: (%d,%d) -Score = %d\n", i, get_colonne(moves[i]), get_ligne(moves[i]), scores[i]);
+        printf("%d: (%d,%d) ", i, get_colonne(moves[i]), get_ligne(moves[i]));
         i++;
     }
     
@@ -1132,7 +1144,7 @@ int echec_et_mat(int couleur)
         fprintf(stderr, "\nUPDATE FEN: ECHEC MALLOC LISTE_PIECES -> ECHEC ET MAT NON  VERIFIE\n");
         return -1;
     }
-    liste_pieces = liste_moves(couleur, liste_pieces, taille_liste);
+    liste_pieces = liste_moves(couleur, liste_pieces, taille_liste, echequier);
 
     if (liste_pieces[0] == -1)
     {
@@ -1145,10 +1157,10 @@ int echec_et_mat(int couleur)
 FEN update_fen(FEN fen)
 {
     int i;
-    for (i = 0; i < 64; i++)
+    /*for (i = 0; i < 64; i++)
     {
         fen.tab[i] = echequier[i];
-    }
+    }*/
     fen.half_move++;
     if (fen.tour == 1)
     {
@@ -1162,7 +1174,7 @@ FEN update_fen(FEN fen)
 
     if (echequier[4] == ROI + NOIR)
     {
-        fen.castleb = castle(4);
+        fen.castleb = castle(4, echequier);
     }
     else
     {
@@ -1171,7 +1183,7 @@ FEN update_fen(FEN fen)
 
     if (echequier[60] == ROI)
     {
-        fen.castlew = castle(60);
+        fen.castlew = castle(60, echequier);
     }
     else // si echequier[60] contient un roi qui n'a jamais bougé:
     {
@@ -1196,11 +1208,12 @@ FEN update_fen(FEN fen)
     return fen;
 }
 
-int empty(int a, int b)
+//retourne 1 si il n'y a aucune pièce entre la case a et la case b, 0 sinon
+int empty(int a, int b, int * plateau)
 {
     for (int i = a; i < b; ++i)
     {
-        if (echequier[i] != VIDE)
+        if (plateau[i] != VIDE)
             return 0;
     }
     return 1;
@@ -1208,23 +1221,23 @@ int empty(int a, int b)
 
 // pour les fonctions castle on part du principe que le roi n'a jamais bougé !!
 // retourne un tableau de 2 cases: moves[0] pour castle côté reine et moves[1] pour castle côté roi
-int *castle(int position)
+int *castle(int position, int * plateau)
 {
     int i = 0, pos_tour1 = -1, pos_tour2 = -1, nb_tour = 0; // pos_tour est initialisé a -1 pour preciser qu'on a pas encore de Tour
     int *moves = (int *)malloc(sizeof(int) * 2);
     // on cherche si on a une tour sur la ligne du roi
-    if (get_color(position, echequier) == 1)
+    if (get_color(position, plateau) == 1)
     {
         for (i = 0; i < 8; ++i)
         {
-            if (echequier[i] == TOUR + NOIR && nb_tour == 0)
+            if (plateau[i] == TOUR + NOIR && nb_tour == 0)
             {
                 pos_tour1 = i;
                 nb_tour += 1;
             }
             else
             {
-                if (echequier[i] == TOUR + NOIR && nb_tour > 0)
+                if (plateau[i] == TOUR + NOIR && nb_tour > 0)
                 {
                     pos_tour2 = i;
                     nb_tour += 1;
@@ -1236,14 +1249,14 @@ int *castle(int position)
     {
         for (i = 56; i < 64; ++i)
         {
-            if (echequier[i] == TOUR && nb_tour == 0)
+            if (plateau[i] == TOUR && nb_tour == 0)
             {
                 pos_tour1 = i;
                 nb_tour += 1;
             }
             else
             {
-                if (echequier[i] == TOUR && nb_tour > 0)
+                if (plateau[i] == TOUR && nb_tour > 0)
                 {
                     pos_tour2 = i;
                     nb_tour += 1;
@@ -1260,7 +1273,7 @@ int *castle(int position)
         if (pos_tour1 < position) // tour placé avant le roi
         {
             // si coté reine
-            if (empty(pos_tour1 + 1, position) == 0)
+            if (empty(pos_tour1 + 1, position, plateau) == 0)
             {
                 moves[0] = -1; // pas de castle coté reine car pas vide
             }
@@ -1272,7 +1285,7 @@ int *castle(int position)
         else
         {
             // si coté roi
-            if (empty(position + 1, pos_tour1) == 0)
+            if (empty(position + 1, pos_tour1, plateau) == 0)
             {
                 moves[1] = -1; // pas de castle coté roi car pas vide
             }
@@ -1284,7 +1297,7 @@ int *castle(int position)
     }
     else // on a 2 tours
     {
-        if (empty(pos_tour1 + 1, position) == 0)
+        if (empty(pos_tour1 + 1, position, plateau) == 0)
         {
             moves[0] = -1; // pas de castle coté reine car pas vide
         }
@@ -1292,7 +1305,7 @@ int *castle(int position)
         {
             moves[0] = 1;
         }
-        if (empty(position + 1, pos_tour2) == 0)
+        if (empty(position + 1, pos_tour2, plateau) == 0)
         {
             moves[1] = -1; // pas de castle coté roi car pas vide
         }

@@ -22,7 +22,7 @@
 #define VALEUR_ROI 900
 
 struct FEN{
-    int tab[MAX]; //echequier
+    //int tab[MAX]; //echequier
     int tour; //0 si blanc, 1 si noir (un int c'est mieux qu'un booléen)
     int *castlew; 
     int *castleb; //coté reine alors "q" coté roi "k" sinon -
@@ -59,11 +59,13 @@ int get_ligne(int position);
 
 int get_colonne(int position);
 
-int * copie_echequier(int * tab);
+int * copie_echequier(int * plateau, int * tab);
 
 int compter_blanc();
 
 int compter_noir();
+
+int compter(int couleur, int * plateau);
 
 void print_name(int piece);
 
@@ -97,11 +99,13 @@ int get_taille_moves(int position, int * tab);
 
 int * recuperer_moves(int position, int taille, int * tab);
 
-int * retirer_echec(int position, int * moves);
+int * ajouter_castle(int couleur, int * moves, int * castleb, int * castlew);
 
-int * liste_moves(int couleur, int * liste_pieces, int taille_liste);
+int * retirer_echec(int position, int * moves, int * plateau);
 
-int * get_moves_total(int * moves, int taille, int position, FEN fen);
+int * liste_moves(int couleur, int * liste_pieces, int taille_liste, int * plateau);
+
+int * get_moves_total(int * moves, int taille, int position, int * castleb, int * castlew, int * plateau);
 
 int bouger(int position, FEN fen);
 
@@ -111,7 +115,9 @@ int echec_et_mat(int couleur);
 
 FEN update_fen(FEN fen);
 
-int * castle(int position);
+int empty(int a, int b, int * plateau);
+
+int * castle(int position, int * plateau);
 
 void bouger_tour_castle(int position, int move);
 
@@ -123,12 +129,18 @@ int get_valeur_total(int couleur, int *tab);
 
 int get_score(int couleur, int * tab);
 
-int get_score_move(int position, int move);
+//int get_score_move(int position, int move);
 
-int * get_score_all_moves(int position, FEN fen);
+//int * get_score_all_moves(int position, FEN fen);
 
-int minimax(int position, int profondeur, int couleur_maximizer);
+int get_minimizer(int maximizer);
 
-int minimaxx(int position, int maximizer, int profondeur);
+int get_couleur_ennemie(int couleur);
+
+//int minimax(int position, int profondeur, int couleur_maximizer);
+
+//int minimaxx(int position, int maximizer, int profondeur);
+
+int encore(int maximizer, int couleur, int profondeur, int * plateau, int alpha, int beta);
 
 #endif

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 int echequier[64];
 FEN fen;
@@ -19,7 +20,8 @@ int main()
         affichage_echequier();
         if (fen.tour == 0)
         {
-            printf("\nTour des Blancs:\n");
+            printf("\nTour des Blancs:\nMAXIMISATION DU SCORE BLANC: ");
+            printf("%d\n", encore(1, 0, 1, echequier, INT_MIN, INT_MAX));
         }
         else
         {
@@ -35,9 +37,6 @@ int main()
             }
         } while (position == -1);
 
-        if (fen.tour == 1){
-            printf("\nBest score: %d\n", minimaxx(position, 1, 2));
-        }
         move = bouger(position, fen);
 
         /* **Si le mouvement est un castle, on bouge la tour** */
@@ -58,9 +57,6 @@ int main()
         echequier[position] = VIDE;
 
         fen = update_fen(fen);
-        printf("\nSCORE NOIR: %d\n", get_score(0, echequier));
-        //printf("SCORE NOIR: %d\n", get_score(1, echequier));
-
     }
 
     affichage_echequier();
