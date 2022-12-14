@@ -121,6 +121,8 @@ int * castle(int position, int * plateau);
 
 void bouger_tour_castle(int position, int move);
 
+void promo_pion(int position, int piece, int *tab);
+
 //minimax:
 
 int get_valeur(int position, int * tab);

@@ -35,6 +35,7 @@ char int_to_piece(int position)
         c = 'q';
         break;
     case ROI:
+    case ROI + SPECIAL:
         c = 'k';
         break;
     case PION + NOIR:
@@ -53,6 +54,7 @@ char int_to_piece(int position)
         c = 'Q';
         break;
     case ROI + NOIR:
+    case ROI + NOIR + SPECIAL:
         c = 'K';
         break;
     default:
@@ -142,10 +144,7 @@ void initialiser_debug()
     {
         echequier[i] = VIDE;
     }
-    echequier[13] = PION + NOIR;
-    echequier[22] = PION;
-    echequier[20] = PION;
-    echequier[29] = PION;
+    echequier[50] = PION + NOIR;
     // echequier[51] = PION+NOIR;
 }
 
@@ -221,8 +220,6 @@ void print_name(int position) // pas besoin de créer une variable a tu peuc jus
         printf("Vide");
         break;
     case PION:
-    case PION + SPECIAL:
-    case PION + NOIR + SPECIAL:
     case PION + NOIR:
         printf("Pion");
         break;
@@ -340,7 +337,7 @@ void debug_mode()
     initialiser_debug();
     initialiser_fen(fen);
     affichage_echequier(echequier, MAX);
-    while (fen.echec == -1)
+    while (rep < 10 )//fen.echec == -1)
     {
 
         printf("\nSelectionner une piece:\n\tColonne: ");
@@ -359,6 +356,7 @@ void debug_mode()
         affichage_echequier(echequier, MAX);
         printf("\n*Continuer? (1: oui, 2: non): ");
         scanf("%d", &rep);
+        rep++;
     }
 }
 
@@ -1057,6 +1055,25 @@ int bouger(int position, FEN fen)
         }
     } while ((rep > taille) || (moves[rep] < 0));
 
+
+    // on regarde si le move permet une promotion ou non
+    if(echequier[position] == PION || echequier[position] == PION + NOIR){
+        if( (moves[rep] >= 0 && moves[rep] <= 7) || (moves[rep] >= 56 && moves[rep] <= 63) ){ //si le mouvement de l'utilisateur est un pion allant dans la derniere ligne 
+            int promo; 
+            printf("\nVOUS ETES EN SITUATION DE PROMOTION, VEUILLEZ SELECTIONNER UNE PIECE PARMIS = 1 : DAME, 2 : TOUR, 3 : FOU, 4 : CAVALIER\n");
+            do{
+                printf("Veuillez choisir une piece : ");
+                scanf("%d", &promo);
+                if(promo != 1 && promo != 2 && promo != 3 && promo != 4){
+                    printf("\nVEUILLEZ CHOISIR UNE PIECE PARMIS LES 4 !\n");
+                }
+            }while(promo != 1 && promo != 2 && promo != 3 && promo != 4);
+            promo_pion(position, promo, echequier);
+
+        }
+    }
+
+
     // on regarde si le move choisi est une capture ou non
     if (moves[rep] != VIDE)
     {
@@ -1341,4 +1358,63 @@ void bouger_tour_castle(int position, int move)
         echequier[3] = echequier[0];
         echequier[0] = VIDE;
     }
+}
+
+
+void promo_pion(int position, int new_piece, int *tab){
+    switch(new_piece){
+        case 1:
+            printf("changement de PION en DAME\n");
+            break;
+        case 2:
+            printf("changement de PION en TOUR\n");
+            break;
+        case 3:
+            printf("changement de PION en FOU\n");
+            break; 
+        case 4:
+            printf("changement de PION en CAVALIER\n");
+            break;
+        default:
+            printf("ERREUR! promotion impossible : selectionnez une dame, une tour, un fou ou un cavalier !\n");
+            return;
+    }
+    if(get_color(position, echequier) == 1){ //le pion est noir
+        switch(new_piece){
+            case 1: 
+                tab[position] = REINE + NOIR;
+                break; 
+            case 2:
+                tab[position] = TOUR + NOIR;
+                break;
+            case 3:
+                tab[position] = FOU + NOIR;
+                break;
+            case 4:
+                tab[position] = CAVALIER + NOIR;
+                break;
+            default:
+                printf("erreur tableau\n");
+                return;
+        }
+    }else if(get_color(position, echequier) == 0){ //le pion est blanc
+        switch(new_piece){
+            case 1: 
+                tab[position] = REINE;
+                break; 
+            case 2:
+                tab[position] = TOUR;
+                break;
+            case 3:
+                tab[position] = FOU;
+                break;
+            case 4:
+                tab[position] = CAVALIER;
+                break;
+            default: 
+                printf("erreur tableau");
+                return;
+        }
+    }
+    printf("\nPROMOTION EFFECTUÉE !\n");
 }

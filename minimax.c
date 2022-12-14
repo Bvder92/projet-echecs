@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <limits.h>
 
+//hello world
+
 // retourne la valeur de la piece dans position
 int get_valeur(int position, int *tab)
 {
@@ -13,9 +15,7 @@ int get_valeur(int position, int *tab)
         valeur = 0;
         break;
     case PION:
-    case PION + SPECIAL:
     case PION + NOIR:
-    case PION + NOIR + SPECIAL:
         valeur = VALEUR_PION;
         break;
     case CAVALIER:
