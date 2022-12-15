@@ -1,18 +1,22 @@
 #ifndef __CHESS_H__
-#define __CHESS_H__
+
+#define __CHESS_H_
 
 #define TAILLE_LIGNE 8
-#define MAX 64
+#define TAILLE_ECHEQUIER 64
 
 #define VIDE 0
+#define BLANC 1
+#define NOIR 2
+
 #define PION 1
-#define CAVALIER  2
+#define CAVALIER 2
 #define FOU 3
 #define TOUR 4
 #define REINE 5
 #define ROI 6
-#define NOIR 128
-#define SPECIAL 100
+#define PIECE_NOIRE 128
+#define PIECE_SPECIAL 100
 
 #define VALEUR_PION 10
 #define VALEUR_CAVALIER 30
@@ -21,128 +25,131 @@
 #define VALEUR_REINE 90
 #define VALEUR_ROI 900
 
-struct FEN{
-    //int tab[MAX]; //echequier
-    int tour; //0 si blanc, 1 si noir (un int c'est mieux qu'un booléen)
-    int *castlew; 
-    int *castleb; //coté reine alors "q" coté roi "k" sinon -
-    int en_passant; //coordonées du tableau pour en_passant
-    int half_move; 
-    int full_move;
-    int echec; //-1 de base, prend la couleur du perdant (1 si le roi noir est en echec)
-    int echec_et_mat; //-1 defaut, prend la couleur du perdant
-}; 
-typedef struct FEN FEN; 
-
-struct AI{
-    int plateau_prev[MAX]; //echequier du tour precendent
-    int maximizer; //couleur qui maximize
-    int maximizer_score; // score de la couleur qui maximize
+struct liste
+{
+    unsigned char valeur;
+    struct liste *next;
 };
-typedef struct AI AI;
+typedef struct liste liste;
 
-extern int echequier[MAX];
+struct FEN
+{
+    char tour;         // BLANC OU NOIR (1 ou 2)
+    char half_move;    // incrémenté a chaque tour
+    char full_move;    // incrémenté a chaque tour des noirs
+    char echec;        // -1 par défaut, prend la couleur du roi en échec
+    char echec_et_mat; // -1 par défaut, prend la couleur du perdant (NOIR ou BLANC)
+    int *castlew;
+    int *castleb; // tableaux indiquant si on peut castle
+};
+typedef struct FEN FEN;
 
-int get_pos(int ligne, int colonne);
+extern unsigned char echequier[TAILLE_ECHEQUIER];
 
-FEN initialiser_fen(FEN fen);
+// FONCTIONS LISTE:
+liste *creation_maillon(char n);
 
-char int_to_piece(int position);
-   
+char liste_vide(liste *l);
+
+void affichage_liste(liste *l);
+
+liste *ajout_tete(liste *l, liste *e);
+
+liste *supprimer_tete(liste *l);
+
+liste *ajout_queue(liste *l, liste *m);
+
+liste *suppression_queue(liste *l);
+
+char recherche(liste * l, char e);
+
+liste *suppression_valeur(liste *l, char m);
+
+void liberation(liste *l);
+
+// FONCTIONS INFORMATIVES:
+
+char get_pos(char ligne, char colonne);
+
+char get_ligne(char position);
+
+char get_colonne(char position);
+
+char compter_pieces(char couleur, unsigned char *plateau);
+
+char get_color(unsigned char piece);
+
+char vide(char a, char b, char position, unsigned char *plateau);
+
+// FONCTIONS DE BASE DU JEU:
 void affichage_echequier();
 
 void initialiser_jeu();
 
-void initialiser_debug();
+FEN initialiser_fen(FEN fen);
 
-int get_ligne(int position);
+char print_piece(unsigned char position);
 
-int get_colonne(int position);
+void print_name(unsigned char piece);
 
-int * copie_echequier(int * plateau, int * tab);
+void print_color(unsigned char piece);
 
-int compter_blanc();
-
-int compter_noir();
-
-int compter(int couleur, int * plateau);
-
-void print_name(int piece);
-
-void print_color(int position);
-
-int get_color(int position, int * tab);
-
-void debug_mode();
-
-int select_piece(int tour);
-
-int select_piece_mieux(int couleur);
-
-int * retirer_impossible(int * tab, int taille);
-
-int * get_legal_pion_blanc(int position, int * moves, int * tab);
-
-int * get_legal_pion_noir(int position, int * moves, int * tab);
-    
-int * get_legal_cavalier(int position, int * moves, int * tab);
-
-int * get_legal_tour(int position, int * moves, int taille, int * tab);
-
-int * get_legal_fou(int position, int * moves, int taille, int * tab);
-
-int * get_legal_roi(int position, int * moves, int * tab);
-
-int * get_legal_reine(int position, int * moves, int taille, int * tab);
-
-int get_taille_moves(int position, int * tab);
-
-int * recuperer_moves(int position, int taille, int * tab);
-
-int * ajouter_castle(int couleur, int * moves, int * castleb, int * castlew);
-
-int * retirer_echec(int position, int * moves, int * plateau);
-
-int * liste_moves(int couleur, int * liste_pieces, int taille_liste, int * plateau);
-
-int * get_moves_total(int * moves, int taille, int position, int * castleb, int * castlew, int * plateau);
-
-int bouger(int position, FEN fen);
-
-int verifier_echec(int * tab);
-
-int echec_et_mat(int couleur);
+char select_piece(char tour, unsigned char *plateau);
 
 FEN update_fen(FEN fen);
 
-int empty(int a, int b, int * plateau);
+char verifier_echec(unsigned char *plateau);
 
-int * castle(int position, int * plateau);
+// FONCTIONS DE FORMATTAGE DE TABLEAUX:
+char *copie_echequier(unsigned char *plateau, char *tab);
 
-void bouger_tour_castle(int position, int move);
+int *retirer_impossible(int *tab, int taille);
 
-void promo_pion(int position, int piece, int *tab);
+// FONCTIONS DE RECUPERATION DE MOVES:
 
-//minimax:
+liste *get_legal_pion_blanc(char position, liste *moves, unsigned char *plateau);
 
-int get_valeur(int position, int * tab);
+liste *get_legal_pion_noir(char position, liste *moves, unsigned char *plateau);
 
-int get_valeur_total(int couleur, int *tab);
+liste *get_legal_cavalier(char position, liste *moves, unsigned char *plateau);
 
-int get_score(int couleur, int * tab);
+liste *get_legal_tour(char position, liste *moves, unsigned char *plateau);
 
-//int get_score_move(int position, int move);
+liste *get_legal_fou(char position, liste *moves, unsigned char *plateau);
 
-//int * get_score_all_moves(int position, FEN fen);
+liste *get_legal_roi(char position, liste *moves, unsigned char *plateau);
 
-int get_minimizer(int maximizer);
+liste *get_legal_reine(char position, liste *moves, unsigned char *plateau);
 
-int get_couleur_ennemie(int couleur);
+liste *get_legal_any(char position, liste *moves, unsigned char *plateau);
 
-//int minimax(int position, int profondeur, int couleur_maximizer);
+liste *retirer_echec(char position, liste *moves, unsigned char *plateau);
 
-//int minimaxx(int position, int maximizer, int profondeur);
+liste *liste_moves(char couleur, liste *liste_pieces, unsigned char *plateau);
 
-int encore(int maximizer, int couleur, int profondeur, int * plateau, int alpha, int beta);
+char echec_et_mat(char couleur, unsigned char * plateau);
+
+char bouger(char position, unsigned char *plateau);
+
+/* ************************
+// FICHIER IA:
+***************************/
+
+// FONCITONS SCORE:
+
+int get_valeur(char position, unsigned char *plateau);
+
+int get_valeur_total(char couleur, unsigned char *plateau);
+
+int get_score(unsigned char *plateau);
+
+// MINIMAX:
+int get_minimizer(char maximizer);
+
+int get_couleur_ennemie(char couleur);
+
+int get_max(int a, int b);
+
+int get_min(int a, int b);
 
 #endif

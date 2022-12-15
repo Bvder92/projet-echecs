@@ -1,78 +1,80 @@
 #include "chess.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <limits.h>
 
-int echequier[64];
+unsigned char echequier[64];
 FEN fen;
 
 int main()
-{   
-    
-    printf("test \n");
-    debug_mode();
-    /*
-    int position, rep = 0;
-    int move;
-    int maximizer;
+{
+    char position, move;
+    int i = 0;
+    char ligne, colonne;
+    char tmp = 0;
+    liste * liste_pieces = (liste *)malloc(sizeof(liste));
+    liste_pieces = NULL;
 
     initialiser_jeu();
     fen = initialiser_fen(fen);
     while (fen.echec_et_mat == -1)
     {
         affichage_echequier();
-        if (fen.tour == 0)
+        printf("\nSCORE: %d\n", get_score(echequier));
+        if (fen.tour == BLANC)
         {
-            printf("\nTour des Blancs:\nMAXIMISATION DU SCORE BLANC: ");
-            printf("%d\n", encore(1, 0, 1, echequier, INT_MIN, INT_MAX));
+            printf("\nTour des Blancs:\n");
         }
         else
         {
-            printf("\nTour des Noirs:\n");
+            printf("\nTour des Noirs\n");
         }
 
         do
         {
-            position = select_piece_mieux(fen.tour);
-            if (position == -1)
+            tmp = 0;
+            if (fen.tour == NOIR)
             {
-                printf("\nCette piece ne peut pas bouger!\n");
+                liste_pieces = liste_moves(NOIR, liste_pieces, echequier);
+                printf("\nPieces pouvant bouger: ");
+                affichage_liste(liste_pieces);
+                printf("\nSelectionner une piece Noire:\n\tColonne: ");
             }
-        } while (position == -1);
+            else
+            {
+                liste_pieces = liste_moves(BLANC, liste_pieces, echequier);
+                printf("\nPieces pouvant bouger: ");
+                affichage_liste(liste_pieces);
+                printf("\nSelectionner une piece Blanche:\n\tColonne: ");
+            }
+            scanf("%d", &colonne);
+            printf("\n\tLigne: ");
+            scanf("%d", &ligne);
 
-        move = bouger(position, fen);
+            position = (ligne * 8) + colonne;
 
-        //**Si le mouvement est un castle, on bouge la tour** 
-        if (echequier[position] == ROI || echequier[position] == ROI+NOIR)//on bouge un roi pour la 1ere fois
-        {
-            bouger_tour_castle(position, move); //si le move est un castle, on bouge la tour au bon endroit
-            echequier[position] += SPECIAL; // on vient de bouger un roi donc on incremente
-        }
+            if (recherche(liste_pieces, position) == 0) // recherche(liste_pieces, position)
+            {
+                printf("\nCette piece ne peut pas bouger !");
+            }
+            else{
+                tmp = 1;
+            }
+        } while (tmp == 0);
 
-        // **Incrémentation des pions et rois de SPECIAL** 
-        if (echequier[position] == PION || echequier[position] == PION + NOIR)
-        {
-            echequier[position] += SPECIAL;
-        }
-
-        // **On effectue le mouvement et update le fen** 
+        move = bouger(position, echequier);
         echequier[move] = echequier[position];
         echequier[position] = VIDE;
-
         fen = update_fen(fen);
     }
-
     affichage_echequier();
-    printf("\nECHEC ET MAT: VICTOIRE DES ");
-    if (fen.echec_et_mat == 1)
+    if (fen.echec == BLANC)
     {
-        printf("BLANCS\n");
+        printf("\nECHEC ROI BLANC!\n");
     }
     else
     {
-        printf("NOIRS\n");
+        printf("\nECHEC ROI NOIR!\n");
     }
-    */
     return 0;
 }
