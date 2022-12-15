@@ -271,6 +271,17 @@ void initialiser_jeu()
     echequier[61] = FOU;
     echequier[62] = CAVALIER;
     echequier[63] = TOUR;
+    /*for (i = 0; i<63; i++){
+        echequier[i] = VIDE;
+    }
+    echequier[60] = ROI;
+    echequier[54] = PION;
+    echequier[33] = FOU;
+    echequier[28] = TOUR;
+
+    echequier[4] = ROI+PIECE_NOIRE;
+    echequier[19] = PION+PIECE_NOIRE;
+    echequier[22] = CAVALIER+PIECE_NOIRE;*/
 }
 
 FEN initialiser_fen(FEN fen)
@@ -452,10 +463,10 @@ FEN update_fen(FEN fen)
     return fen;
 }
 
-// retourne un tableau identique à plateau
-char *copie_echequier(unsigned char *plateau, char *tab)
+//parametre 1 = tableau original, parametre 2 = nouveau tableau
+unsigned char *copie_echequier(unsigned char *plateau, unsigned char *tab)
 {
-    for (char i = 0; i < TAILLE_ECHEQUIER; ++i)
+    for (int i = 0; i < TAILLE_ECHEQUIER; ++i)
     {
         tab[i] = plateau[i];
     }
@@ -829,7 +840,7 @@ liste *get_legal_any(char position, liste *moves, unsigned char *plateau)
         moves = get_legal_roi(position, moves, plateau);
         break;
     default:
-        fprintf(stderr, "ERREUR RECUP MOVES: PIECE INCONNUE\n");
+        fprintf(stderr, "ERREUR RECUP MOVES: PIECE INCONNUE, piece = %d, position = %d\n", plateau[position], position);
     }
     return moves;
 }

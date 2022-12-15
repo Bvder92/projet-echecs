@@ -101,7 +101,7 @@ FEN update_fen(FEN fen);
 char verifier_echec(unsigned char *plateau);
 
 // FONCTIONS DE FORMATTAGE DE TABLEAUX:
-char *copie_echequier(unsigned char *plateau, char *tab);
+unsigned char *copie_echequier(unsigned char *plateau, unsigned char *tab);
 
 int *retirer_impossible(int *tab, int taille);
 
@@ -122,6 +122,8 @@ liste *get_legal_roi(char position, liste *moves, unsigned char *plateau);
 liste *get_legal_reine(char position, liste *moves, unsigned char *plateau);
 
 liste *get_legal_any(char position, liste *moves, unsigned char *plateau);
+
+liste * get_legal_all(char position, liste * moves, unsigned char * plateau);
 
 liste *retirer_echec(char position, liste *moves, unsigned char *plateau);
 
@@ -144,12 +146,16 @@ int get_valeur_total(char couleur, unsigned char *plateau);
 int get_score(unsigned char *plateau);
 
 // MINIMAX:
-int get_minimizer(char maximizer);
+char get_minimizer(char maximizer);
 
-int get_couleur_ennemie(char couleur);
+char get_couleur_ennemie(char couleur);
 
 int get_max(int a, int b);
 
 int get_min(int a, int b);
+
+int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeur);
+
+void test(unsigned char *plateau);
 
 #endif

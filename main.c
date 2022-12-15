@@ -12,15 +12,17 @@ int main()
     int i = 0;
     char ligne, colonne;
     char tmp = 0;
-    liste * liste_pieces = (liste *)malloc(sizeof(liste));
+    liste *liste_pieces = (liste *)malloc(sizeof(liste));
     liste_pieces = NULL;
+    unsigned char *plateau_tmp = (unsigned char *)malloc(sizeof(unsigned char)*TAILLE_ECHEQUIER);
 
     initialiser_jeu();
     fen = initialiser_fen(fen);
     while (fen.echec_et_mat == -1)
     {
         affichage_echequier();
-        printf("\nSCORE: %d\n", get_score(echequier));
+        printf("SCORE: %d\n", get_score(echequier));
+
         if (fen.tour == BLANC)
         {
             printf("\nTour des Blancs:\n");
@@ -28,6 +30,10 @@ int main()
         else
         {
             printf("\nTour des Noirs\n");
+            plateau_tmp = copie_echequier(echequier, plateau_tmp);
+            //test(echequier);
+            printf("Meilleur score possible: %d", minimax(NOIR, 1, plateau_tmp, 2));
+            printf("\n");
         }
 
         do
@@ -36,15 +42,11 @@ int main()
             if (fen.tour == NOIR)
             {
                 liste_pieces = liste_moves(NOIR, liste_pieces, echequier);
-                printf("\nPieces pouvant bouger: ");
-                affichage_liste(liste_pieces);
                 printf("\nSelectionner une piece Noire:\n\tColonne: ");
             }
             else
             {
                 liste_pieces = liste_moves(BLANC, liste_pieces, echequier);
-                printf("\nPieces pouvant bouger: ");
-                affichage_liste(liste_pieces);
                 printf("\nSelectionner une piece Blanche:\n\tColonne: ");
             }
             scanf("%d", &colonne);
@@ -57,7 +59,8 @@ int main()
             {
                 printf("\nCette piece ne peut pas bouger !");
             }
-            else{
+            else
+            {
                 tmp = 1;
             }
         } while (tmp == 0);
@@ -65,6 +68,8 @@ int main()
         move = bouger(position, echequier);
         echequier[move] = echequier[position];
         echequier[position] = VIDE;
+
+        // free(plateau_tmp);
         fen = update_fen(fen);
     }
     affichage_echequier();
