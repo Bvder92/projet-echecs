@@ -79,7 +79,7 @@ char compter_pieces(char couleur, unsigned char *plateau);
 
 char get_color(unsigned char piece);
 
-char vide(char a, char b, char position, unsigned char *plateau);
+char vide(char a, char b, unsigned char *plateau);
 
 // FONCTIONS DE BASE DU JEU:
 void affichage_echequier();
@@ -101,6 +101,7 @@ FEN update_fen(FEN fen);
 char verifier_echec(unsigned char *plateau);
 
 // FONCTIONS DE FORMATTAGE DE TABLEAUX:
+
 unsigned char *copie_echequier(unsigned char *plateau, unsigned char *tab);
 
 int *retirer_impossible(int *tab, int taille);
@@ -131,7 +132,9 @@ liste *liste_moves(char couleur, liste *liste_pieces, unsigned char *plateau);
 
 char echec_et_mat(char couleur, unsigned char * plateau);
 
-char bouger(char position, unsigned char *plateau);
+char choisir_move(char position, unsigned char *plateau);
+
+void effectuer_move(char position_piece, char position_move, unsigned char *plateau);
 
 /* ************************
 // FICHIER IA:

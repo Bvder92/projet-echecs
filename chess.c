@@ -31,7 +31,8 @@ void affichage_liste(liste *l)
 // ajoute un element en tete (tete = premier element de la liste):
 liste *ajout_tete(liste *l, liste *m)
 {
-    if (m == NULL){
+    if (m == NULL)
+    {
         return l;
     }
     if (l == NULL)
@@ -207,7 +208,7 @@ char get_color(unsigned char piece)
 }
 
 // retourne 1 si toutes les cases entre a et b sont vides
-char vide(char a, char b, char position, unsigned char *plateau)
+char vide(char a, char b, unsigned char *plateau)
 {
     for (char i = a; i < b; ++i)
     {
@@ -453,17 +454,19 @@ FEN update_fen(FEN fen)
     }
 
     fen.echec = verifier_echec(echequier);
-    if (fen.echec == BLANC){
+    if (fen.echec == BLANC)
+    {
         fen.echec_et_mat = echec_et_mat(BLANC, echequier);
     }
-    else if (fen.echec == NOIR){
+    else if (fen.echec == NOIR)
+    {
         fen.echec_et_mat = echec_et_mat(NOIR, echequier);
     }
 
     return fen;
 }
 
-//parametre 1 = tableau original, parametre 2 = nouveau tableau
+// parametre 1 = tableau original, parametre 2 = nouveau tableau
 unsigned char *copie_echequier(unsigned char *plateau, unsigned char *tab)
 {
     for (int i = 0; i < TAILLE_ECHEQUIER; ++i)
@@ -777,6 +780,27 @@ liste *get_legal_roi(char position, liste *moves, unsigned char *plateau)
     {
         moves = ajout_tete(moves, creation_maillon(position + 9));
     }
+
+    if (plateau[position] == ROI && plateau[61] == VIDE && plateau[62] == VIDE) // castle blanc coté roi
+    {
+        moves = ajout_tete(moves, creation_maillon(position + 2));
+    }
+
+    if (plateau[position] == ROI && vide(57, 60, plateau) == 1) // castle blanc coté reine
+    {
+        moves = ajout_tete(moves, creation_maillon(position - 2));
+    }
+
+    if (plateau[position] == ROI + PIECE_NOIRE && plateau[5] == VIDE && plateau[6] == VIDE) // castle noir coté roi
+    {
+        moves = ajout_tete(moves, creation_maillon(position + 2));
+    }
+
+    if (plateau[position] == ROI + PIECE_NOIRE && vide(1, 4, plateau) == 1) // castle noir coté reine
+    {
+        moves = ajout_tete(moves, creation_maillon(position - 2));
+    }
+
     return moves;
 }
 
@@ -793,8 +817,8 @@ liste *get_legal_reine(char position, liste *moves, unsigned char *plateau)
     moves = ajout_tete(moves, moves_tour);
     moves = ajout_tete(moves, moves_fou);
 
-    //liberation(moves_fou);
-    // liberation(moves_tour);
+    // liberation(moves_fou);
+    //  liberation(moves_tour);
 
     // moves_fou = NULL;
     // moves_tour = NULL;
@@ -892,7 +916,7 @@ char verifier_echec(unsigned char *plateau)
     int i, j = 0, echec = -1;
     for (i = 0; i < TAILLE_ECHEQUIER; i++)
     {
-        if ((plateau[i]!=VIDE) && (plateau[i]!=ROI) && (plateau[i]!=ROI+PIECE_NOIRE) && (plateau[i]!=ROI+PIECE_SPECIAL) && (plateau[i]!=ROI+PIECE_NOIRE+PIECE_SPECIAL))
+        if ((plateau[i] != VIDE) && (plateau[i] != ROI) && (plateau[i] != ROI + PIECE_NOIRE) && (plateau[i] != ROI + PIECE_SPECIAL) && (plateau[i] != ROI + PIECE_NOIRE + PIECE_SPECIAL))
         {
             moves = get_legal_any(i, moves, plateau);
             tmp = moves;
@@ -950,25 +974,28 @@ liste *liste_moves(char couleur, liste *liste_pieces, unsigned char *plateau)
     return liste_pieces;
 }
 
-//retourne la couleur du perdant, ou -1
-char echec_et_mat(char couleur, unsigned char * plateau){
-    
-    liste * liste_pieces = (liste *)malloc(sizeof(liste));
+// retourne la couleur du perdant, ou -1
+char echec_et_mat(char couleur, unsigned char *plateau)
+{
+
+    liste *liste_pieces = (liste *)malloc(sizeof(liste));
     liste_pieces = NULL;
     liste_pieces = liste_moves(couleur, liste_pieces, plateau);
-    
-    if (liste_pieces == NULL){
+
+    if (liste_pieces == NULL)
+    {
         return couleur;
     }
-    else return -1;
+    else
+        return -1;
 }
 
 // propose tous les moves dispo a l'utilisateur et retourne le move choisi:
-char bouger(char position, unsigned char *plateau)
+char choisir_move(char position, unsigned char *plateau)
 {
     liste *moves = (liste *)malloc(sizeof(liste));
     moves = NULL;
-    moves = get_legal_all(position, moves, plateau); //get_legal_any car si on appelle bouger sur une piece, c'est quelle peut bouger
+    moves = get_legal_all(position, moves, plateau); // get_legal_any car si on appelle bouger sur une piece, c'est quelle peut bouger
     liste *tmp = moves;
     liste *tmptmp = moves;
     char i = 0;
@@ -1018,6 +1045,70 @@ char bouger(char position, unsigned char *plateau)
     }
     t = tmp = tmptmp = NULL;
 
-    printf("\nREP = %d", rep);
     return rep;
+}
+
+void promotion(char position, unsigned char nouvelle_piece, unsigned char * plateau)
+{
+    printf("\nappel promotion\n");
+    plateau[position] = nouvelle_piece;
+}
+
+void effectuer_move(char position_piece, char position_move, unsigned char *plateau)
+{
+    if (plateau[position_piece] == ROI) // castle blanc
+    {
+        if (position_move == 62) // coté roi
+        {
+            plateau[62] = ROI + PIECE_SPECIAL;
+            plateau[position_piece] = VIDE;
+            plateau[61] = plateau[63];
+            plateau[63] = VIDE;
+        }
+
+        if (position_move == 58) // coté reine
+        {
+            plateau[58] = ROI + PIECE_SPECIAL;
+            plateau[position_piece] = VIDE;
+            plateau[59] = plateau[56];
+            plateau[56] = VIDE;
+        }
+    }
+
+    else if (plateau[position_piece] == ROI + PIECE_NOIRE) // castle noir
+    {
+        if (position_move == 6) // coté roi
+        {
+            plateau[6] = ROI + PIECE_SPECIAL;
+            plateau[position_piece] = VIDE;
+            plateau[5] = plateau[7];
+            plateau[7] = VIDE;
+        }
+
+        if (position_move == 2) // coté reine
+        {
+            plateau[2] = ROI + PIECE_SPECIAL;
+            plateau[position_piece] = VIDE;
+            plateau[3] = plateau[0];
+            plateau[0] = VIDE;
+        }
+    }
+
+    else
+    {
+        // pion commenté pour l'instant ça sert à rien
+        if (plateau[position_piece] == ROI || plateau[position_piece] == ROI + PIECE_NOIRE /*|| plateau[position_piece] == PION || plateau[position_piece] == PION + PIECE_NOIRE*/)
+        {
+            plateau[position_piece] = plateau[position_piece] + PIECE_SPECIAL;
+        }
+
+        if (plateau[position_piece] == PION && get_ligne(position_piece) == 0)
+        {
+            unsigned char nouvelle_piece = REINE;
+            promotion(position_piece, nouvelle_piece, plateau);
+        }
+
+        plateau[position_move] = plateau[position_piece];
+        plateau[position_piece] = VIDE;
+    }
 }

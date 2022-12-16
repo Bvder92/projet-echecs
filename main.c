@@ -32,7 +32,7 @@ int main()
             printf("\nTour des Noirs\n");
             plateau_tmp = copie_echequier(echequier, plateau_tmp);
             //test(echequier);
-            printf("Meilleur score possible: %d", minimax(NOIR, 1, plateau_tmp, 2));
+            printf("Meilleur score possible: %d", minimax(NOIR, 1, plateau_tmp, 3));
             printf("\n");
         }
 
@@ -65,9 +65,8 @@ int main()
             }
         } while (tmp == 0);
 
-        move = bouger(position, echequier);
-        echequier[move] = echequier[position];
-        echequier[position] = VIDE;
+        move = choisir_move(position, echequier);
+        effectuer_move(position, move, echequier);
 
         // free(plateau_tmp);
         fen = update_fen(fen);
