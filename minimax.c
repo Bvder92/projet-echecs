@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <sys/time.h>
 
 // retourne la valeur de la piece dans position
 int get_valeur(char position, unsigned char *plateau)
@@ -89,7 +90,16 @@ int get_valeur_total(char couleur, unsigned char *plateau)
 int get_score(unsigned char *plateau)
 {
     // score noir + somme des valeurs des pieces blanches capturées
-    return get_valeur_total(NOIR, plateau) + (1290 - get_valeur_total(BLANC, plateau));
+    int score_noir = get_valeur_total(NOIR, plateau);
+    /*if (plateau[6] == ROI+PIECE_NOIRE+PIECE_SPECIAL || plateau[2] == ROI+PIECE_NOIRE+PIECE_SPECIAL)
+    {
+        score_noir = score_noir + 50;
+    }
+    if (plateau[27] == CAVALIER+PIECE_NOIRE || plateau[28] == CAVALIER+PIECE_NOIRE || plateau[35] == CAVALIER+PIECE_NOIRE || plateau[36] == CAVALIER+PIECE_NOIRE)
+    {
+        score_noir = score_noir + 1000;
+    }*/
+    return score_noir + (2400 - get_valeur_total(BLANC, plateau));
 }
 
 // retourne le plus grand entre les 2 entiers
@@ -130,20 +140,23 @@ char get_couleur_ennemie(char couleur)
         return NOIR;
 }
 
-void test(unsigned char *plateau)
+void test()
 {
-    unsigned char * backup = (unsigned char *)malloc(sizeof(unsigned char)*64);
+    echequier[35] = ROI+PIECE_SPECIAL;
+    affichage_echequier();
 }
 
 // couleur = couleur du joueur qui doit jouer, maximizer = es-ce qu'il veut maximizer ou minimizer son score
 int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeur)
 {
     char couleur_ennemie = get_couleur_ennemie(couleur);
-    if (profondeur == 0 || echec_et_mat(couleur_ennemie, plateau) != -1)
+    if (profondeur == 0 || echec_et_mat(couleur, plateau) != -1)
     {
         // printf("profondeur = 0");
         return get_score(plateau);
     }
+    char meilleur_move;
+    unsigned char meilleure_piece;
 
     char minimizer = get_minimizer(maximizer);
 
@@ -153,55 +166,51 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
     char i = 0;
     unsigned char *plateau_backup = (unsigned char *)malloc(sizeof(unsigned char)*TAILLE_ECHEQUIER);
     plateau_backup = copie_echequier(plateau, plateau_backup); //utilisé pour reset l'echequier après qu'on ait testé un move
+
     if (maximizer = 1) // on cherche a maximizer le score
     {
         best_eval = INT_MIN; // int min car on veut maximizer -> on commence au minimum
+        
 
         liste *liste_pieces = (liste *)malloc(sizeof(liste)); // liste des pieces pouvant bouger
         liste_pieces = NULL;
         liste_pieces = liste_moves(couleur, liste_pieces, plateau);
-        liste *tmp_pieces = liste_pieces;
 
-        while (tmp_pieces != NULL) // POUR CHAQUE PIECE POUVANT BOUGER:
+        while (liste_pieces != NULL) // POUR CHAQUE PIECE POUVANT BOUGER:
         {
             liste *moves = (liste *)malloc(sizeof(liste)); // liste des moves d'une piece
             moves = NULL;
-            moves = get_legal_all(tmp_pieces->valeur, moves, plateau);
-            liste *tmp_moves = moves;
+            moves = get_legal_all(liste_pieces->valeur, moves, plateau);
 
-            while (tmp_moves != NULL) // POUR CHAQUE MOVE DE LA PIECE:
+            while (moves != NULL) // POUR CHAQUE MOVE DE LA PIECE:
             {
                 // on effectue le move
-                effectuer_move(tmp_pieces->valeur, tmp_moves->valeur, plateau);
+                effectuer_move(liste_pieces->valeur, moves->valeur, plateau);
 
                 // on evalue l'echequier de la perspective de l'ennemi (il va vouloir minimizer donc maximizer = 0)
                 eval = minimax(couleur_ennemie, 0, plateau, profondeur - 1);
                 best_eval = get_max(best_eval, eval);
+                if (best_eval == eval)//on a trouvé un nouveau meilleur move
+                {
+                    meilleur_move = moves->valeur;
+                    meilleure_piece = liste_pieces->valeur;
+                }
 
                 //reset le plateau puis incrémente la liste des moves
                 plateau = copie_echequier(plateau_backup, plateau);
-                tmp_moves = tmp_moves->next;
+                moves = moves->next;
             }
             // liberation de moves avant la prochaine itération:
-            liste *t = moves;
-            while (moves != NULL)
-            {
-                t = moves->next;
-                free(moves);
-                moves = t;
-            }
-            tmp_pieces = tmp_pieces->next;
+            liberation(moves);
+            liste_pieces = liste_pieces->next;
         }
         // liberation de liste_pieces:
-        liste *tt = liste_pieces;
-        while (liste_pieces != NULL)
-        {
-            tt = liste_pieces->next;
-            free(liste_pieces);
-            liste_pieces = tt;
-        }
+        liberation(liste_pieces);
 
         free(plateau_backup);
+        return_minimax.move = meilleur_move;
+        return_minimax.piece = meilleure_piece;
+        return_minimax.score = best_eval;
         return best_eval; // on retourne l'évaluation maximale
     }
 
@@ -212,47 +221,42 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
         liste *liste_pieces = (liste *)malloc(sizeof(liste)); // liste des pieces pouvant bouger
         liste_pieces = NULL;
         liste_pieces = liste_moves(couleur, liste_pieces, plateau);
-        liste *tmp_pieces = liste_pieces;
 
-        while (tmp_pieces != NULL) // POUR CHAQUE PIECE POUVANT BOUGER:
+        while (liste_pieces != NULL) // POUR CHAQUE PIECE POUVANT BOUGER:
         {
             liste *moves = (liste *)malloc(sizeof(liste)); // liste des moves d'une piece
             moves = NULL;
-            moves = get_legal_all(tmp_pieces->valeur, moves, plateau);
-            liste *tmp_moves = moves;
+            moves = get_legal_all(liste_pieces->valeur, moves, plateau);
 
-            while (tmp_moves != NULL) // POUR CHAQUE MOVE DE LA PIECE:
+            while (moves != NULL) // POUR CHAQUE MOVE DE LA PIECE:
             {
                 // on effectue le move
-                effectuer_move(tmp_pieces->valeur, tmp_moves->valeur, plateau);
+                effectuer_move(liste_pieces->valeur, moves->valeur, plateau);
 
                 // on evalue l'echequier de la perspective de l'ennemi (il va vouloir maximizer donc maximizer = 1)
                 eval = minimax(couleur_ennemie, 1, plateau, profondeur - 1);
                 best_eval = get_min(best_eval, eval);
 
+                if (best_eval == eval)
+                {
+                    meilleur_move = moves->valeur;
+                    meilleure_piece = liste_pieces->valeur;
+                }
+
                 //reset le plateau puis incrémente la liste des moves
                 plateau = copie_echequier(plateau_backup, plateau);
-                tmp_moves = tmp_moves->next;
+                moves = moves->next;
             }
             // liberation de moves avant la prochaine itération:
-            liste *t = moves;
-            while (moves != NULL)
-            {
-                t = moves->next;
-                free(moves);
-                moves = t;
-            }
-            tmp_pieces = tmp_pieces->next;
+            liberation(moves);
+            liste_pieces = liste_pieces->next;
         }
         // liberation de liste_pieces:
-        liste *tt = liste_pieces;
-        while (liste_pieces != NULL)
-        {
-            tt = liste_pieces->next;
-            free(liste_pieces);
-            liste_pieces = tt;
-        }
+        liberation(liste_pieces);
         free(plateau_backup);
-        return best_eval; // on retourne l'évaluation maximale
+        return_minimax.move = meilleur_move;
+        return_minimax.piece = meilleure_piece;
+        return_minimax.score = best_eval;
+        return best_eval; // on retourne l'évaluation minimale
     }
 }

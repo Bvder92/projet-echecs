@@ -19,11 +19,11 @@
 #define PIECE_SPECIAL 100
 
 #define VALEUR_PION 10
-#define VALEUR_CAVALIER 30
-#define VALEUR_FOU 30
+#define VALEUR_CAVALIER 32
+#define VALEUR_FOU 33
 #define VALEUR_TOUR 50
 #define VALEUR_REINE 90
-#define VALEUR_ROI 900
+#define VALEUR_ROI 2000
 
 struct liste
 {
@@ -43,6 +43,16 @@ struct FEN
     int *castleb; // tableaux indiquant si on peut castle
 };
 typedef struct FEN FEN;
+
+struct best_move
+{
+    unsigned char piece;
+    char move;
+    int score;
+};
+typedef struct best_move best_move;
+
+extern best_move return_minimax;
 
 extern unsigned char echequier[TAILLE_ECHEQUIER];
 
@@ -104,8 +114,6 @@ char verifier_echec(unsigned char *plateau);
 
 unsigned char *copie_echequier(unsigned char *plateau, unsigned char *tab);
 
-int *retirer_impossible(int *tab, int taille);
-
 // FONCTIONS DE RECUPERATION DE MOVES:
 
 liste *get_legal_pion_blanc(char position, liste *moves, unsigned char *plateau);
@@ -159,6 +167,6 @@ int get_min(int a, int b);
 
 int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeur);
 
-void test(unsigned char *plateau);
+void test();
 
 #endif

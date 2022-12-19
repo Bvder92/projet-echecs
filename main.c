@@ -3,8 +3,9 @@
 #include <stdlib.h>
 #include <limits.h>
 
-unsigned char echequier[64];
+unsigned char echequier[TAILLE_ECHEQUIER];
 FEN fen;
+best_move return_minimax;
 
 int main()
 {
@@ -14,7 +15,6 @@ int main()
     char tmp = 0;
     liste *liste_pieces = (liste *)malloc(sizeof(liste));
     liste_pieces = NULL;
-    unsigned char *plateau_tmp = (unsigned char *)malloc(sizeof(unsigned char)*TAILLE_ECHEQUIER);
 
     initialiser_jeu();
     fen = initialiser_fen(fen);
@@ -26,14 +26,26 @@ int main()
         if (fen.tour == BLANC)
         {
             printf("\nTour des Blancs:\n");
+            liste_pieces = liste_moves(BLANC, liste_pieces, echequier);
+            printf("Liste des pieces qui peuvent bouger: ");
+            affichage_liste(liste_pieces);
+            minimax(BLANC, 0, echequier, 4);
+            printf("\n\t***MEILLEUR COUP POSSIBLE***");
+            printf("\nPiece: (%d,%d), ", get_colonne(return_minimax.piece), get_ligne(return_minimax.piece));
+            printf("Move: (%d,%d), ", get_colonne(return_minimax.move), get_ligne(return_minimax.move));
+            printf("Score: %d\n", return_minimax.score);
         }
         else
         {
             printf("\nTour des Noirs\n");
-            plateau_tmp = copie_echequier(echequier, plateau_tmp);
-            //test(echequier);
-            printf("Meilleur score possible: %d", minimax(NOIR, 1, plateau_tmp, 3));
-            printf("\n");
+            liste_pieces = liste_moves(NOIR, liste_pieces, echequier);
+            printf("Liste des pieces qui peuvent bouger: ");
+            affichage_liste(liste_pieces);
+            minimax(NOIR, 1, echequier, 4);
+            printf("\n\t***MEILLEUR COUP POSSIBLE***");
+            printf("\nPiece: (%d,%d), ", get_colonne(return_minimax.piece), get_ligne(return_minimax.piece));
+            printf("Move: (%d,%d), ", get_colonne(return_minimax.move), get_ligne(return_minimax.move));
+            printf("Score: %d\n", return_minimax.score);
         }
 
         do

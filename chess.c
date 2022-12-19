@@ -1048,7 +1048,7 @@ char choisir_move(char position, unsigned char *plateau)
     return rep;
 }
 
-void promotion(char position, unsigned char nouvelle_piece, unsigned char * plateau)
+void promotion(char position, unsigned char nouvelle_piece, unsigned char *plateau)
 {
     printf("\nappel promotion\n");
     plateau[position] = nouvelle_piece;
@@ -1056,42 +1056,36 @@ void promotion(char position, unsigned char nouvelle_piece, unsigned char * plat
 
 void effectuer_move(char position_piece, char position_move, unsigned char *plateau)
 {
-    if (plateau[position_piece] == ROI) // castle blanc
+    if (plateau[position_piece] == ROI && position_move == 62) // castle blanc coté roi
     {
-        if (position_move == 62) // coté roi
-        {
-            plateau[62] = ROI + PIECE_SPECIAL;
-            plateau[position_piece] = VIDE;
-            plateau[61] = plateau[63];
-            plateau[63] = VIDE;
-        }
-
-        if (position_move == 58) // coté reine
-        {
-            plateau[58] = ROI + PIECE_SPECIAL;
-            plateau[position_piece] = VIDE;
-            plateau[59] = plateau[56];
-            plateau[56] = VIDE;
-        }
+        plateau[62] = ROI + PIECE_SPECIAL;
+        plateau[position_piece] = VIDE;
+        plateau[61] = plateau[63];
+        plateau[63] = VIDE;
     }
 
-    else if (plateau[position_piece] == ROI + PIECE_NOIRE) // castle noir
+    else if (plateau[position_piece] == ROI && position_move == 58) // blanc coté reine
     {
-        if (position_move == 6) // coté roi
-        {
-            plateau[6] = ROI + PIECE_SPECIAL;
-            plateau[position_piece] = VIDE;
-            plateau[5] = plateau[7];
-            plateau[7] = VIDE;
-        }
+        plateau[58] = ROI + PIECE_SPECIAL;
+        plateau[position_piece] = VIDE;
+        plateau[59] = plateau[56];
+        plateau[56] = VIDE;
+    }
 
-        if (position_move == 2) // coté reine
-        {
-            plateau[2] = ROI + PIECE_SPECIAL;
-            plateau[position_piece] = VIDE;
-            plateau[3] = plateau[0];
-            plateau[0] = VIDE;
-        }
+    else if (plateau[position_piece] == ROI + PIECE_NOIRE && position_move == 6) // castle noir roi
+    {
+        plateau[6] = ROI + PIECE_NOIRE +PIECE_SPECIAL;
+        plateau[position_piece] = VIDE;
+        plateau[5] = plateau[7];
+        plateau[7] = VIDE;
+    }
+
+    else if (plateau[position_piece] == ROI + PIECE_NOIRE && position_move == 2) // castle noir coté reine
+    {
+        plateau[2] = ROI + +PIECE_NOIRE + PIECE_SPECIAL;
+        plateau[position_piece] = VIDE;
+        plateau[3] = plateau[0];
+        plateau[0] = VIDE;
     }
 
     else
