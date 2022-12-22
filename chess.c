@@ -241,6 +241,27 @@ void affichage_echequier()
     }
 }
 
+void affichage_echequier_alt()
+{
+    char c = 0;
+    printf("    0  1  2  3  4  5  6  7  \n\n");
+    for (char i = 0; i<TAILLE_ECHEQUIER; ++i)
+    {
+        if (i % 8 == 0)
+        {
+            printf(" %d ", i/8);
+        }
+        printf(" %c ", print_piece(echequier[i]));
+        c++;
+        if (c == 8)
+        {
+            printf("\n");
+            c = 0;
+        }
+    }
+
+}
+
 void initialiser_jeu()
 {
     char i;
@@ -413,44 +434,66 @@ void print_color(unsigned char piece)
     }
 }
 
-char select_piece(char tour, unsigned char *plateau)
+//retourne la position de la piece choisie par l'utilisateur
+int select_piece(char tour, unsigned char *plateau)
 {
-    char ligne, colonne, position = -1;
+    liste * liste_pieces = (liste*)malloc(sizeof(liste));
+    liste_pieces = NULL;
+
+    int colonne, ligne, tmp, position;
     do
     {
+        tmp = 0;
         if (tour == NOIR)
         {
+            printf("\nTour des Noirs\n");
+            liste_pieces = liste_moves(NOIR, liste_pieces, plateau);
             printf("\nSelectionner une piece Noire:\n\tColonne: ");
         }
         else
         {
+            printf("\nTour des Blancs:\n");
+            liste_pieces = liste_moves(BLANC, liste_pieces, plateau);
             printf("\nSelectionner une piece Blanche:\n\tColonne: ");
         }
         scanf("%d", &colonne);
         printf("\n\tLigne: ");
         scanf("%d", &ligne);
 
-        position = (ligne * 8) + colonne;
-
-        if (get_color(plateau[position]) != tour)
+        position = get_pos(ligne, colonne);
+        if (recherche(liste_pieces, position) == 0) // recherche(liste_pieces, position)
         {
-            printf("\nChoisir une piece de la bonne couleur");
+            printf("\nCette piece ne peut pas bouger ! pos = %d", position);
         }
-    } while (get_color(plateau[position]) != tour);
+        else
+        {
+            tmp = 1;
+        }
+    } while (tmp == 0);
+
+    liberation(liste_pieces);
+
     return position;
 }
 
 FEN update_fen(FEN fen)
 {
-    fen.half_move++;
+    //en.half_move++;
     if (fen.tour == BLANC)
     {
+        printf("fen.tour devient NOIR\n");
         fen.tour = NOIR;
-        fen.full_move++;
+        //fen.full_move++;
+    }
+    else if (fen.tour == NOIR)
+    {
+        printf("fen.tour devient BLANC\n");
+        fen.tour = BLANC;
     }
     else
     {
-        fen.tour = BLANC;
+        printf("\nERREUR, fen.tour = %d\n", fen.tour);
+        fen.tour = -1;
     }
 
     fen.echec = verifier_echec(echequier);
@@ -1074,7 +1117,7 @@ void effectuer_move(char position_piece, char position_move, unsigned char *plat
 
     else if (plateau[position_piece] == ROI + PIECE_NOIRE && position_move == 6) // castle noir roi
     {
-        plateau[6] = ROI + PIECE_NOIRE +PIECE_SPECIAL;
+        plateau[6] = ROI + PIECE_NOIRE + PIECE_SPECIAL;
         plateau[position_piece] = VIDE;
         plateau[5] = plateau[7];
         plateau[7] = VIDE;
@@ -1105,4 +1148,21 @@ void effectuer_move(char position_piece, char position_move, unsigned char *plat
         plateau[position_move] = plateau[position_piece];
         plateau[position_piece] = VIDE;
     }
+}
+
+// apppelle minimax pour savoir le meilleur move possible, puis l'effectue
+void ia_move(char profondeur, char couleur, unsigned char *plateau)
+{
+    if (couleur == BLANC)
+    {
+        minimax(BLANC, 0, plateau, 4);
+    }
+    if (couleur == NOIR)
+    {
+        minimax(NOIR, 1, plateau, 4);
+    }
+    printf("\nPiece: (%d,%d), ", get_colonne(return_minimax.piece), get_ligne(return_minimax.piece));
+    printf("Move: (%d,%d), ", get_colonne(return_minimax.move), get_ligne(return_minimax.move));
+    printf("Score: %d\n", return_minimax.score);
+    effectuer_move(return_minimax.piece, return_minimax.move, plateau);
 }

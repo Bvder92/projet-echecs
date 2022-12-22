@@ -34,7 +34,7 @@ typedef struct liste liste;
 
 struct FEN
 {
-    char tour;         // BLANC OU NOIR (1 ou 2)
+    int tour;         // BLANC OU NOIR (1 ou 2)
     char half_move;    // incrémenté a chaque tour
     char full_move;    // incrémenté a chaque tour des noirs
     char echec;        // -1 par défaut, prend la couleur du roi en échec
@@ -94,6 +94,8 @@ char vide(char a, char b, unsigned char *plateau);
 // FONCTIONS DE BASE DU JEU:
 void affichage_echequier();
 
+void affichage_echequier_alt();
+
 void initialiser_jeu();
 
 FEN initialiser_fen(FEN fen);
@@ -104,7 +106,7 @@ void print_name(unsigned char piece);
 
 void print_color(unsigned char piece);
 
-char select_piece(char tour, unsigned char *plateau);
+int select_piece(char tour, unsigned char *plateau);
 
 FEN update_fen(FEN fen);
 
@@ -143,6 +145,8 @@ char echec_et_mat(char couleur, unsigned char * plateau);
 char choisir_move(char position, unsigned char *plateau);
 
 void effectuer_move(char position_piece, char position_move, unsigned char *plateau);
+
+void ia_move(char profondeur, char couleur, unsigned char * plateau);
 
 /* ************************
 // FICHIER IA:
