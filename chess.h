@@ -148,6 +148,10 @@ void effectuer_move(char position_piece, char position_move, unsigned char *plat
 
 void ia_move(char profondeur, char couleur, unsigned char * plateau);
 
+void promotion_ia(char position, unsigned char nouvelle_piece, unsigned char *plateau);
+
+void promotion_user(char position, char piece, unsigned char *plateau);
+
 /* ************************
 // FICHIER IA:
 ***************************/

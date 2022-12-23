@@ -1017,6 +1017,65 @@ liste *liste_moves(char couleur, liste *liste_pieces, unsigned char *plateau)
     return liste_pieces;
 }
 
+
+void promotion_user(char position, char piece, unsigned char *plateau){
+    switch(piece){
+        case 1:
+            printf("changement de PION en DAME\n");
+            break;
+        case 2:
+            printf("changement de PION en TOUR\n");
+            break;
+        case 3:
+            printf("changement de PION en FOU\n");
+            break; 
+        case 4:
+            printf("changement de PION en CAVALIER\n");
+            break;
+        default:
+            printf("ERREUR! promotion impossible : selectionnez une dame, une tour, un fou ou un cavalier !\n");
+            return;
+    }
+    if(get_color(position) == 1){ //le pion est noir
+        switch(piece){
+            case 1: 
+                plateau[position] = REINE + PIECE_NOIRE;
+                break; 
+            case 2:
+                plateau[position] = TOUR + PIECE_NOIRE;
+                break;
+            case 3:
+                plateau[position] = FOU + PIECE_NOIRE;
+                break;
+            case 4:
+                plateau[position] = CAVALIER + PIECE_NOIRE;
+                break;
+            default:
+                printf("erreur tableau\n");
+                return;
+        }
+    }else if(get_color(position) == 0){ //le pion est blanc
+        switch(piece){
+            case 1: 
+                plateau[position] = REINE;
+                break; 
+            case 2:
+                plateau[position] = TOUR;
+                break;
+            case 3:
+                plateau[position] = FOU;
+                break;
+            case 4:
+                plateau[position] = CAVALIER;
+                break;
+            default: 
+                printf("erreur tableau\n");
+                return;
+        }
+    }
+    printf("PROMOTION EFFECTUÉE !\n");
+}
+
 // retourne la couleur du perdant, ou -1
 char echec_et_mat(char couleur, unsigned char *plateau)
 {
@@ -1079,6 +1138,17 @@ char choisir_move(char position, unsigned char *plateau)
     }
     rep = tmptmp->valeur;
 
+    //promotion pour l'utilisateur 
+    if(plateau[position] == PION || plateau[position] == PION + PIECE_NOIRE ){
+        char move2 = recuperer_valeur(tmp, rep);
+        if(plateau[move2] >= 0 && plateau[move2] <= 7 && plateau[move2] >= 56 && plateau[move2] <= 63){
+            char promo;
+            printf("\nVOUS ETES EN SITUATION DE PROMOTION, VEUILLEZ SELECTIONNER UNE PIECE PARMIS = 1 : DAME, 2 : TOUR, 3 : FOU, 4 : CAVALIER\n");
+            scanf("%d", &promo);
+            promotion_user(position, promo, plateau);
+        }
+    }
+
     liste *t = moves;
     while (moves != NULL)
     {
@@ -1091,7 +1161,7 @@ char choisir_move(char position, unsigned char *plateau)
     return rep;
 }
 
-void promotion(char position, unsigned char nouvelle_piece, unsigned char *plateau)
+void promotion_ia(char position, unsigned char nouvelle_piece, unsigned char *plateau)
 {
     printf("\nappel promotion\n");
     plateau[position] = nouvelle_piece;
@@ -1138,11 +1208,11 @@ void effectuer_move(char position_piece, char position_move, unsigned char *plat
         {
             plateau[position_piece] = plateau[position_piece] + PIECE_SPECIAL;
         }
-
-        if (plateau[position_piece] == PION && get_ligne(position_piece) == 0)
+        //position move car on part du principe que le pion n'a pas encore bougé donc regarder sa position avant son move est inutile
+        if (plateau[position_piece] == PION && get_ligne(position_move) == 0)
         {
             unsigned char nouvelle_piece = REINE;
-            promotion(position_piece, nouvelle_piece, plateau);
+            promotion_ia(position_piece, nouvelle_piece, plateau);
         }
 
         plateau[position_move] = plateau[position_piece];
