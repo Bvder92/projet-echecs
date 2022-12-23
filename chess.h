@@ -35,7 +35,7 @@ typedef struct liste liste;
 struct FEN
 {
     int tour;         // BLANC OU NOIR (1 ou 2)
-    char half_move;    // incrémenté a chaque tour
+    int half_move;    // incrémenté a chaque tour
     char full_move;    // incrémenté a chaque tour des noirs
     char echec;        // -1 par défaut, prend la couleur du roi en échec
     char echec_et_mat; // -1 par défaut, prend la couleur du perdant (NOIR ou BLANC)
@@ -93,6 +93,8 @@ char vide(char a, char b, unsigned char *plateau);
 
 // FONCTIONS DE BASE DU JEU:
 void affichage_echequier();
+
+int affichage_echequier_fichier();
 
 void affichage_echequier_alt();
 

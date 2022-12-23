@@ -6,6 +6,7 @@
 unsigned char echequier[TAILLE_ECHEQUIER];
 FEN fen;
 best_move return_minimax;
+int file = -1;
 
 int main()
 {
@@ -20,7 +21,7 @@ int main()
     fen = initialiser_fen(fen);
     while (fen.echec_et_mat == -1)
     {
-        affichage_echequier_alt();
+        affichage_echequier();
         printf("SCORE: %d\n", get_score(echequier));
 
         if (fen.tour == BLANC)
@@ -29,12 +30,12 @@ int main()
             //move = choisir_move(position, echequier);
             //effectuer_move(position, move, echequier);
             printf("\nBLANC");
-            ia_move(1, BLANC, echequier);
+            ia_move(3, BLANC, echequier);
         }
         else if (fen.tour == NOIR)
         {
-            printf("NOIR");
-            ia_move(1, NOIR, echequier);
+            printf("\nNOIR\n");
+            ia_move(3, NOIR, echequier);
         }
         else
         {
@@ -43,8 +44,18 @@ int main()
         }
 
         fen = update_fen(fen);
+        printf("\n%d\n", fen.half_move);
+        file = affichage_echequier_fichier();
+        if (file == 0)
+        {
+            break;
+        }
+        if (file == -1)
+        {
+            fprintf(stderr, "\nerreur de batard\n");
+        }
     }
-    affichage_echequier_alt();
+    affichage_echequier();
     if (fen.echec == BLANC)
     {
         printf("\nECHEC ROI BLANC!\n");
@@ -53,7 +64,8 @@ int main()
     {
         printf("\nECHEC ROI NOIR!\n");
     }
-    else {
+    else
+    {
         printf("\nFin erreur");
     }
     return 0;

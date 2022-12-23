@@ -241,15 +241,47 @@ void affichage_echequier()
     }
 }
 
+int affichage_echequier_fichier()
+{
+    FILE *fp = fopen("partie.txt", "a");
+    if (fp == NULL)
+    {
+        fprintf(stderr, "ERREUR OUVERTURE FICHIER");
+        return 0;
+    }
+
+    char c = 0;
+    fprintf(fp, "     | ~0~ | ~1~ | ~2~ | ~3~ | ~4~ | ~5~ | ~6~ | ~7~ |\n");
+    fprintf(fp, "+----+-----+-----+-----+-----+-----+-----+-----+-----+\n");
+    for (char i = 0; i < TAILLE_ECHEQUIER; ++i)
+    {
+        if (i % 8 == 0)
+        {
+            fprintf(fp, "|~%d~ | ", i / 8);
+        }
+        fprintf(fp, " %c  | ", print_piece(echequier[i]));
+        c++;
+        if (c == 8)
+        {
+            fprintf(fp, "\n+----+-----+-----+-----+-----+-----+-----+-----+-----+\n");
+            c = 0;
+        }
+    }
+    fprintf(fp, "\n\n");
+
+    fclose(fp);
+    return 1;
+}
+
 void affichage_echequier_alt()
 {
     char c = 0;
     printf("    0  1  2  3  4  5  6  7  \n\n");
-    for (char i = 0; i<TAILLE_ECHEQUIER; ++i)
+    for (char i = 0; i < TAILLE_ECHEQUIER; ++i)
     {
         if (i % 8 == 0)
         {
-            printf(" %d ", i/8);
+            printf(" %d ", i / 8);
         }
         printf(" %c ", print_piece(echequier[i]));
         c++;
@@ -259,7 +291,6 @@ void affichage_echequier_alt()
             c = 0;
         }
     }
-
 }
 
 void initialiser_jeu()
@@ -434,10 +465,10 @@ void print_color(unsigned char piece)
     }
 }
 
-//retourne la position de la piece choisie par l'utilisateur
+// retourne la position de la piece choisie par l'utilisateur
 int select_piece(char tour, unsigned char *plateau)
 {
-    liste * liste_pieces = (liste*)malloc(sizeof(liste));
+    liste *liste_pieces = (liste *)malloc(sizeof(liste));
     liste_pieces = NULL;
 
     int colonne, ligne, tmp, position;
@@ -478,12 +509,12 @@ int select_piece(char tour, unsigned char *plateau)
 
 FEN update_fen(FEN fen)
 {
-    //en.half_move++;
+    fen.half_move++;
     if (fen.tour == BLANC)
     {
         printf("fen.tour devient NOIR\n");
         fen.tour = NOIR;
-        //fen.full_move++;
+        // fen.full_move++;
     }
     else if (fen.tour == NOIR)
     {
@@ -853,18 +884,27 @@ liste *get_legal_reine(char position, liste *moves, unsigned char *plateau)
     liste *moves_tour = (liste *)malloc(sizeof(liste));
     moves_fou = NULL;
     moves_tour = NULL;
-
     moves_fou = get_legal_fou(position, moves_fou, plateau);
     moves_tour = get_legal_tour(position, moves_tour, plateau);
+    liste *tmp_tour = moves_tour;
+    liste *tmp_fou = moves_fou;
 
-    moves = ajout_tete(moves, moves_tour);
-    moves = ajout_tete(moves, moves_fou);
+    while (tmp_fou != NULL)
+    {
+        moves = ajout_tete(moves, creation_maillon(tmp_fou->valeur));
+        tmp_fou = tmp_fou->next;
+    }
 
-    // liberation(moves_fou);
-    //  liberation(moves_tour);
+    while (tmp_tour != NULL)
+    {
+        moves = ajout_tete(moves, creation_maillon(tmp_tour->valeur));
+        tmp_tour = tmp_tour->next;
+    }
 
-    // moves_fou = NULL;
-    // moves_tour = NULL;
+    liberation(moves_fou);
+    liberation(moves_tour);
+
+    moves_fou = moves_tour = NULL;
 
     return moves;
 }
@@ -963,6 +1003,7 @@ char verifier_echec(unsigned char *plateau)
         {
             moves = get_legal_any(i, moves, plateau);
             tmp = moves;
+            t = moves;
             while (tmp != NULL)
             {
                 if (plateau[tmp->valeur] == ROI || plateau[tmp->valeur] == ROI + PIECE_SPECIAL)
@@ -1005,72 +1046,78 @@ liste *liste_moves(char couleur, liste *liste_pieces, unsigned char *plateau)
             {
                 liste_pieces = ajout_tete(liste_pieces, creation_maillon(i)); // si il y a au moins 1 move, on ajoute la piece à la liste de pieces qui peuvent bouger
             }
-            liste *tmp = moves;
+            liste *t = moves;
             while (moves != NULL)
             {
-                tmp = moves->next;
+                t = moves->next;
                 free(moves);
-                moves = tmp;
+                moves = t;
             }
         }
     }
     return liste_pieces;
 }
 
-
-void promotion_user(char position, char piece, unsigned char *plateau){
-    switch(piece){
+void promotion_user(char position, char piece, unsigned char *plateau)
+{
+    switch (piece)
+    {
+    case 1:
+        printf("changement de PION en DAME\n");
+        break;
+    case 2:
+        printf("changement de PION en TOUR\n");
+        break;
+    case 3:
+        printf("changement de PION en FOU\n");
+        break;
+    case 4:
+        printf("changement de PION en CAVALIER\n");
+        break;
+    default:
+        printf("ERREUR! promotion impossible : selectionnez une dame, une tour, un fou ou un cavalier !\n");
+        return;
+    }
+    if (get_color(position) == 1)
+    { // le pion est noir
+        switch (piece)
+        {
         case 1:
-            printf("changement de PION en DAME\n");
+            plateau[position] = REINE + PIECE_NOIRE;
             break;
         case 2:
-            printf("changement de PION en TOUR\n");
+            plateau[position] = TOUR + PIECE_NOIRE;
             break;
         case 3:
-            printf("changement de PION en FOU\n");
-            break; 
+            plateau[position] = FOU + PIECE_NOIRE;
+            break;
         case 4:
-            printf("changement de PION en CAVALIER\n");
+            plateau[position] = CAVALIER + PIECE_NOIRE;
             break;
         default:
-            printf("ERREUR! promotion impossible : selectionnez une dame, une tour, un fou ou un cavalier !\n");
+            printf("erreur tableau\n");
             return;
-    }
-    if(get_color(position) == 1){ //le pion est noir
-        switch(piece){
-            case 1: 
-                plateau[position] = REINE + PIECE_NOIRE;
-                break; 
-            case 2:
-                plateau[position] = TOUR + PIECE_NOIRE;
-                break;
-            case 3:
-                plateau[position] = FOU + PIECE_NOIRE;
-                break;
-            case 4:
-                plateau[position] = CAVALIER + PIECE_NOIRE;
-                break;
-            default:
-                printf("erreur tableau\n");
-                return;
         }
-    }else if(get_color(position) == 0){ //le pion est blanc
-        switch(piece){
-            case 1: 
-                plateau[position] = REINE;
-                break; 
-            case 2:
-                plateau[position] = TOUR;
-                break;
-            case 3:
-                plateau[position] = FOU;
-                break;
-            case 4:
-                plateau[position] = CAVALIER;
-                break;
-            default: 
-                printf("erreur tableau\n");
-                return;
+    }
+    else if (get_color(position) == 0)
+    { // le pion est blanc
+        switch (piece)
+        {
+        case 1:
+            plateau[position] = REINE;
+            break;
+        case 2:
+            plateau[position] = TOUR;
+            break;
+        case 3:
+            plateau[position] = FOU;
+            break;
+        case 4:
+            plateau[position] = CAVALIER;
+            break;
+        default:
+            printf("erreur tableau\n");
+            return;
         }
     }
     printf("PROMOTION EFFECTUÉE !\n");
@@ -1086,10 +1133,14 @@ char echec_et_mat(char couleur, unsigned char *plateau)
 
     if (liste_pieces == NULL)
     {
+        liberation(liste_pieces);
         return couleur;
     }
     else
+    {
+        liberation(liste_pieces);
         return -1;
+    }
 }
 
 // propose tous les moves dispo a l'utilisateur et retourne le move choisi:
@@ -1138,8 +1189,8 @@ char choisir_move(char position, unsigned char *plateau)
     }
     rep = tmptmp->valeur;
 
-    //promotion pour l'utilisateur 
-    if(plateau[position] == PION || plateau[position] == PION + PIECE_NOIRE ){
+    // promotion pour l'utilisateur
+    /*if(plateau[position] == PION || plateau[position] == PION + PIECE_NOIRE ){
         char move2 = recuperer_valeur(tmp, rep);
         if(plateau[move2] >= 0 && plateau[move2] <= 7 && plateau[move2] >= 56 && plateau[move2] <= 63){
             char promo;
@@ -1147,7 +1198,7 @@ char choisir_move(char position, unsigned char *plateau)
             scanf("%d", &promo);
             promotion_user(position, promo, plateau);
         }
-    }
+    }*/
 
     liste *t = moves;
     while (moves != NULL)
@@ -1168,7 +1219,6 @@ void promotion_ia(char position, unsigned char nouvelle_piece, unsigned char *pl
     plateau[position] = nouvelle_piece;
 }
 */
-
 
 void effectuer_move(char position_piece, char position_move, unsigned char *plateau)
 {
@@ -1211,8 +1261,8 @@ void effectuer_move(char position_piece, char position_move, unsigned char *plat
         {
             plateau[position_piece] = plateau[position_piece] + PIECE_SPECIAL;
         }
-        //position move car on part du principe que le pion n'a pas encore bougé donc regarder sa position avant son move est inutile
-        if (plateau[position_piece] == PION && get_ligne(position_move) == 0)
+        // position move car on part du principe que le pion n'a pas encore bougé donc regarder sa position avant son move est inutile
+        /*if (plateau[position_piece] == PION && get_ligne(position_move) == 0)
         {
             unsigned char nouvelle_piece = REINE;
             printf("promotion nappe 1\n");
@@ -1221,7 +1271,7 @@ void effectuer_move(char position_piece, char position_move, unsigned char *plat
             unsigned char nouvelle_piece = REINE+PIECE_NOIRE;
             printf("promotion nappe 1\n");
             plateau[position_piece] = nouvelle_piece;
-        }
+        }*/
 
         plateau[position_move] = plateau[position_piece];
         plateau[position_piece] = VIDE;
@@ -1233,11 +1283,11 @@ void ia_move(char profondeur, char couleur, unsigned char *plateau)
 {
     if (couleur == BLANC)
     {
-        minimax(BLANC, 0, plateau, 4);
+        minimax(BLANC, 0, plateau, profondeur);
     }
     if (couleur == NOIR)
     {
-        minimax(NOIR, 1, plateau, 4);
+        minimax(NOIR, 1, plateau, profondeur);
     }
     printf("\nPiece: (%d,%d), ", get_colonne(return_minimax.piece), get_ligne(return_minimax.piece));
     printf("Move: (%d,%d), ", get_colonne(return_minimax.move), get_ligne(return_minimax.move));
