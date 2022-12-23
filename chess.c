@@ -1161,11 +1161,14 @@ char choisir_move(char position, unsigned char *plateau)
     return rep;
 }
 
+/*
 void promotion_ia(char position, unsigned char nouvelle_piece, unsigned char *plateau)
 {
     printf("\nappel promotion\n");
     plateau[position] = nouvelle_piece;
 }
+*/
+
 
 void effectuer_move(char position_piece, char position_move, unsigned char *plateau)
 {
@@ -1212,7 +1215,12 @@ void effectuer_move(char position_piece, char position_move, unsigned char *plat
         if (plateau[position_piece] == PION && get_ligne(position_move) == 0)
         {
             unsigned char nouvelle_piece = REINE;
-            promotion_ia(position_piece, nouvelle_piece, plateau);
+            printf("promotion nappe 1\n");
+            plateau[position_piece] = nouvelle_piece;
+        }else if(plateau[position_piece] == PION+PIECE_NOIRE && get_ligne(position_move) == 7){
+            unsigned char nouvelle_piece = REINE+PIECE_NOIRE;
+            printf("promotion nappe 1\n");
+            plateau[position_piece] = nouvelle_piece;
         }
 
         plateau[position_move] = plateau[position_piece];
