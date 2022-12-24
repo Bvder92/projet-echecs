@@ -324,17 +324,24 @@ void initialiser_jeu()
     echequier[61] = FOU;
     echequier[62] = CAVALIER;
     echequier[63] = TOUR;
-    /*for (i = 0; i<63; i++){
+    /*for (int i = 0; i < TAILLE_ECHEQUIER; ++i)
+    {
         echequier[i] = VIDE;
     }
-    echequier[60] = ROI;
-    echequier[54] = PION;
-    echequier[33] = FOU;
-    echequier[28] = TOUR;
-
-    echequier[4] = ROI+PIECE_NOIRE;
-    echequier[19] = PION+PIECE_NOIRE;
-    echequier[22] = CAVALIER+PIECE_NOIRE;*/
+    echequier[0] = TOUR + PIECE_NOIRE;
+    echequier[1] = CAVALIER + PIECE_NOIRE;
+    echequier[3] = REINE + PIECE_NOIRE;
+    echequier[4] = ROI + PIECE_NOIRE;
+    echequier[5] = FOU + PIECE_NOIRE;
+    echequier[8] = echequier[9] = echequier[10] = PION + PIECE_NOIRE;
+    echequier[20] = FOU;
+    echequier[21] = CAVALIER + PIECE_NOIRE;
+    echequier[29] = REINE;
+    echequier[35] = echequier[44] = echequier[48] = echequier[49] = echequier[50] = echequier[51] = echequier[55] = PION;
+    echequier[56] = TOUR;
+    echequier[57] = CAVALIER;
+    echequier[58] = FOU;
+    echequier[60] = ROI;*/
 }
 
 FEN initialiser_fen(FEN fen)
@@ -959,7 +966,7 @@ liste *retirer_echec(char position, liste *moves, unsigned char *plateau)
     int i = 0;
     liste *tmp = moves;
     liste *tmptmp;
-    unsigned char *echequier_tmp = (char *)malloc(sizeof(char) * TAILLE_ECHEQUIER);
+    unsigned char *echequier_tmp = (unsigned char *)malloc(sizeof(unsigned char) * TAILLE_ECHEQUIER);
     while (tmp != NULL)
     {
         tmptmp = tmp->next; // comme on va supprimer un élément, pas sur de ce qu'il va se passer a tmp->next donc on le save avant
@@ -994,8 +1001,8 @@ char verifier_echec(unsigned char *plateau)
 {
     liste *moves = (liste *)malloc(sizeof(liste));
     moves = NULL;
-    liste *tmp;
-    liste *t;
+    liste *tmp; // parcours
+    liste *t;   // liberation
     int i, j = 0, echec = -1;
     for (i = 0; i < TAILLE_ECHEQUIER; i++)
     {
@@ -1003,7 +1010,6 @@ char verifier_echec(unsigned char *plateau)
         {
             moves = get_legal_any(i, moves, plateau);
             tmp = moves;
-            t = moves;
             while (tmp != NULL)
             {
                 if (plateau[tmp->valeur] == ROI || plateau[tmp->valeur] == ROI + PIECE_SPECIAL)
@@ -1016,7 +1022,6 @@ char verifier_echec(unsigned char *plateau)
                 }
                 tmp = tmp->next;
             }
-            t = moves;
             while (moves != NULL)
             {
                 t = moves->next;
@@ -1133,12 +1138,24 @@ char echec_et_mat(char couleur, unsigned char *plateau)
 
     if (liste_pieces == NULL)
     {
-        liberation(liste_pieces);
+        liste *tmp = liste_pieces;
+        while (liste_pieces != NULL)
+        {
+            tmp = liste_pieces->next;
+            free(liste_pieces);
+            liste_pieces = tmp;
+        }
         return couleur;
     }
     else
     {
-        liberation(liste_pieces);
+        liste *tmp = liste_pieces;
+        while (liste_pieces != NULL)
+        {
+            tmp = liste_pieces->next;
+            free(liste_pieces);
+            liste_pieces = tmp;
+        }
         return -1;
     }
 }
