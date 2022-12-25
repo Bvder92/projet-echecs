@@ -160,9 +160,13 @@ void promotion_user(char position, char piece, unsigned char *plateau);
 
 // FONCITONS SCORE:
 
-int get_valeur(char position, unsigned char *plateau);
+int get_valeur_materielle(char position, unsigned char *plateau);
 
-int get_valeur_total(char couleur, unsigned char *plateau);
+int get_valeur_materielle_totale(char couleur, unsigned char *plateau);
+
+int get_bonus_placements(unsigned char piece, char position);
+
+int get_bonus_placements_total(char couleur, unsigned char * plateau);
 
 int get_score(unsigned char *plateau);
 

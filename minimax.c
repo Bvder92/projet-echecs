@@ -4,8 +4,83 @@
 #include <limits.h>
 #include <sys/time.h>
 
+/* *******************************************************
+TABLES DES CASES OPTIMALES POUR CHAQUE PIECE (BLANCHES):
+******************************************************* */
+
+const int table_pion[TAILLE_ECHEQUIER] = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    50, 50, 50, 50, 50, 50, 50, 50,
+    10, 10, 20, 30, 30, 20, 10, 10,
+    5, 5, 10, 25, 25, 10, 5, 5,
+    0, 0, 0, 20, 20, 0, 0, 0,
+    5, -5, -10, 0, 0, -10, -5, 5,
+    5, 10, 10, -20, -20, 10, 10, 5,
+    0, 0, 0, 0, 0, 0, 0, 0};
+
+const int table_cavalier[TAILLE_ECHEQUIER] = {
+    -50, -40, -30, -30, -30, -30, -40, -50,
+    -40, -20, 0, 0, 0, 0, -20, -40,
+    -30, 0, 10, 15, 15, 10, 0, -30,
+    -30, 5, 15, 20, 20, 15, 5, -30,
+    -30, 0, 15, 20, 20, 15, 0, -30,
+    -30, 5, 10, 15, 15, 10, 5, -30,
+    -40, -20, 0, 5, 5, 0, -20, -40,
+    -50, -40, -30, -30, -30, -30, -40, -50};
+
+const int table_fou[TAILLE_ECHEQUIER] = {
+    -20, -10, -10, -10, -10, -10, -10, -20,
+    -10, 0, 0, 0, 0, 0, 0, -10,
+    -10, 0, 5, 10, 10, 5, 0, -10,
+    -10, 5, 5, 10, 10, 5, 5, -10,
+    -10, 0, 10, 10, 10, 10, 0, -10,
+    -10, 10, 10, 10, 10, 10, 10, -10,
+    -10, 5, 0, 0, 0, 0, 5, -10,
+    -20, -10, -10, -10, -10, -10, -10, -20};
+
+int table_tour[TAILLE_ECHEQUIER] = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    5, 10, 10, 10, 10, 10, 10, 5,
+    -5, 0, 0, 0, 0, 0, 0, -5,
+    -5, 0, 0, 0, 0, 0, 0, -5,
+    -5, 0, 0, 0, 0, 0, 0, -5,
+    -5, 0, 0, 0, 0, 0, 0, -5,
+    -5, 0, 0, 0, 0, 0, 0, -5,
+    0, 0, 0, 5, 5, 0, 0, 0};
+
+const int table_reine[TAILLE_ECHEQUIER] = {
+    -20, -10, -10, -5, -5, -10, -10, -20,
+    -10, 0, 0, 0, 0, 0, 0, -10,
+    -10, 0, 5, 5, 5, 5, 0, -10,
+    -5, 0, 5, 5, 5, 5, 0, -5,
+    0, 0, 5, 5, 5, 5, 0, -5,
+    -10, 5, 5, 5, 5, 5, 0, -10,
+    -10, 0, 5, 0, 0, 0, 0, -10,
+    -20, -10, -10, -5, -5, -10, -10, -20};
+
+const int table_roi[TAILLE_ECHEQUIER] = {
+    -30, -40, -40, -50, -50, -40, -40, -30,
+    -30, -40, -40, -50, -50, -40, -40, -30,
+    -30, -40, -40, -50, -50, -40, -40, -30,
+    -30, -40, -40, -50, -50, -40, -40, -30,
+    -20, -30, -30, -40, -40, -30, -30, -20,
+    -10, -20, -20, -20, -20, -20, -20, -10,
+    20, 20, 0, 0, 0, 0, 20, 20,
+    20, 30, 10, 0, 0, 10, 30, 20};
+
+//utilisé pour inverser les tableaux précédents pour les utiliser sur les pieces noires
+const int table_mirroir[TAILLE_ECHEQUIER] = {
+    56, 57, 58, 59, 60, 61, 62, 63,
+    48, 49, 50, 51, 52, 53, 54, 55,
+    40, 41, 42, 43, 44, 45, 46, 47,
+    32, 33, 34, 35, 36, 37, 38, 39,
+    24, 25, 26, 27, 28, 29, 30, 31,
+    16, 17, 18, 19, 20, 21, 22, 23,
+    8, 9, 10, 11, 12, 13, 14, 15,
+    0, 1, 2, 3, 4, 5, 6, 7};
+
 // retourne la valeur de la piece dans position
-int get_valeur(char position, unsigned char *plateau)
+int get_valeur_materielle(char position, unsigned char *plateau)
 {
     int valeur;
     switch (plateau[position])
@@ -46,123 +121,8 @@ int get_valeur(char position, unsigned char *plateau)
     return valeur;
 }
 
-int bonus_placement(unsigned char piece, char position)
-{
-    int bonus;
-    int bonus_pion[TAILLE_ECHEQUIER] = {
-        0, 0, 0, 0, 0, 0, 0, 0,
-        50, 50, 50, 50, 50, 50, 50, 50,
-        10, 10, 20, 30, 30, 20, 10, 10,
-        5, 5, 10, 25, 25, 10, 5, 5,
-        0, 0, 0, 20, 20, 0, 0, 0,
-        5, -5, -10, 0, 0, -10, -5, 5,
-        5, 10, 10, -20, -20, 10, 10, 5,
-        0, 0, 0, 0, 0, 0, 0, 0};
-
-    int bonus_cavalier[TAILLE_ECHEQUIER] = {
-        -50, -40, -30, -30, -30, -30, -40, -50,
-        -40, -20, 0, 0, 0, 0, -20, -40,
-        -30, 0, 10, 15, 15, 10, 0, -30,
-        -30, 5, 15, 20, 20, 15, 5, -30,
-        -30, 0, 15, 20, 20, 15, 0, -30,
-        -30, 5, 10, 15, 15, 10, 5, -30,
-        -40, -20, 0, 5, 5, 0, -20, -40,
-        -50, -40, -30, -30, -30, -30, -40, -50};
-
-    int bonus_fou[TAILLE_ECHEQUIER] = {
-        -20, -10, -10, -10, -10, -10, -10, -20,
-        -10, 0, 0, 0, 0, 0, 0, -10,
-        -10, 0, 5, 10, 10, 5, 0, -10,
-        -10, 5, 5, 10, 10, 5, 5, -10,
-        -10, 0, 10, 10, 10, 10, 0, -10,
-        -10, 10, 10, 10, 10, 10, 10, -10,
-        -10, 5, 0, 0, 0, 0, 5, -10,
-        -20, -10, -10, -10, -10, -10, -10, -20};
-
-    int bonus_tour[TAILLE_ECHEQUIER] = {
-        0, 0, 0, 0, 0, 0, 0, 0,
-        5, 10, 10, 10, 10, 10, 10, 5,
-        -5, 0, 0, 0, 0, 0, 0, -5,
-        -5, 0, 0, 0, 0, 0, 0, -5,
-        -5, 0, 0, 0, 0, 0, 0, -5,
-        -5, 0, 0, 0, 0, 0, 0, -5,
-        -5, 0, 0, 0, 0, 0, 0, -5,
-        0, 0, 0, 5, 5, 0, 0, 0};
-
-    int bonus_reine[TAILLE_ECHEQUIER] = {
-        -20, -10, -10, -5, -5, -10, -10, -20,
-        -10, 0, 0, 0, 0, 0, 0, -10,
-        -10, 0, 5, 5, 5, 5, 0, -10,
-        -5, 0, 5, 5, 5, 5, 0, -5,
-        0, 0, 5, 5, 5, 5, 0, -5,
-        -10, 5, 5, 5, 5, 5, 0, -10,
-        -10, 0, 5, 0, 0, 0, 0, -10,
-        -20, -10, -10, -5, -5, -10, -10, -20};
-
-    int bonus_roi[TAILLE_ECHEQUIER] = {
-        -30, -40, -40, -50, -50, -40, -40, -30,
-        -30, -40, -40, -50, -50, -40, -40, -30,
-        -30, -40, -40, -50, -50, -40, -40, -30,
-        -30, -40, -40, -50, -50, -40, -40, -30,
-        -20, -30, -30, -40, -40, -30, -30, -20,
-        -10, -20, -20, -20, -20, -20, -20, -10,
-        20, 20, 0, 0, 0, 0, 20, 20,
-        20, 30, 10, 0, 0, 10, 30, 20};
-
-    switch (piece)
-    {
-    case VIDE:
-        break;
-    case PION:
-    case PION + PIECE_SPECIAL:
-        return bonus_pion[position];
-        break;
-    case CAVALIER:
-        return bonus_cavalier[position];
-        break;
-    case FOU:
-        return bonus_fou[position];
-        break;
-    case TOUR:
-        return bonus_tour[position];
-        break;
-    case REINE:
-        return bonus_reine[position];
-        break;
-    case ROI:
-    case ROI+PIECE_SPECIAL:
-        return bonus_roi[position];
-        break;
-    case PION + PIECE_NOIRE:
-    case PION + PIECE_NOIRE + PIECE_SPECIAL:
-        c = 'P';
-        break;
-    case CAVALIER + PIECE_NOIRE:
-        c = 'N';
-        break;
-    case FOU + PIECE_NOIRE:
-        c = 'B';
-        break;
-    case TOUR + PIECE_NOIRE:
-        c = 'R';
-        break;
-    case REINE + PIECE_NOIRE:
-        c = 'Q';
-        break;
-    case ROI + PIECE_NOIRE:
-        c = 'K';
-        break;
-    case ROI + PIECE_NOIRE + PIECE_SPECIAL:
-        c = '#';
-        break;
-    default:
-        c = '?';
-        break;
-    }
-}
-
 // retourne la somme de la valeur des pieces d'une couleur passée en parametre
-int get_valeur_total(char couleur, unsigned char *plateau)
+int get_valeur_materielle_totale(char couleur, unsigned char *plateau)
 {
     char i, nb_pieces = 0;
     int valeur = 0;
@@ -174,7 +134,7 @@ int get_valeur_total(char couleur, unsigned char *plateau)
         {
             if (get_color(plateau[i]) == couleur)
             {
-                valeur = valeur + get_valeur(i, plateau);
+                valeur = valeur + get_valeur_materielle(i, plateau);
                 nb_pieces++;
             }
             i++;
@@ -187,7 +147,7 @@ int get_valeur_total(char couleur, unsigned char *plateau)
         {
             if (get_color(plateau[i]) == couleur)
             {
-                valeur = valeur + get_valeur(i, plateau);
+                valeur = valeur + get_valeur_materielle(i, plateau);
                 nb_pieces++;
             }
             i--;
@@ -201,13 +161,99 @@ int get_valeur_total(char couleur, unsigned char *plateau)
     return valeur;
 }
 
+int get_bonus_placements(unsigned char piece, char position)
+{
+    switch (piece)
+    {
+    case VIDE:
+        break;
+    case PION:
+    case PION + PIECE_SPECIAL:
+        return table_pion[position];
+        break;
+    case CAVALIER:
+        return table_cavalier[position];
+        break;
+    case FOU:
+        return table_fou[position];
+        break;
+    case TOUR:
+        return table_tour[position];
+        break;
+    case REINE:
+        return table_reine[position];
+        break;
+    case ROI:
+    case ROI + PIECE_SPECIAL:
+        return table_roi[position];
+        break;
+    
+    //POUR LES PIECES NOIRES ON UTILISE TABLE[TABLE_MIRROIR[POSITION]] 
+    case PION + PIECE_NOIRE:
+    case PION + PIECE_NOIRE + PIECE_SPECIAL:
+        return table_pion[table_mirroir[position]]; 
+        break;
+    case CAVALIER + PIECE_NOIRE:
+        return table_cavalier[table_mirroir[position]];
+        break;
+    case FOU + PIECE_NOIRE:
+        return table_fou[table_mirroir[position]];
+        break;
+    case TOUR + PIECE_NOIRE:
+        return table_tour[table_mirroir[position]];
+        break;
+    case REINE + PIECE_NOIRE:
+        return table_reine[table_mirroir[position]];
+        break;
+    case ROI + PIECE_NOIRE:
+    case ROI + PIECE_NOIRE + PIECE_SPECIAL:
+        return table_roi[table_mirroir[position]];
+        break;
+    default:
+        break;
+    };
+}
+
+//retourne la somme des valeurs des bonus de placement pour chaque piece d'une couleur donnée
+int get_bonus_placements_total(char couleur, unsigned char * plateau)
+{
+    char nb_pieces = compter_pieces(couleur, plateau); //nombre de pieces de "couleur" présentes sur l'echequier
+    int i, bonus_total;
+
+    if (couleur == NOIR) //les pieces noires commencent la partie entre echequier[0] et 16, i commence donc à 0
+    {
+        i = 0;
+        while (i<TAILLE_ECHEQUIER && i<nb_pieces)
+        {
+            if (get_color(plateau[i]) == couleur)
+            {
+                bonus_total += get_bonus_placements(plateau[i], i);
+            }
+            ++i;
+        }
+    }
+    else //les pieces blanches commencent entre echequier[63] et 48, i commence donc à 63 et décrémente
+    {
+        i = 63;
+        while (i>0 && i<nb_pieces)
+        {
+            if (get_color(plateau[i]) == couleur)
+            {
+                bonus_total += get_bonus_placements(plateau[i], i);
+            }
+            --i;
+        }
+    }
+    return bonus_total;
+}
+
 // retourne le score total de l'echequier passé en argument, score calculé par rapport aux noirs
 int get_score(unsigned char *plateau)
 {
     // score noir + somme des valeurs des pieces blanches capturées
-    int score_noir = get_valeur_total(NOIR, plateau);
-
-    return score_noir + (2400 - get_valeur_total(BLANC, plateau));
+    int score_noir = get_valeur_materielle_totale(NOIR, plateau) + get_bonus_placements_total(NOIR, plateau);
+    int score_blanc = get_valeur_materielle_totale(BLANC, plateau) + get_bonus_placements_total(BLANC, plateau);
+    return score_noir + (2400 - get_valeur_materielle_totale(BLANC, plateau));
 }
 
 // retourne le plus grand entre les 2 entiers
@@ -252,8 +298,8 @@ char get_couleur_ennemie(char couleur)
 
 void test()
 {
-    echequier[35] = ROI + PIECE_SPECIAL;
-    affichage_echequier();
+    printf("%d", table_fou[16]);
+    printf("\n%d", table_fou[table_mirroir[16]]);
 }
 
 // couleur = couleur du joueur qui doit jouer, maximizer = es-ce qu'il veut maximizer ou minimizer son score

@@ -26,15 +26,15 @@ int main()
 
         if (fen.tour == BLANC)
         {
-            // position = select_piece(fen.tour, echequier);
-            // move = choisir_move(position, echequier);
-            // effectuer_move(position, move, echequier);
-            printf("\nBLANC");
-            ia_move(4, BLANC, echequier);
+            position = select_piece(fen.tour, echequier);
+            move = choisir_move(position, echequier);
+            effectuer_move(position, move, echequier);
+            //printf("\nBLANC");
+            //ia_move(4, BLANC, echequier);
         }
         else if (fen.tour == NOIR)
         {
-            printf("\nNOIR\n");
+            //printf("\nNOIR\n");
             ia_move(4, NOIR, echequier);
         }
         else
@@ -56,7 +56,7 @@ int main()
         }*/
         affichage_echequier();
     }
-    affichage_echequier();
+
     if (fen.echec == BLANC)
     {
         printf("\nECHEC ROI BLANC!\n");
