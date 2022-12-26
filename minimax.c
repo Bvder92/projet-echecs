@@ -303,7 +303,7 @@ void test()
 }
 
 // couleur = couleur du joueur qui doit jouer, maximizer = es-ce qu'il veut maximizer ou minimizer son score
-int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeur)
+int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta)
 {
     char couleur_ennemie = get_couleur_ennemie(couleur);
     if (profondeur == 0 || echec_et_mat(couleur, plateau) != -1)
@@ -342,8 +342,12 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                 // on effectue le move
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau);
 
-                // on evalue l'echequier de la perspective de l'ennemi (il va vouloir minimizer donc maximizer = 0)
-                eval = minimax(couleur_ennemie, 0, plateau, profondeur - 1);
+                eval = minimax_mieux(couleur_ennemie, 0, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra minimizer)
+                best_eval = get_max(best_eval, eval);
+                alpha = get_max(alpha, eval);
+                if(beta <= alpha){
+                    break;
+                }
                 if (best_eval < eval) // on a trouvé un nouveau meilleur move
                 {
                     meilleur_move = moves->valeur;
@@ -387,8 +391,13 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
             {
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau); // on effectue le move
 
-                eval = minimax(couleur_ennemie, 1, plateau, profondeur - 1); // on appelle minimax du point de vue de l'ennemi (il voudra maximiser)
-                // printf("\neval = %d", eval);
+                eval = minimax_mieux(couleur_ennemie, 1, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra maximizer)
+                best_eval = get_min(best_eval, eval);
+                beta = get_min(beta, eval);
+
+                if(beta <= alpha){
+                    break;
+                }
                 if (eval < best_eval) // on a trouvé un nouveau score minimal
                 {
                     meilleur_move = moves->valeur;
@@ -416,7 +425,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
     }
 }
 
-int minimax_mieux(char couleur, char maximizer, unsigned char *plateau, char profondeur)
+int minimax_mieux(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta)
 {
     if (profondeur == 0 || echec_et_mat(couleur, plateau) != -1)
     {
@@ -454,7 +463,13 @@ int minimax_mieux(char couleur, char maximizer, unsigned char *plateau, char pro
             {
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau); // on effectue le move
 
-                eval = minimax_mieux(couleur_ennemie, 0, plateau, profondeur - 1); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra minimizer)
+                
+                eval = minimax_mieux(couleur_ennemie, 0, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra minimizer)
+                best_eval = get_max(best_eval, eval);
+                alpha = get_max(alpha, eval);
+                if(beta <= alpha){
+                    break;
+                }
 
                 if (eval > best_eval) // on vient de trouver un nouveau meilleur move
                 {
@@ -490,8 +505,15 @@ int minimax_mieux(char couleur, char maximizer, unsigned char *plateau, char pro
             {
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau); // on effectue le move
 
-                eval = minimax_mieux(couleur_ennemie, 1, plateau, profondeur - 1); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra maximizer)
+                
+                eval = minimax_mieux(couleur_ennemie, 1, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra maximizer)
+                best_eval = get_min(best_eval, eval);
+                beta = get_min(beta, eval);
 
+                if(beta <= alpha){
+                    break;
+                }
+                
                 if (eval < best_eval) // on vient de trouver un nouveau meilleur move
                 {
                     return_minimax.move = moves->valeur;
