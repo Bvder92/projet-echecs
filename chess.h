@@ -179,9 +179,9 @@ int get_max(int a, int b);
 
 int get_min(int a, int b);
 
-int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeur);
+int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta);
 
-int minimax_mieux(char couleur, char maximizer, unsigned char *plateau, char profondeur);
+int minimax_mieux(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta);
 
 void test();
 

@@ -1,6 +1,7 @@
 #include "chess.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 liste *creation_maillon(char n)
 {
@@ -1298,13 +1299,16 @@ void effectuer_move(char position_piece, char position_move, unsigned char *plat
 // apppelle minimax pour savoir le meilleur move possible, puis l'effectue
 void ia_move(char profondeur, char couleur, unsigned char *plateau)
 {
+    int alpha = INT_MIN;
+    int beta = INT_MAX;
+
     if (couleur == BLANC)
     {
-        minimax(BLANC, 0, plateau, profondeur);
+        minimax(BLANC, 0, plateau, profondeur, alpha, beta);
     }
     if (couleur == NOIR)
     {
-        minimax(NOIR, 1, plateau, profondeur);
+        minimax(NOIR, 1, plateau, profondeur, alpha, beta);
     }
     printf("\nPiece: (%d,%d), ", get_colonne(return_minimax.piece), get_ligne(return_minimax.piece));
     printf("Move: (%d,%d), ", get_colonne(return_minimax.move), get_ligne(return_minimax.move));
