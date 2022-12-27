@@ -20,17 +20,19 @@ int main()
     initialiser_jeu();
     fen = initialiser_fen(fen);
     affichage_echequier();
-    while (fen.echec_et_mat == -1)
+    while (fen.echec_et_mat != -1)
     {
         printf("SCORE: %d\n", get_score(echequier));
 
         if (fen.tour == BLANC)
-        {
+        {   
+            /*
             position = select_piece(fen.tour, echequier);
             move = choisir_move(position, echequier);
             effectuer_move(position, move, echequier);
-            //printf("\nBLANC");
-            //ia_move(4, BLANC, echequier);
+            */
+            printf("\nBLANC");
+            ia_move(4, BLANC, echequier);
         }
         else if (fen.tour == NOIR)
         {
