@@ -20,7 +20,7 @@ int main()
     initialiser_jeu();
     fen = initialiser_fen(fen);
     affichage_echequier();
-    while (fen.echec_et_mat != -1)
+    while (fen.echec_et_mat == -1)
     {
         printf("SCORE: %d\n", get_score(echequier));
 

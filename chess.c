@@ -1304,11 +1304,11 @@ void ia_move(char profondeur, char couleur, unsigned char *plateau)
 
     if (couleur == BLANC)
     {
-        minimax(BLANC, 0, plateau, profondeur, alpha, beta);
+        minimax_old(BLANC, 0, plateau, profondeur);
     }
     if (couleur == NOIR)
     {
-        minimax(NOIR, 1, plateau, profondeur, alpha, beta);
+        minimax_old(NOIR, 1, plateau, profondeur);
     }
     printf("\nPiece: (%d,%d), ", get_colonne(return_minimax.piece), get_ligne(return_minimax.piece));
     printf("Move: (%d,%d), ", get_colonne(return_minimax.move), get_ligne(return_minimax.move));
