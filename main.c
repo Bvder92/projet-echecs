@@ -24,7 +24,7 @@ int main()
     {
         printf("SCORE: %d\n", get_score(echequier));
 
-        if (fen.tour == BLANC)
+        if (fen.tour == BLANC /* || fen.half_move <= 50*/)
         {   
             /*
             position = select_piece(fen.tour, echequier);
@@ -33,6 +33,7 @@ int main()
             */
             printf("\nBLANC");
             ia_move(4, BLANC, echequier);
+            
         }
         else if (fen.tour == NOIR)
         {

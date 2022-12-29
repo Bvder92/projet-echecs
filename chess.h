@@ -37,8 +37,8 @@ struct FEN
     int tour;         // BLANC OU NOIR (1 ou 2)
     int half_move;    // incrémenté a chaque tour
     char full_move;    // incrémenté a chaque tour des noirs
-    char echec;        // -1 par défaut, prend la couleur du roi en échec
-    char echec_et_mat; // -1 par défaut, prend la couleur du perdant (NOIR ou BLANC)
+    int echec;        // -1 par défaut, prend la couleur du roi en échec
+    int echec_et_mat; // -1 par défaut, prend la couleur du perdant (NOIR ou BLANC)
     int *castlew;
     int *castleb; // tableaux indiquant si on peut castle
 };
