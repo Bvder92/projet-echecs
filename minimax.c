@@ -343,7 +343,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau);
 
                 eval = minimax(couleur_ennemie, 0, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra minimizer)
-                
+                best_eval = get_max(best_eval, eval);
                 alpha = get_max(alpha, eval);
                 if (beta <= alpha)
                 {
@@ -396,6 +396,8 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau); // on effectue le move
 
                 eval = minimax(couleur_ennemie, 1, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra maximizer)
+                
+                best_eval = get_min(best_eval, eval);
                 
                 beta = get_min(beta, eval);
                 if (beta <= alpha)
