@@ -96,9 +96,11 @@ int get_valeur_materielle(char position, unsigned char *plateau)
         break;
     case CAVALIER:
     case CAVALIER + PIECE_NOIRE:
+        valeur = VALEUR_CAVALIER;
+        break;
     case FOU:
     case FOU + PIECE_NOIRE:
-        valeur = VALEUR_CAVALIER;
+        valeur = VALEUR_FOU;
         break;
     case TOUR:
     case TOUR + PIECE_NOIRE:
@@ -218,12 +220,12 @@ int get_bonus_placements(unsigned char piece, char position)
 int get_bonus_placements_total(char couleur, unsigned char *plateau)
 {
     char nb_pieces = compter_pieces(couleur, plateau); // nombre de pieces de "couleur" présentes sur l'echequier
-    int i, bonus_total;
+    int i, j, bonus_total;
 
     if (couleur == NOIR) // les pieces noires commencent la partie entre echequier[0] et 16, i commence donc à 0
     {
         i = 0;
-        while (i < TAILLE_ECHEQUIER && i < nb_pieces)
+        while (i < nb_pieces)
         {
             if (get_color(plateau[i]) == couleur)
             {
@@ -235,13 +237,13 @@ int get_bonus_placements_total(char couleur, unsigned char *plateau)
     else // les pieces blanches commencent entre echequier[63] et 48, i commence donc à 63 et décrémente
     {
         i = 63;
-        while (i > 0 && i < nb_pieces)
+        while ((63-i) < nb_pieces)
         {
             if (get_color(plateau[i]) == couleur)
             {
                 bonus_total += get_bonus_placements(plateau[i], i);
             }
-            --i;
+            i--;
         }
     }
     return bonus_total;
@@ -250,10 +252,10 @@ int get_bonus_placements_total(char couleur, unsigned char *plateau)
 // retourne le score total de l'echequier passé en argument, score calculé par rapport aux noirs
 int get_score(unsigned char *plateau)
 {
-    // score noir + somme des valeurs des pieces blanches capturées
+    // score = valeur materielle + placements
     int score_noir = get_valeur_materielle_totale(NOIR, plateau) + get_bonus_placements_total(NOIR, plateau);
     int score_blanc = get_valeur_materielle_totale(BLANC, plateau) + get_bonus_placements_total(BLANC, plateau);
-    return score_noir + (2400 - get_valeur_materielle_totale(BLANC, plateau));
+    return score_noir - score_blanc;
 }
 
 // retourne le plus grand entre les 2 entiers
@@ -298,8 +300,10 @@ char get_couleur_ennemie(char couleur)
 
 void test()
 {
-    printf("%d", table_fou[16]);
-    printf("\n%d", table_fou[table_mirroir[16]]);
+    printf("\nBLANC\n");
+    printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(BLANC, echequier), get_bonus_placements_total(BLANC, echequier));
+    printf("NOIR\n");
+    printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(NOIR, echequier), get_bonus_placements_total(NOIR, echequier));
 }
 
 // couleur = couleur du joueur qui doit jouer, maximizer = es-ce qu'il veut maximizer ou minimizer son score
@@ -351,8 +355,8 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                     moves = moves->next;
                     break;
                 }
-                
-                if (best_eval < eval) // on a trouvé un nouveau meilleur move
+
+                if (best_eval == eval) // on a trouvé un nouveau meilleur move
                 {
                     meilleur_move = moves->valeur;
                     meilleure_piece = liste_pieces->valeur;
@@ -396,9 +400,9 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau); // on effectue le move
 
                 eval = minimax(couleur_ennemie, 1, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra maximizer)
-                
+
                 best_eval = get_min(best_eval, eval);
-                
+
                 beta = get_min(beta, eval);
                 if (beta <= alpha)
                 {
@@ -406,8 +410,8 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                     moves = moves->next;
                     break;
                 }
-                
-                if (eval < best_eval) // on a trouvé un nouveau score minimal
+
+                if (eval == best_eval) // on a trouvé un nouveau score minimal
                 {
                     meilleur_move = moves->valeur;
                     meilleure_piece = liste_pieces->valeur;
@@ -433,7 +437,6 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
         return best_eval;
     }
 }
-
 
 int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profondeur)
 {

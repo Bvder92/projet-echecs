@@ -39,8 +39,7 @@ struct FEN
     char full_move;    // incrémenté a chaque tour des noirs
     int echec;        // -1 par défaut, prend la couleur du roi en échec
     int echec_et_mat; // -1 par défaut, prend la couleur du perdant (NOIR ou BLANC)
-    int *castlew;
-    int *castleb; // tableaux indiquant si on peut castle
+    char capture;      // 0 par défaut, 1 si le dernier move etait une capture
 };
 typedef struct FEN FEN;
 
