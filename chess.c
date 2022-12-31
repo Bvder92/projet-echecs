@@ -553,7 +553,79 @@ FEN update_fen(FEN fen)
     }
 
     fen.capture = 0;
+
+    fen.endgame = check_endgame(echequier);
     return fen;
+}
+
+// retourne 1 si on est en end game, 0 sinon
+// vérifie que les 2 côtés n'aient pas de reine ou que ceux qui en ont n'aient qu'une piece mineure max
+char check_endgame(unsigned char *plateau)
+{
+    char wq = 0;  // reine blanche
+    char bq = 0;  // reine noire
+    char wpieces; // pieces importantes blanches
+    char bpieces; // pieces importantes noires
+    char nb_piecesw;
+    char nb_piecesb;
+    int i;
+    for (i = 0; i < TAILLE_ECHEQUIER; ++i)
+    {
+        if (plateau[i] == REINE)
+        {
+            wq = 1;
+            break;
+        }
+        if (plateau[i] == REINE + PIECE_NOIRE)
+        {
+            bq = 1;
+            break;
+        }
+    }
+
+    if (wq == 0 && bq == 0) // les 2 côtés n'ont pas de reine
+    {
+        return 1;
+    }
+
+    if (wq == 1) // les blancs ont une reine
+    {
+        nb_piecesw = compter_pieces(BLANC, plateau);
+        for (i = 0; i < nb_piecesw; ++i)
+        {
+            if (plateau[i] == TOUR) //la tour n'est pas une piece mineure, on est pas en endgame
+            {
+                return 0;
+            }
+            if (plateau[i] == CAVALIER || plateau[i] == FOU)
+            {
+                wpieces++;
+                if (wpieces > 1) //on a + d'une piece mineure, pas d'endgame
+                {
+                    return 0;
+                }
+            }
+        }
+    }
+    if (bq == 1) //les noirs ont une reine
+    {
+        for (i = 0; i < TAILLE_ECHEQUIER; ++i)
+        {
+            if (plateau[i] == TOUR + PIECE_NOIRE)
+            {
+                return 0;
+            }
+            if (plateau[i] == CAVALIER + PIECE_NOIRE || plateau[i] == FOU + PIECE_NOIRE)
+            {
+                bpieces++;
+                if (bpieces > 1){
+                    return 0;
+                }
+            }
+        }
+    }
+
+    return 1; //si on a pas encore return c'est que les conditions sont respectées
 }
 
 // parametre 1 = tableau original, parametre 2 = nouveau tableau
@@ -1247,13 +1319,11 @@ char choisir_move(char position, unsigned char *plateau)
     return rep;
 }
 
-
 void promotion_ia(char position, unsigned char nouvelle_piece, unsigned char *plateau)
 {
     printf("\nappel promotion\n");
     plateau[position] = nouvelle_piece;
 }
-
 
 void effectuer_move(char position_piece, char position_move, unsigned char *plateau)
 {

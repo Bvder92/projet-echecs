@@ -40,6 +40,7 @@ struct FEN
     int echec;        // -1 par défaut, prend la couleur du roi en échec
     int echec_et_mat; // -1 par défaut, prend la couleur du perdant (NOIR ou BLANC)
     char capture;      // 0 par défaut, 1 si le dernier move etait une capture
+    char endgame;      // 0 par défaut, 1 quand on est en endgame
 };
 typedef struct FEN FEN;
 
@@ -52,6 +53,8 @@ struct best_move
 typedef struct best_move best_move;
 
 extern best_move return_minimax;
+
+extern FEN fen;
 
 extern unsigned char echequier[TAILLE_ECHEQUIER];
 
@@ -112,6 +115,8 @@ int select_piece(char tour, unsigned char *plateau);
 FEN update_fen(FEN fen);
 
 char verifier_echec(unsigned char *plateau);
+
+char check_endgame(unsigned char * plateau);
 
 // FONCTIONS DE FORMATTAGE DE TABLEAUX:
 

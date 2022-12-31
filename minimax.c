@@ -68,16 +68,18 @@ const int table_roi[TAILLE_ECHEQUIER] = {
     20, 20, 0, 0, 0, 0, 20, 20,
     20, 30, 10, 0, 0, 10, 30, 20};
 
+const int table_roi_endgame[TAILLE_ECHEQUIER] = {
+    -50, -40, -30, -20, -20, -30, -40, -50,
+    -30, -20, -10, 0, 0, -10, -20, -30,
+    -30, -10, 20, 30, 30, 20, -10, -30,
+    -30, -10, 30, 40, 40, 30, -10, -30,
+    -30, -10, 30, 40, 40, 30, -10, -30,
+    -30, -10, 20, 30, 30, 20, -10, -30,
+    -30, -30, 0, 0, 0, 0, -30, -30,
+    -50, -30, -30, -30, -30, -30, -30, -50};
+
 // utilisé pour inverser les tableaux précédents pour les utiliser sur les pieces noires
-const int table_mirroir[TAILLE_ECHEQUIER] = {
-    56, 57, 58, 59, 60, 61, 62, 63,
-    48, 49, 50, 51, 52, 53, 54, 55,
-    40, 41, 42, 43, 44, 45, 46, 47,
-    32, 33, 34, 35, 36, 37, 38, 39,
-    24, 25, 26, 27, 28, 29, 30, 31,
-    16, 17, 18, 19, 20, 21, 22, 23,
-    8, 9, 10, 11, 12, 13, 14, 15,
-    0, 1, 2, 3, 4, 5, 6, 7};
+const int table_mirroir[TAILLE_ECHEQUIER] = {56, 57, 58, 59, 60, 61, 62, 63, 48, 49, 50, 51, 52, 53, 54, 55, 40, 41, 42, 43, 44, 45, 46, 47, 32, 33, 34, 35, 36, 37, 38, 39, 24, 25, 26, 27, 28, 29, 30, 31, 16, 17, 18, 19, 20, 21, 22, 23, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7};
 
 // retourne la valeur de la piece dans position
 int get_valeur_materielle(char position, unsigned char *plateau)
@@ -187,8 +189,16 @@ int get_bonus_placements(unsigned char piece, char position)
         break;
     case ROI:
     case ROI + PIECE_SPECIAL:
-        return table_roi[position];
-        break;
+        if (fen.endgame == 1)
+        {
+            return table_roi_endgame[position];
+            break;
+        }
+        else
+        {
+            return table_roi[position];
+            break;
+        }
 
     // POUR LES PIECES NOIRES ON UTILISE TABLE[TABLE_MIRROIR[POSITION]]
     case PION + PIECE_NOIRE:
@@ -209,8 +219,16 @@ int get_bonus_placements(unsigned char piece, char position)
         break;
     case ROI + PIECE_NOIRE:
     case ROI + PIECE_NOIRE + PIECE_SPECIAL:
-        return table_roi[table_mirroir[position]];
-        break;
+        if (fen.endgame == 1)
+        {
+            return table_roi_endgame[table_mirroir[position]];
+            break;
+        }
+        else
+        {
+            return table_roi[table_mirroir[position]];
+            break;
+        }
     default:
         break;
     };
@@ -237,7 +255,7 @@ int get_bonus_placements_total(char couleur, unsigned char *plateau)
     else // les pieces blanches commencent entre echequier[63] et 48, i commence donc à 63 et décrémente
     {
         i = 63;
-        while ((63-i) < nb_pieces)
+        while ((63 - i) < nb_pieces)
         {
             if (get_color(plateau[i]) == couleur)
             {
