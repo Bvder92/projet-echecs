@@ -34,11 +34,11 @@ int main()
         {
 
             printf("\nBLANC\n");
-            // printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(BLANC, echequier), get_bonus_placements_total(BLANC, echequier));
-            //position = select_piece(fen.tour, echequier);
-            //move = choisir_move(position, echequier);
-            //effectuer_move(position, move, echequier);
-            ia_move(3, BLANC, echequier);
+            //printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(BLANC, echequier), get_bonus_placements_total(BLANC, echequier));
+            position = select_piece(fen.tour, echequier);
+            move = choisir_move(position, echequier);
+            effectuer_move(position, move, echequier);
+            //ia_move(4, BLANC, echequier);
 
             if (compter_pieces(NOIR, echequier) != nb_pieces_noires)
             {
@@ -48,11 +48,11 @@ int main()
         else if (fen.tour == NOIR)
         {
             printf("\nNOIR\n");
-            ia_move(3, NOIR, echequier);
-            // printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(NOIR, echequier), get_bonus_placements_total(NOIR, echequier));
-            //position = select_piece(fen.tour, echequier);
-            //move = choisir_move(position, echequier);
-            //effectuer_move(position, move, echequier);
+            //ia_move(4, NOIR, echequier);
+            //printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(NOIR, echequier), get_bonus_placements_total(NOIR, echequier));
+            position = select_piece(fen.tour, echequier);
+            move = choisir_move(position, echequier);
+            effectuer_move(position, move, echequier);
 
             if (compter_pieces(BLANC, echequier) != nb_pieces_blanches)
             {
@@ -70,7 +70,7 @@ int main()
         affichage_echequier();
         affichage_echequier_fichier();
         printf("\nHalf-moves: %d", fen.half_move);
-        printf("\nEndgame: %d", fen.endgame);
+        printf("\nEndgame: %d\n", fen.endgame);
         nbtours++;
     }
 
@@ -88,7 +88,6 @@ int main()
     }
     afficher_liste_pieces(BLANC, echequier);
     afficher_liste_pieces(NOIR, echequier);
-    printf("\nPromotions: %d", fen.promos);
     printf("\n\n\n\n");
     return 0;
 }

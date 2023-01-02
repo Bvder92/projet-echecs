@@ -29,7 +29,7 @@ const int table_cavalier[TAILLE_ECHEQUIER] = {
     -50, -40, -30, -30, -30, -30, -40, -50};
 
 const int table_fou[TAILLE_ECHEQUIER] = {
-    -20, -10, -10, -10, -10, -10, -10, -20,
+    -20,-10,-10, -10, -10, -10, -10, -20,
     -10, 0, 0, 0, 0, 0, 0, -10,
     -10, 0, 5, 10, 10, 5, 0, -10,
     -10, 5, 5, 10, 10, 5, 5, -10,
@@ -125,46 +125,6 @@ int get_valeur_materielle(char position, unsigned char *plateau)
     return valeur;
 }
 
-// retourne la somme de la valeur des pieces d'une couleur passée en parametre
-int get_valeur_materielle_totale(char couleur, unsigned char *plateau)
-{
-    char i, nb_pieces = 0;
-    int valeur = 0;
-
-    if (couleur == NOIR)
-    {
-        i = 0;                                         // i commence à 0 car les noirs commencent en haut
-        while (i < TAILLE_ECHEQUIER && nb_pieces < 16) // il n'y a jamais plus de 16 pieces d'une couleur
-        {
-            if (get_color(plateau[i]) == couleur)
-            {
-                valeur = valeur + get_valeur_materielle(i, plateau);
-                nb_pieces++;
-            }
-            i++;
-        }
-    }
-    else if (couleur == BLANC)
-    {
-        i = TAILLE_ECHEQUIER - 1;
-        while (i >= 0 && nb_pieces < 16)
-        {
-            if (get_color(plateau[i]) == couleur)
-            {
-                valeur = valeur + get_valeur_materielle(i, plateau);
-                nb_pieces++;
-            }
-            i--;
-        }
-    }
-    else
-    {
-        fprintf(stderr, "\nERREUR FONCTION GET_VALEUR_TOTAL: COULEUR INVALIDE\n");
-        return -1;
-    }
-    return valeur;
-}
-
 int get_bonus_placements(unsigned char piece, char position)
 {
     switch (piece)
@@ -238,16 +198,18 @@ int get_bonus_placements(unsigned char piece, char position)
 int get_bonus_placements_total(char couleur, unsigned char *plateau)
 {
     char nb_pieces = compter_pieces(couleur, plateau); // nombre de pieces de "couleur" présentes sur l'echequier
-    int i, j, bonus_total;
+    char i, j = 0;
+    int materiel_total, bonus_total;
 
     if (couleur == NOIR) // les pieces noires commencent la partie entre echequier[0] et 16, i commence donc à 0
     {
         i = 0;
-        while (i < nb_pieces)
+        while (j < nb_pieces)
         {
             if (get_color(plateau[i]) == couleur)
             {
                 bonus_total += get_bonus_placements(plateau[i], i);
+                ++j;
             }
             ++i;
         }
@@ -255,25 +217,105 @@ int get_bonus_placements_total(char couleur, unsigned char *plateau)
     else // les pieces blanches commencent entre echequier[63] et 48, i commence donc à 63 et décrémente
     {
         i = 63;
-        while ((63 - i) < nb_pieces)
+        while (j < nb_pieces)
         {
             if (get_color(plateau[i]) == couleur)
             {
                 bonus_total += get_bonus_placements(plateau[i], i);
+                ++j;
             }
             i--;
         }
     }
     return bonus_total;
 }
+// retourne la somme de la valeur des pieces d'une couleur passée en parametre
+int get_valeur_materielle_totale(char couleur, unsigned char *plateau)
+{
+    char i, j = 0;
+    char nb_pieces = compter_pieces(couleur, plateau);
+    int materiel_total = 0;
+
+    if (couleur == NOIR)
+    {
+        i = 0;                                         // i commence à 0 car les noirs commencent en haut
+        while (j < nb_pieces) // il n'y a jamais plus de 16 pieces d'une couleur
+        {
+            if (get_color(plateau[i]) == couleur)
+            {
+                materiel_total += get_valeur_materielle(i, plateau);
+                ++j;
+            }
+            ++i;
+        }
+    }
+    else
+    {
+        i = TAILLE_ECHEQUIER - 1;
+        while (j < nb_pieces)
+        {
+            if (get_color(plateau[i]) == couleur)
+            {
+                materiel_total += get_valeur_materielle(i, plateau);
+                ++j;
+            }
+            i--;
+        }
+    }
+    return materiel_total;
+}
+
+// retourne la somme des valeurs des bonus de placement pour chaque piece d'une couleur donnée
+int get_score_couleur(char couleur, unsigned char * plateau)
+{
+    char nb_pieces = compter_pieces(couleur, plateau);
+    int i, j = 0;
+    int bonus_total = 0, materiel_total = 0;
+
+    if (couleur == NOIR)
+    {
+        i = 0;
+        while (j < nb_pieces)
+        {
+            if (get_color(plateau[i]) == couleur)
+            {
+                materiel_total += get_valeur_materielle(i, plateau);
+                bonus_total += get_bonus_placements(plateau[i], i);
+                ++j;
+            }
+            ++i;
+        }
+    }
+    else
+    {
+        i = 63;
+        while (j < nb_pieces)
+        {
+            if (get_color(plateau[i]) == couleur)
+            {
+                materiel_total += get_valeur_materielle(i, plateau);
+                bonus_total += get_bonus_placements(plateau[i], i);
+                ++j;
+            }
+            i--;
+        }
+    }
+    return bonus_total + materiel_total;
+}
 
 // retourne le score total de l'echequier passé en argument, score calculé par rapport aux noirs
 int get_score(unsigned char *plateau)
 {
     // score = valeur materielle + placements
-    int score_noir = get_valeur_materielle_totale(NOIR, plateau) + get_bonus_placements_total(NOIR, plateau);
-    int score_blanc = get_valeur_materielle_totale(BLANC, plateau) + get_bonus_placements_total(BLANC, plateau);
-    return score_noir - score_blanc;
+    //int score_noir = get_valeur_materielle_totale(NOIR, plateau) + get_bonus_placements_total(NOIR, plateau);
+    //int score_blanc = get_valeur_materielle_totale(BLANC, plateau) + get_bonus_placements_total(BLANC, plateau);
+    //return score_noir - score_blanc;
+    return get_score_couleur(NOIR, plateau) - get_score_couleur(BLANC, plateau);
+}
+
+int get_newscore(unsigned char * plateau)
+{
+    return (get_score_couleur(NOIR, plateau) - get_score_couleur(BLANC, plateau));
 }
 
 // retourne le plus grand entre les 2 entiers
@@ -568,3 +610,6 @@ int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profo
         return best_eval;
     }
 }
+
+
+

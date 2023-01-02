@@ -41,7 +41,6 @@ struct FEN
     int echec_et_mat; // -1 par défaut, prend la couleur du perdant (NOIR ou BLANC)
     char capture;      // 0 par défaut, 1 si le dernier move etait une capture
     char endgame;      // 0 par défaut, 1 quand on est en endgame
-    int promos;
 };
 typedef struct FEN FEN;
 
@@ -177,7 +176,11 @@ int get_bonus_placements(unsigned char piece, char position);
 
 int get_bonus_placements_total(char couleur, unsigned char * plateau);
 
+int get_score_couleur(char couleur, unsigned char * plateau);
+
 int get_score(unsigned char *plateau);
+
+int get_newscore(unsigned char * plateau);
 
 // MINIMAX:
 char get_minimizer(char maximizer);
