@@ -15,7 +15,7 @@ int main()
     char nb_pieces_noires;
     int i = 0, position;
     char ligne, colonne;
-    char tmp = 0;
+    int nbtours = 0;
     liste *liste_pieces = (liste *)malloc(sizeof(liste));
     liste_pieces = NULL;
 
@@ -35,10 +35,10 @@ int main()
 
             printf("\nBLANC\n");
             // printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(BLANC, echequier), get_bonus_placements_total(BLANC, echequier));
-            position = select_piece(fen.tour, echequier);
-            move = choisir_move(position, echequier);
-            effectuer_move(position, move, echequier);
-            //ia_move(4, BLANC, echequier);
+            //position = select_piece(fen.tour, echequier);
+            //move = choisir_move(position, echequier);
+            //effectuer_move(position, move, echequier);
+            ia_move(3, BLANC, echequier);
 
             if (compter_pieces(NOIR, echequier) != nb_pieces_noires)
             {
@@ -48,7 +48,7 @@ int main()
         else if (fen.tour == NOIR)
         {
             printf("\nNOIR\n");
-            ia_move(4, NOIR, echequier);
+            ia_move(3, NOIR, echequier);
             // printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(NOIR, echequier), get_bonus_placements_total(NOIR, echequier));
             //position = select_piece(fen.tour, echequier);
             //move = choisir_move(position, echequier);
@@ -67,30 +67,28 @@ int main()
         }
 
         fen = update_fen(fen);
-        printf("\nfen.half_move: %d\n", fen.half_move);
-        /*file = affichage_echequier_fichier();
-        if (file == 0)
-        {
-            break;
-        }
-        if (file == -1)
-        {
-            fprintf(stderr, "\nerreur de batard\n");
-        }*/
         affichage_echequier();
+        affichage_echequier_fichier();
+        printf("\nHalf-moves: %d", fen.half_move);
+        printf("\nEndgame: %d", fen.endgame);
+        nbtours++;
     }
 
-    if (fen.echec == BLANC)
+    if (fen.echec_et_mat == BLANC)
     {
-        printf("\nECHEC ROI BLANC!\n");
+        printf("\nECHEC ET MAT, VICTOIRE DES NOIRS! en %d tours\n", nbtours);
     }
-    else if (fen.echec == NOIR)
+    else if (fen.echec_et_mat == NOIR)
     {
-        printf("\nECHEC ROI NOIR!\n");
+        printf("\nECHEC ET MAT, VICTOIRE DES BLANCS! en %d tours\n", nbtours);
     }
     else if (fen.half_move == 50)
     {
-        printf("\nEgalite: 50 moves a la suite sans captures\n");
+        printf("\nEgalite: 50 moves a la suite sans captures\nNombre de tours: %d", nbtours);
     }
+    afficher_liste_pieces(BLANC, echequier);
+    afficher_liste_pieces(NOIR, echequier);
+    printf("\nPromotions: %d", fen.promos);
+    printf("\n\n\n\n");
     return 0;
 }

@@ -219,6 +219,45 @@ char vide(char a, char b, unsigned char *plateau)
     return 1;
 }
 
+void afficher_liste_pieces(char couleur, unsigned char *plateau)
+{
+    int i;
+    int piece = ROI;
+    if (couleur == BLANC)
+    {
+        printf("\nPieces Blanches: ");
+        while (piece >= PION)
+        {
+            for (i = 0; i < TAILLE_ECHEQUIER; i++)
+            {
+                if (plateau[i] == piece || plateau[i] == piece+PIECE_SPECIAL)
+                {
+                    print_name(plateau[i]);
+                    printf(", ");
+                }
+            }
+            piece--;
+        }
+    }
+    else
+    {
+        piece = ROI+PIECE_NOIRE;
+        printf("\nPieces Noires: ");
+        while (piece >= PION+PIECE_NOIRE)
+        {
+            for (i = 0; i < TAILLE_ECHEQUIER; i++)
+            {
+                if (plateau[i] == piece || plateau[i] == piece+PIECE_SPECIAL)
+                {
+                    print_name(plateau[i]);
+                    printf(", ");
+                }
+            }
+            piece--;
+        }
+    }
+}
+
 // FONCTIONS DE BASE DU JEU:
 
 void affichage_echequier()
@@ -465,7 +504,7 @@ void print_color(unsigned char piece)
     }
     else if (piece == VIDE)
     {
-        printf(" VIDE ");
+        printf("");
     }
     else
     {
@@ -526,13 +565,13 @@ FEN update_fen(FEN fen)
 
     if (fen.tour == BLANC)
     {
-        printf("fen.tour devient NOIR\n");
+        // printf("fen.tour devient NOIR\n");
         fen.tour = NOIR;
         fen.full_move++;
     }
     else if (fen.tour == NOIR)
     {
-        printf("fen.tour devient BLANC\n");
+        // printf("fen.tour devient BLANC\n");
         fen.tour = BLANC;
     }
 
@@ -551,6 +590,11 @@ FEN update_fen(FEN fen)
     {
         fen.echec_et_mat = echec_et_mat(NOIR, echequier);
     }
+    /*fen.echec = verifier_echec_couleur(fen.tour, echequier);
+    if (fen.echec == fen.tour)
+    {
+        fen.echec_et_mat = echec_et_mat(fen.tour, echequier);
+    }*/
 
     fen.capture = 0;
 
@@ -574,12 +618,10 @@ char check_endgame(unsigned char *plateau)
         if (plateau[i] == REINE)
         {
             wq = 1;
-            break;
         }
         if (plateau[i] == REINE + PIECE_NOIRE)
         {
             bq = 1;
-            break;
         }
     }
 
@@ -593,23 +635,24 @@ char check_endgame(unsigned char *plateau)
         nb_piecesw = compter_pieces(BLANC, plateau);
         for (i = 0; i < nb_piecesw; ++i)
         {
-            if (plateau[i] == TOUR) //la tour n'est pas une piece mineure, on est pas en endgame
+            if (plateau[i] == TOUR) // la tour n'est pas une piece mineure, on est pas en endgame
             {
                 return 0;
             }
             if (plateau[i] == CAVALIER || plateau[i] == FOU)
             {
                 wpieces++;
-                if (wpieces > 1) //on a + d'une piece mineure, pas d'endgame
+                if (wpieces > 1) // on a + d'une piece mineure, pas d'endgame
                 {
                     return 0;
                 }
             }
         }
     }
-    if (bq == 1) //les noirs ont une reine
+    if (bq == 1) // les noirs ont une reine
     {
-        for (i = 0; i < TAILLE_ECHEQUIER; ++i)
+        nb_piecesb = compter_pieces(NOIR, plateau);
+        for (i = 0; i < nb_piecesb; ++i)
         {
             if (plateau[i] == TOUR + PIECE_NOIRE)
             {
@@ -618,14 +661,15 @@ char check_endgame(unsigned char *plateau)
             if (plateau[i] == CAVALIER + PIECE_NOIRE || plateau[i] == FOU + PIECE_NOIRE)
             {
                 bpieces++;
-                if (bpieces > 1){
+                if (bpieces > 1)
+                {
                     return 0;
                 }
             }
         }
     }
 
-    return 1; //si on a pas encore return c'est que les conditions sont respectées
+    return 1; // si on a pas encore return c'est que les conditions sont respectées
 }
 
 // parametre 1 = tableau original, parametre 2 = nouveau tableau
@@ -1114,6 +1158,42 @@ char verifier_echec(unsigned char *plateau)
     return echec;
 }
 
+// verifie si la couleur passée en argument est en echec en inspectant les moves de toutes les pieces ennemies
+char verifier_echec_couleur(char couleur, unsigned char *plateau)
+{
+    liste *liste_pieces = (liste *)malloc(sizeof(liste));
+    liste *moves = (liste *)malloc(sizeof(liste));
+    moves = liste_pieces = NULL;
+    liste *tmp_moves = moves, *tmp_pieces = liste_pieces;
+
+    char couleur_ennemie = get_couleur_ennemie(couleur);
+
+    liste_pieces = liste_moves(couleur_ennemie, liste_pieces, plateau); // on recupere la liste des pieces ennemies pouvant bouger
+    affichage_liste(liste_pieces);
+    char echec = -1;
+    while (tmp_pieces != NULL)
+    {
+        printf("\nEvaluation de la piece %d", tmp_pieces->valeur);
+        moves = get_legal_any(tmp_pieces->valeur, moves, plateau);
+        tmp_moves = moves;
+        while (tmp_moves != NULL)
+        {
+            if (plateau[tmp_moves->valeur] == ROI || plateau[tmp_moves->valeur] == ROI + PIECE_SPECIAL)
+            {
+                echec = BLANC;
+            }
+            if (plateau[tmp_moves->valeur] == ROI + PIECE_NOIRE || plateau[tmp_moves->valeur] == ROI + PIECE_NOIRE + PIECE_SPECIAL)
+            {
+                echec = NOIR;
+            }
+            tmp_moves = tmp_moves->next;
+        }
+        liberation(moves);
+    }
+    liberation(liste_pieces);
+    return echec;
+}
+
 // liste des pieces de couleur qui peuvent bouger
 liste *liste_moves(char couleur, liste *liste_pieces, unsigned char *plateau)
 {
@@ -1363,14 +1443,16 @@ void effectuer_move(char position_piece, char position_move, unsigned char *plat
     else if (plateau[position_piece] == PION && get_ligne(position_move) == 0) // pion blanc ligne 0
     {
         unsigned char nouvelle_piece = REINE;
-        printf("promotion nappe 1\n");
-        plateau[position_piece] = nouvelle_piece;
+        plateau[position_move] = nouvelle_piece;
+        fen.promos++;
+        plateau[position_piece] = VIDE;
     }
     else if (plateau[position_piece] == PION + PIECE_NOIRE && get_ligne(position_move) == 7) // pion noir ligne 7
     {
         unsigned char nouvelle_piece = REINE + PIECE_NOIRE;
-        printf("promotion nappe 1\n");
-        plateau[position_piece] = nouvelle_piece;
+        fen.promos++;
+        plateau[position_move] = nouvelle_piece;
+        plateau[position_piece] = VIDE;
     }
 
     else
@@ -1400,8 +1482,14 @@ void ia_move(char profondeur, char couleur, unsigned char *plateau)
     {
         minimax(NOIR, 1, plateau, profondeur, alpha, beta);
     }
-    printf("\nPiece: (%d,%d), ", get_colonne(return_minimax.piece), get_ligne(return_minimax.piece));
-    printf("Move: (%d,%d), ", get_colonne(return_minimax.move), get_ligne(return_minimax.move));
+    printf("\nPiece: ");
+    print_name(plateau[return_minimax.piece]);
+    print_color(plateau[return_minimax.piece]);
+    printf("(%d,%d), ", get_colonne(return_minimax.piece), get_ligne(return_minimax.piece));
+    printf("Move: ");
+    print_name(plateau[return_minimax.move]);
+    print_color(plateau[return_minimax.move]);
+    printf("(%d,%d), ", get_colonne(return_minimax.move), get_ligne(return_minimax.move));
     printf("Score: %d\n", return_minimax.score);
     effectuer_move(return_minimax.piece, return_minimax.move, plateau);
 }

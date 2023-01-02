@@ -41,6 +41,7 @@ struct FEN
     int echec_et_mat; // -1 par défaut, prend la couleur du perdant (NOIR ou BLANC)
     char capture;      // 0 par défaut, 1 si le dernier move etait une capture
     char endgame;      // 0 par défaut, 1 quand on est en endgame
+    int promos;
 };
 typedef struct FEN FEN;
 
@@ -93,6 +94,8 @@ char get_color(unsigned char piece);
 
 char vide(char a, char b, unsigned char *plateau);
 
+void afficher_liste_pieces(char couleur, unsigned char * plateau);
+
 // FONCTIONS DE BASE DU JEU:
 void affichage_echequier();
 
@@ -115,6 +118,8 @@ int select_piece(char tour, unsigned char *plateau);
 FEN update_fen(FEN fen);
 
 char verifier_echec(unsigned char *plateau);
+
+char verifier_echec_couleur(char couleur, unsigned char *plateau);
 
 char check_endgame(unsigned char * plateau);
 
