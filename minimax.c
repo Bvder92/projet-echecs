@@ -375,6 +375,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
         // printf("profondeur = 0");
         return get_score(plateau);
     }
+
     char meilleur_move;
     unsigned char meilleure_piece;
 
@@ -403,6 +404,18 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
 
             while (moves != NULL) // POUR CHAQUE MOVE DE LA PIECE:
             {
+
+                /*entry.posKey = GeneratePosKey(plateau, couleur);
+                entry.move = moves->valeur;
+
+                int k = 0;
+                while(k < Pvtable->numEntries)
+                {
+                    if (SearchPvTable(plateau, moves->valeur) != 0)
+                    {
+                        return Pvtable
+                    }
+                }*/
                 // on effectue le move
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau);
 

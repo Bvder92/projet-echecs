@@ -377,6 +377,30 @@ FEN initialiser_fen(FEN fen)
     return fen;
 }
 
+/*Plateau * init_plateau()
+{
+    Plateau * nouveau = (Plateau *)malloc(sizeof(Plateau));
+
+    nouveau->plateau = (unsigned char*)malloc(sizeof(unsigned char)* TAILLE_ECHEQUIER);
+    nouveau->plateau = copie_echequier(echequier, nouveau->plateau);
+    nouveau->hash = GeneratePosKey(nouveau->plateau, BLANC);
+
+    nouveau->Pvtable->numEntries = 1;
+
+    return nouveau;
+}
+
+Plateau * update_plateau(Plateau *P)
+{
+    for(int i = 0; i<TAILLE_ECHEQUIER; ++i)
+    {
+        P->plateau[i] = echequier[i];
+    }
+    P->hash = GeneratePosKey(P->plateau, fen.tour);
+
+    return P;
+}*/
+
 // affiche l'initiale d'une piece, utilisée pour affichage_echequier
 char print_piece(unsigned char position)
 {
@@ -580,10 +604,6 @@ FEN update_fen(FEN fen)
     else if (echec == BLANC)
     {
         fen.echec = BLANC;
-    }
-    else
-    {
-        printf("\nECHEC = %d\n", fen.echec);
     }
 
     if (fen.echec != -1)
@@ -1120,7 +1140,6 @@ liste *get_legal_all(char position, liste *moves, unsigned char *plateau)
 // parcours les moves de toutes les pieces et retourne la couleur du joueur en échec, -1 si aucun
 char verifier_echec(unsigned char *plateau)
 {
-    printf("\nPARAMETRES: , %p\n",  plateau);
     liste *moves = (liste *)malloc(sizeof(liste));
     moves = NULL;
     liste *tmp; // parcours
@@ -1158,10 +1177,9 @@ char verifier_echec(unsigned char *plateau)
 // verifie si la couleur passée en argument est en echec en inspectant les moves de toutes les pieces ennemies
 char verifier_echec_couleur(char couleur, unsigned char *plateau)
 {
-    printf("\nPARAMETRES: %d, %p\n", couleur, plateau);
     char couleur_ennemie = get_couleur_ennemie(couleur), echec = -1;
     unsigned char const_couleur;
-    
+
     if (couleur == NOIR)
     {
         const_couleur = PIECE_NOIRE;
@@ -1494,4 +1512,14 @@ void ia_move(char profondeur, char couleur, unsigned char *plateau)
     printf("(%d,%d), ", get_colonne(return_minimax.move), get_ligne(return_minimax.move));
     printf("Score: %d\n", return_minimax.score);
     effectuer_move(return_minimax.piece, return_minimax.move, plateau);
+}
+
+void player_move(char couleur, unsigned char *plateau)
+{
+    char move;
+    int position;
+
+    position = select_piece(couleur, plateau);
+    move = choisir_move(position, plateau);
+    effectuer_move(position, move, plateau);
 }

@@ -4,9 +4,11 @@
 #include <limits.h>
 
 unsigned char echequier[TAILLE_ECHEQUIER];
+U64 PieceKeys[14][64];
+U64 SideKey;
 FEN fen;
 best_move return_minimax;
-int file = -1;
+Hash_table *hashtable;
 
 int main()
 {
@@ -21,24 +23,25 @@ int main()
 
     initialiser_jeu();
     fen = initialiser_fen(fen);
+    InitHashKeys();
+    init_hashtable(hashtable);
     affichage_echequier();
-    // test();
     while (fen.echec_et_mat == -1 && fen.half_move < 50)
     {
         nb_pieces_blanches = compter_pieces(BLANC, echequier);
         nb_pieces_noires = compter_pieces(NOIR, echequier);
-        printf("SCORE: %d\n", get_score(echequier));
-        //test();
+        printf("\nSCORE: %d", get_score(echequier));
+        printf("\nHASH: %llu", GeneratePosKey(echequier, fen.tour));
+        printf("\nHalf-moves: %d", fen.half_move);
+        printf("\nEndgame: %d\n", fen.endgame);
 
         if (fen.tour == BLANC)
         {
-
-            printf("\nBLANC\n");
-            //printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(BLANC, echequier), get_bonus_placements_total(BLANC, echequier));
-            position = select_piece(fen.tour, echequier);
+            // printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(BLANC, echequier), get_bonus_placements_total(BLANC, echequier));
+            // ia_move(4, BLANC, echequier);
+            position = select_piece(BLANC, echequier);
             move = choisir_move(position, echequier);
             effectuer_move(position, move, echequier);
-            //ia_move(4, BLANC, echequier);
 
             if (compter_pieces(NOIR, echequier) != nb_pieces_noires)
             {
@@ -47,10 +50,9 @@ int main()
         }
         else if (fen.tour == NOIR)
         {
-            printf("\nNOIR\n");
-            //ia_move(4, NOIR, echequier);
-            //printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(NOIR, echequier), get_bonus_placements_total(NOIR, echequier));
-            position = select_piece(fen.tour, echequier);
+            // ia_move(4, NOIR, echequier);
+            // printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(NOIR, echequier), get_bonus_placements_total(NOIR, echequier));
+            position = select_piece(NOIR, echequier);
             move = choisir_move(position, echequier);
             effectuer_move(position, move, echequier);
 
@@ -68,9 +70,8 @@ int main()
 
         fen = update_fen(fen);
         affichage_echequier();
-        affichage_echequier_fichier();
-        printf("\nHalf-moves: %d", fen.half_move);
-        printf("\nEndgame: %d\n", fen.endgame);
+
+        // affichage_echequier_fichier();
         nbtours++;
     }
 

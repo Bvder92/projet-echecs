@@ -8,6 +8,7 @@
 #define VIDE 0
 #define BLANC 1
 #define NOIR 2
+#define U64 unsigned long long
 
 #define PION 1
 #define CAVALIER 2
@@ -25,14 +26,20 @@
 #define VALEUR_REINE 90
 #define VALEUR_ROI 2000
 
-struct liste
+#define MAX_TABLE_SIZE 11
+#define RAND_64 	((U64)rand() | \
+					(U64)rand() << 15 | \
+					(U64)rand() << 30 | \
+					(U64)rand() << 45 | \
+					((U64)rand() & 0xf) << 60 )
+
+typedef struct liste
 {
     unsigned char valeur;
     struct liste *next;
-};
-typedef struct liste liste;
+} liste;
 
-struct FEN
+typedef struct FEN
 {
     int tour;         // BLANC OU NOIR (1 ou 2)
     int half_move;    // incrémenté a chaque tour
@@ -41,22 +48,40 @@ struct FEN
     int echec_et_mat; // -1 par défaut, prend la couleur du perdant (NOIR ou BLANC)
     char capture;      // 0 par défaut, 1 si le dernier move etait une capture
     char endgame;      // 0 par défaut, 1 quand on est en endgame
-};
-typedef struct FEN FEN;
-
-struct best_move
+} FEN;
+typedef struct best_move
 {
     unsigned char piece;
     char move;
     int score;
-};
-typedef struct best_move best_move;
+} best_move;
+
+typedef struct Entry
+{
+    U64 posKey; //position
+    int score;  //score associé
+    //Entry *next;
+} Entry;
+
+typedef struct Hash_table
+{
+    Entry **entries; //tableau d'entries (poskey + move)
+    int nb_entries;
+} Hash_table;
+
+typedef struct Plateau //plateau + key
+{
+    unsigned char *plateau;
+    U64 hash;
+} Plateau;
+
 
 extern best_move return_minimax;
-
 extern FEN fen;
-
+extern Hash_table * hashtable;
 extern unsigned char echequier[TAILLE_ECHEQUIER];
+extern U64 PieceKeys[14][64];
+extern U64 SideKey;
 
 // FONCTIONS LISTE:
 liste *creation_maillon(char n);
@@ -105,6 +130,10 @@ void affichage_echequier_alt();
 void initialiser_jeu();
 
 FEN initialiser_fen(FEN fen);
+
+Plateau * init_plateau();
+
+Plateau *update_plateau(Plateau *P);
 
 char print_piece(unsigned char position);
 
@@ -158,6 +187,8 @@ void effectuer_move(char position_piece, char position_move, unsigned char *plat
 
 void ia_move(char profondeur, char couleur, unsigned char * plateau);
 
+void player_move(char couleur, unsigned char * plateau);
+
 void promotion_ia(char position, unsigned char nouvelle_piece, unsigned char *plateau);
 
 void promotion_user(char position, char piece, unsigned char *plateau);
@@ -196,5 +227,20 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
 int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profondeur);
 
 void test();
+
+/* ************************
+// FICHIER TRANSPO:
+***************************/
+
+void InitHashKeys();
+
+U64 GeneratePosKey(unsigned char * plateau, char tour);
+
+void init_hashtable(Hash_table * hashtable);
+
+void add_entry(Hash_table * hashtable, U64 posKey, int score);
+
+int search_table(Hash_table *hashtable, U64 posKey);
+
 
 #endif
