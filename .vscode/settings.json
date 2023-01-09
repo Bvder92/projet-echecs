@@ -2,6 +2,7 @@
     "files.associations": {
         "stdlib.h": "c",
         "string.h": "c",
-        "chess.h": "c"
+        "chess.h": "c",
+        "stdio.h": "c"
     }
 }

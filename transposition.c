@@ -95,7 +95,6 @@ void clear_hashtable(Hash_table * table)
 
 void init_hashtable(Hash_table * hashtable)
 {
-    printf("\nAvant segfaulteee, %d\n", MAX_TABLE_SIZE);
     hashtable = (Hash_table*)malloc(sizeof(hashtable));
 
     //hashtable->nb_entries = 0;

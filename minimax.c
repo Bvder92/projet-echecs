@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <sys/time.h>
+#include <string.h>
 
 /* *******************************************************
 TABLES DES CASES OPTIMALES POUR CHAQUE PIECE (BLANCHES):
@@ -29,7 +30,7 @@ const int table_cavalier[TAILLE_ECHEQUIER] = {
     -50, -40, -30, -30, -30, -30, -40, -50};
 
 const int table_fou[TAILLE_ECHEQUIER] = {
-    -20,-10,-10, -10, -10, -10, -10, -20,
+    -20, -10, -10, -10, -10, -10, -10, -20,
     -10, 0, 0, 0, 0, 0, 0, -10,
     -10, 0, 5, 10, 10, 5, 0, -10,
     -10, 5, 5, 10, 10, 5, 5, -10,
@@ -149,7 +150,7 @@ int get_bonus_placements(unsigned char piece, char position)
         break;
     case ROI:
     case ROI + PIECE_SPECIAL:
-        if (fen.endgame == 1)
+        if (fen->endgame == 1)
         {
             return table_roi_endgame[position];
             break;
@@ -179,7 +180,7 @@ int get_bonus_placements(unsigned char piece, char position)
         break;
     case ROI + PIECE_NOIRE:
     case ROI + PIECE_NOIRE + PIECE_SPECIAL:
-        if (fen.endgame == 1)
+        if (fen->endgame == 1)
         {
             return table_roi_endgame[table_mirroir[position]];
             break;
@@ -238,7 +239,7 @@ int get_valeur_materielle_totale(char couleur, unsigned char *plateau)
 
     if (couleur == NOIR)
     {
-        i = 0;                                         // i commence à 0 car les noirs commencent en haut
+        i = 0;                // i commence à 0 car les noirs commencent en haut
         while (j < nb_pieces) // il n'y a jamais plus de 16 pieces d'une couleur
         {
             if (get_color(plateau[i]) == couleur)
@@ -266,7 +267,7 @@ int get_valeur_materielle_totale(char couleur, unsigned char *plateau)
 }
 
 // retourne la somme des valeurs des bonus de placement pour chaque piece d'une couleur donnée
-int get_score_couleur(char couleur, unsigned char * plateau)
+int get_score_couleur(char couleur, unsigned char *plateau)
 {
     char nb_pieces = compter_pieces(couleur, plateau);
     int i, j = 0;
@@ -307,13 +308,13 @@ int get_score_couleur(char couleur, unsigned char * plateau)
 int get_score(unsigned char *plateau)
 {
     // score = valeur materielle + placements
-    //int score_noir = get_valeur_materielle_totale(NOIR, plateau) + get_bonus_placements_total(NOIR, plateau);
-    //int score_blanc = get_valeur_materielle_totale(BLANC, plateau) + get_bonus_placements_total(BLANC, plateau);
-    //return score_noir - score_blanc;
+    // int score_noir = get_valeur_materielle_totale(NOIR, plateau) + get_bonus_placements_total(NOIR, plateau);
+    // int score_blanc = get_valeur_materielle_totale(BLANC, plateau) + get_bonus_placements_total(BLANC, plateau);
+    // return score_noir - score_blanc;
     return get_score_couleur(NOIR, plateau) - get_score_couleur(BLANC, plateau);
 }
 
-int get_newscore(unsigned char * plateau)
+int get_newscore(unsigned char *plateau)
 {
     return (get_score_couleur(NOIR, plateau) - get_score_couleur(BLANC, plateau));
 }
@@ -386,7 +387,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
 
     char i = 0;
     unsigned char *plateau_backup = (unsigned char *)malloc(sizeof(unsigned char) * TAILLE_ECHEQUIER);
-    plateau_backup = copie_echequier(plateau, plateau_backup); // utilisé pour reset l'echequier après qu'on ait testé un move
+    memcpy(plateau_backup, plateau, TAILLE_ECHEQUIER * sizeof(unsigned char)); // utilisé pour reset l'echequier après qu'on ait testé un move
 
     if (maximizer == 1) // on cherche a maximizer le score
     {
@@ -404,18 +405,6 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
 
             while (moves != NULL) // POUR CHAQUE MOVE DE LA PIECE:
             {
-
-                /*entry.posKey = GeneratePosKey(plateau, couleur);
-                entry.move = moves->valeur;
-
-                int k = 0;
-                while(k < Pvtable->numEntries)
-                {
-                    if (SearchPvTable(plateau, moves->valeur) != 0)
-                    {
-                        return Pvtable
-                    }
-                }*/
                 // on effectue le move
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau);
 
@@ -424,7 +413,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                 alpha = get_max(alpha, eval);
                 if (beta <= alpha)
                 {
-                    plateau = copie_echequier(plateau_backup, plateau);
+                    memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(unsigned char));
                     moves = moves->next;
                     break;
                 }
@@ -437,7 +426,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                 }
 
                 // reset le plateau puis incrémente la liste des moves
-                plateau = copie_echequier(plateau_backup, plateau);
+                memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(unsigned char));
                 moves = moves->next;
             }
             // liberation de moves avant la prochaine itération:
@@ -449,9 +438,9 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
 
         free(plateau_backup);
 
-        return_minimax.score = best_eval;
-        return_minimax.piece = meilleure_piece;
-        return_minimax.move = meilleur_move;
+        return_minimax->score = best_eval;
+        return_minimax->piece = meilleure_piece;
+        return_minimax->move = meilleur_move;
         return best_eval; // on retourne l'évaluation maximale
     }
 
@@ -479,7 +468,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                 beta = get_min(beta, eval);
                 if (beta <= alpha)
                 {
-                    plateau = copie_echequier(plateau_backup, plateau);
+                    memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(unsigned char));
                     moves = moves->next;
                     break;
                 }
@@ -492,8 +481,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                     best_eval = eval;
                 }
 
-                plateau = copie_echequier(plateau_backup, plateau); // reset echequier
-
+                memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(unsigned char));
                 moves = moves->next;
             }
 
@@ -503,9 +491,9 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
         liberation(liste_pieces);
         free(plateau_backup);
 
-        return_minimax.score = best_eval;
-        return_minimax.piece = meilleure_piece;
-        return_minimax.move = meilleur_move;
+        return_minimax->score = best_eval;
+        return_minimax->piece = meilleure_piece;
+        return_minimax->move = meilleur_move;
 
         return best_eval;
     }
@@ -572,9 +560,9 @@ int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profo
 
         free(plateau_backup);
 
-        return_minimax.score = best_eval;
-        return_minimax.piece = meilleure_piece;
-        return_minimax.move = meilleur_move;
+        return_minimax->score = best_eval;
+        return_minimax->piece = meilleure_piece;
+        return_minimax->move = meilleur_move;
         return best_eval; // on retourne l'évaluation maximale
     }
 
@@ -616,13 +604,10 @@ int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profo
         liberation(liste_pieces);
         free(plateau_backup);
 
-        return_minimax.score = best_eval;
-        return_minimax.piece = meilleure_piece;
-        return_minimax.move = meilleur_move;
+        return_minimax->score = best_eval;
+        return_minimax->piece = meilleure_piece;
+        return_minimax->move = meilleur_move;
 
         return best_eval;
     }
 }
-
-
-

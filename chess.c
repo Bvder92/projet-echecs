@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <time.h>
+#include <string.h>
 
 liste *creation_maillon(char n)
 {
@@ -366,15 +368,15 @@ void initialiser_jeu()
     echequier[63] = TOUR;
 }
 
-FEN initialiser_fen(FEN fen)
+void initialiser_fen()
 {
-    fen.tour = BLANC;
-    fen.half_move = 0;
-    fen.full_move = 0;
-    fen.echec = -1;
-    fen.echec_et_mat = -1;
-    fen.capture = 0;
-    return fen;
+    fen = (FEN *)malloc(sizeof(FEN));
+    fen->tour = BLANC;
+    fen->half_move = 0;
+    fen->full_move = 0;
+    fen->echec = -1;
+    fen->echec_et_mat = -1;
+    fen->capture = 0;
 }
 
 /*Plateau * init_plateau()
@@ -560,61 +562,60 @@ int select_piece(char tour, unsigned char *plateau)
     return position;
 }
 
-FEN update_fen(FEN fen)
+void update_fen(FEN *fen)
 {
-    fen.half_move++;
+    fen->half_move++;
 
-    if (fen.capture == 1)
+    if (fen->capture == 1)
     {
-        fen.half_move = 0;
+        fen->half_move = 0;
     }
 
-    if (fen.tour == BLANC)
+    if (fen->tour == BLANC)
     {
-        // printf("fen.tour devient NOIR\n");
-        fen.tour = NOIR;
-        fen.full_move++;
+        // printf("fen->tour devient NOIR\n");
+        fen->tour = NOIR;
+        fen->full_move++;
     }
-    else if (fen.tour == NOIR)
+    else if (fen->tour == NOIR)
     {
-        // printf("fen.tour devient BLANC\n");
-        fen.tour = BLANC;
+        // printf("fen->tour devient BLANC\n");
+        fen->tour = BLANC;
     }
 
     else
     {
-        printf("\nERREUR, fen.tour = %d\n", fen.tour);
-        fen.tour = -1;
+        printf("\nERREUR, fen->tour = %d\n", fen->tour);
+        fen->tour = -1;
     }
 
-    // fen.echec = verifier_echec(echequier);
-    /*if (fen.echec == BLANC)
+    fen->echec = verifier_echec(echequier);
+    if (fen->echec == BLANC)
     {
-        fen.echec_et_mat = echec_et_mat(BLANC, echequier);
+        fen->echec_et_mat = echec_et_mat(BLANC, echequier);
     }
-    else if (fen.echec == NOIR)
+    else if (fen->echec == NOIR)
     {
-        fen.echec_et_mat = echec_et_mat(NOIR, echequier);
-    }*/
-    int echec = verifier_echec_couleur(fen.tour, echequier);
+        fen->echec_et_mat = echec_et_mat(NOIR, echequier);
+    }
+    /*int echec = verifier_echec_couleur(fen->tour, echequier);
     if (echec == NOIR)
     {
-        fen.echec = NOIR;
+        fen->echec = NOIR;
     }
     else if (echec == BLANC)
     {
-        fen.echec = BLANC;
+        fen->echec = BLANC;
     }
 
-    if (fen.echec != -1)
+    if (fen->echec != -1)
     {
-        fen.echec_et_mat = echec_et_mat(fen.echec, echequier);
-    }
+        fen->echec_et_mat = echec_et_mat(fen->echec, echequier);
+    }*/
 
-    fen.capture = 0;
+    fen->capture = 0;
 
-    fen.endgame = check_endgame(echequier);
-    return fen;
+    fen->endgame = check_endgame(echequier);
 }
 
 // retourne 1 si on est en end game, 0 sinon
@@ -1051,8 +1052,6 @@ liste *get_legal_reine(char position, liste *moves, unsigned char *plateau)
     liberation(moves_fou);
     liberation(moves_tour);
 
-    moves_fou = moves_tour = NULL;
-
     return moves;
 }
 
@@ -1112,13 +1111,14 @@ liste *retirer_echec(char position, liste *moves, unsigned char *plateau)
     {
         tmptmp = tmp->next; // comme on va supprimer un élément, pas sur de ce qu'il va se passer a tmp->next donc on le save avant
         // on effectue le move
-        echequier_tmp = copie_echequier(plateau, echequier_tmp);
+        memcpy(echequier_tmp, plateau, TAILLE_ECHEQUIER * sizeof(unsigned char));
         echequier_tmp[tmp->valeur] = echequier_tmp[position];
         echequier_tmp[position] = VIDE;
 
         // on supprime le move de la liste si il donne lieu a un echec
-        if (verifier_echec(echequier_tmp) != -1)
+        if (verifier_echec_fast(couleur, echequier_tmp) == couleur)
         {
+            //printf("\nECHEC, SUPPRESSION DU MOVE %d\n", tmp->valeur);
             moves = suppression_valeur(moves, tmp->valeur);
         }
 
@@ -1171,6 +1171,80 @@ char verifier_echec(unsigned char *plateau)
             }
         }
     }
+    free(moves);
+    return echec;
+}
+
+char verifier_echec_fast(char couleur, unsigned char *plateau)
+{    
+    liste *moves = (liste *)malloc(sizeof(liste));
+    moves = NULL;
+    liste *tmp; // parcours
+    liste *t;   // liberation
+    char i = 0, j = 0, echec = -1;
+    char nb_pieces = compter_pieces(couleur, plateau);
+
+    if (couleur == BLANC) //on regarde les moves des noirs -> i commence a 0 car les noirs commencent en haut
+    {
+        while (j < nb_pieces - 1 && i < TAILLE_ECHEQUIER)
+        {
+            if (plateau[i] != ROI+PIECE_NOIRE && plateau[i] != ROI+PIECE_NOIRE+PIECE_SPECIAL && get_color(plateau[i]) == NOIR)
+            {
+                moves = get_legal_any(i, moves, plateau);
+                tmp = moves;
+                while (tmp != NULL)
+                {
+                    if (plateau[tmp->valeur] == ROI || plateau[tmp->valeur] == ROI + PIECE_SPECIAL)
+                    {
+                        //printf("\nROI BLANC DANS LES MOVES DE ");
+                        echec = couleur;
+                    }
+                    tmp = tmp->next;
+                }
+                while (moves != NULL)
+                {
+                    t = moves->next;
+                    free(moves);
+                    moves = t;
+                }
+                ++j;
+            }
+            ++i;
+        }
+    }
+    else
+    {
+        i = TAILLE_ECHEQUIER-1; //i commence en 63 et décrémente car les blancs commencent en bas
+        while (j < nb_pieces - 1 && i >= 0)
+        {
+            if (plateau[i] != ROI && plateau[i] != ROI+PIECE_SPECIAL && get_color(plateau[i]) == BLANC)
+            {
+                moves = get_legal_any(i, moves, plateau);
+                tmp = moves;
+                while (tmp != NULL)
+                {
+                    if (plateau[tmp->valeur] == ROI+PIECE_NOIRE || plateau[tmp->valeur] == ROI+PIECE_NOIRE+PIECE_SPECIAL)
+                    {
+                        //printf("\nROI NOIR DANS LES MOVES DE ");
+                        //print_piece(tmp->valeur);
+                        //print_color(tmp->valeur);
+                        //printf("\n");
+                        echec = couleur;
+                    }
+                    tmp = tmp->next;
+                }
+                while (moves != NULL)
+                {
+                    t = moves->next;
+                    free(moves);
+                    moves = t;
+                }
+                ++j;
+            }
+            --i;
+        }
+    }
+    free(moves);
     return echec;
 }
 
@@ -1494,24 +1568,38 @@ void ia_move(char profondeur, char couleur, unsigned char *plateau)
     int alpha = INT_MIN;
     int beta = INT_MAX;
 
+    float total = 0.0, temp;
+    clock_t debut, fin;
+
     if (couleur == BLANC)
     {
+        debut = clock();
         minimax(BLANC, 0, plateau, profondeur, alpha, beta);
+        fin = clock();
+        temp = (float)(fin - debut) / (float)CLOCKS_PER_SEC;
+        total = temp;
     }
     if (couleur == NOIR)
     {
+        debut = clock();
         minimax(NOIR, 1, plateau, profondeur, alpha, beta);
+        fin = clock();
+        temp = (float)(fin - debut) / (float)CLOCKS_PER_SEC;
+        total = temp;
     }
+    total_search += total;
+
     printf("\nPiece: ");
-    print_name(plateau[return_minimax.piece]);
-    print_color(plateau[return_minimax.piece]);
-    printf("(%d,%d), ", get_colonne(return_minimax.piece), get_ligne(return_minimax.piece));
+    print_name(plateau[return_minimax->piece]);
+    print_color(plateau[return_minimax->piece]);
+    printf("(%d,%d), ", get_colonne(return_minimax->piece), get_ligne(return_minimax->piece));
     printf("Move: ");
-    print_name(plateau[return_minimax.move]);
-    print_color(plateau[return_minimax.move]);
-    printf("(%d,%d), ", get_colonne(return_minimax.move), get_ligne(return_minimax.move));
-    printf("Score: %d\n", return_minimax.score);
-    effectuer_move(return_minimax.piece, return_minimax.move, plateau);
+    print_name(plateau[return_minimax->move]);
+    print_color(plateau[return_minimax->move]);
+    printf("(%d,%d), ", get_colonne(return_minimax->move), get_ligne(return_minimax->move));
+    printf("Score: %d\n", return_minimax->score);
+    printf("\t***Temps de recherche: %f***\n", temp);
+    effectuer_move(return_minimax->piece, return_minimax->move, plateau);
 }
 
 void player_move(char couleur, unsigned char *plateau)
