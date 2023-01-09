@@ -1112,13 +1112,12 @@ liste *retirer_echec(char position, liste *moves, unsigned char *plateau)
         tmptmp = tmp->next; // comme on va supprimer un élément, pas sur de ce qu'il va se passer a tmp->next donc on le save avant
         // on effectue le move
         memcpy(echequier_tmp, plateau, TAILLE_ECHEQUIER * sizeof(unsigned char));
-        echequier_tmp[tmp->valeur] = echequier_tmp[position];
-        echequier_tmp[position] = VIDE;
+        effectuer_move(position, tmp->valeur, echequier_tmp);
 
         // on supprime le move de la liste si il donne lieu a un echec
-        if (verifier_echec_fast(couleur, echequier_tmp) == couleur)
+        if (verifier_echec_fast(couleur, echequier_tmp) != -1)
         {
-            //printf("\nECHEC, SUPPRESSION DU MOVE %d\n", tmp->valeur);
+            // printf("\nECHEC, SUPPRESSION DU MOVE %d\n", tmp->valeur);
             moves = suppression_valeur(moves, tmp->valeur);
         }
 
@@ -1176,28 +1175,34 @@ char verifier_echec(unsigned char *plateau)
 }
 
 char verifier_echec_fast(char couleur, unsigned char *plateau)
-{    
+{
     liste *moves = (liste *)malloc(sizeof(liste));
     moves = NULL;
-    liste *tmp; // parcours
-    liste *t;   // liberation
-    char i = 0, j = 0, echec = -1;
-    char nb_pieces = compter_pieces(couleur, plateau);
+    liste *tmp, *t;
+    char i, j = 0, nb_pieces, echec = -1;
 
-    if (couleur == BLANC) //on regarde les moves des noirs -> i commence a 0 car les noirs commencent en haut
+    if (couleur == BLANC) // si couleur == blanc, on cherche dans les pieces noires
     {
-        while (j < nb_pieces - 1 && i < TAILLE_ECHEQUIER)
+        nb_pieces = compter_pieces(NOIR, plateau);        // on recupere le nombre de pieces de l'ennemi
+        i = 0;                                            // i = 0 car on regarde les moves des noirs, qui commencent a echequier[0]
+        while (j < nb_pieces - 1 && i < TAILLE_ECHEQUIER) // tant qu'il y a des pieces a analyser (-1 car on skip les rois)
         {
-            if (plateau[i] != ROI+PIECE_NOIRE && plateau[i] != ROI+PIECE_NOIRE+PIECE_SPECIAL && get_color(plateau[i]) == NOIR)
+            if (get_color(plateau[i]) == NOIR && plateau[i] != ROI + PIECE_NOIRE && plateau[i] != ROI + PIECE_NOIRE + PIECE_SPECIAL ) // si la piece est noire
             {
-                moves = get_legal_any(i, moves, plateau);
+                j++;                                      // on est sur une piece noire (non roi)
+                moves = get_legal_any(i, moves, plateau); // on récupère ses moves
                 tmp = moves;
-                while (tmp != NULL)
+                while (tmp != NULL) // pour chaque move de la piece
                 {
-                    if (plateau[tmp->valeur] == ROI || plateau[tmp->valeur] == ROI + PIECE_SPECIAL)
+                    if (plateau[tmp->valeur] == ROI || plateau[tmp->valeur] == ROI + PIECE_SPECIAL) // si le move contient un roi on peut s'arreter
                     {
-                        //printf("\nROI BLANC DANS LES MOVES DE ");
-                        echec = couleur;
+                        while (moves != NULL)
+                        {
+                            t = moves->next;
+                            free(moves);
+                            moves = t;
+                        }
+                        return BLANC;
                     }
                     tmp = tmp->next;
                 }
@@ -1207,29 +1212,32 @@ char verifier_echec_fast(char couleur, unsigned char *plateau)
                     free(moves);
                     moves = t;
                 }
-                ++j;
             }
-            ++i;
+            i++;
         }
     }
     else
     {
-        i = TAILLE_ECHEQUIER-1; //i commence en 63 et décrémente car les blancs commencent en bas
-        while (j < nb_pieces - 1 && i >= 0)
+        nb_pieces = compter_pieces(BLANC, plateau);
+        i = TAILLE_ECHEQUIER - 1; // car les blancs commencent en bas
+        while (j < nb_pieces && i >= 0)
         {
-            if (plateau[i] != ROI && plateau[i] != ROI+PIECE_SPECIAL && get_color(plateau[i]) == BLANC)
+            if (get_color(plateau[i]) == BLANC && plateau[i] != VIDE && plateau[i] != ROI && plateau[i] != ROI + PIECE_SPECIAL)
             {
+                j++; // on est sur une piece blanche(non roi)
                 moves = get_legal_any(i, moves, plateau);
                 tmp = moves;
                 while (tmp != NULL)
                 {
-                    if (plateau[tmp->valeur] == ROI+PIECE_NOIRE || plateau[tmp->valeur] == ROI+PIECE_NOIRE+PIECE_SPECIAL)
+                    if (plateau[tmp->valeur] == ROI + PIECE_NOIRE || plateau[tmp->valeur] == ROI + PIECE_NOIRE + PIECE_SPECIAL)
                     {
-                        //printf("\nROI NOIR DANS LES MOVES DE ");
-                        //print_piece(tmp->valeur);
-                        //print_color(tmp->valeur);
-                        //printf("\n");
-                        echec = couleur;
+                        while (moves != NULL)
+                        {
+                            t = moves->next;
+                            free(moves);
+                            moves = t;
+                        }
+                        return NOIR;
                     }
                     tmp = tmp->next;
                 }
@@ -1239,54 +1247,10 @@ char verifier_echec_fast(char couleur, unsigned char *plateau)
                     free(moves);
                     moves = t;
                 }
-                ++j;
             }
-            --i;
+            i--;
         }
     }
-    free(moves);
-    return echec;
-}
-
-// verifie si la couleur passée en argument est en echec en inspectant les moves de toutes les pieces ennemies
-char verifier_echec_couleur(char couleur, unsigned char *plateau)
-{
-    char couleur_ennemie = get_couleur_ennemie(couleur), echec = -1;
-    unsigned char const_couleur;
-
-    if (couleur == NOIR)
-    {
-        const_couleur = PIECE_NOIRE;
-    }
-    else
-    {
-        const_couleur = 0;
-    }
-    liste *liste_pieces = (liste *)malloc(sizeof(liste));
-    liste_pieces = NULL;
-    liste *tmp_moves, *tmp_pieces;
-    liste_pieces = liste_moves(couleur_ennemie, liste_pieces, plateau); // on recupere la liste des pieces ennemies pouvant bouger
-
-    tmp_pieces = liste_pieces;
-    while (tmp_pieces != NULL)
-    {
-        liste *moves = (liste *)malloc(sizeof(liste));
-        moves = NULL;
-        moves = get_legal_any(tmp_pieces->valeur, moves, plateau);
-        tmp_moves = moves;
-
-        while (tmp_moves != NULL)
-        {
-            if (plateau[tmp_moves->valeur] == ROI + const_couleur || plateau[tmp_moves->valeur] == ROI + const_couleur + PIECE_SPECIAL)
-            {
-                echec = couleur;
-            }
-            tmp_moves = tmp_moves->next;
-        }
-        tmp_pieces = tmp_pieces->next;
-        liberation(moves);
-    }
-    liberation(liste_pieces);
     return echec;
 }
 
@@ -1303,7 +1267,7 @@ liste *liste_moves(char couleur, liste *liste_pieces, unsigned char *plateau)
     while (i < TAILLE_ECHEQUIER && j < nb_pieces)
     {
         // on regarde les moves dispo pour chaque piece alliée qu'on trouve
-        if ((plateau[i] != VIDE) && (get_color(plateau[i]) == couleur))
+        if (get_color(plateau[i]) == couleur)
         {
             ++j;
             moves = get_legal_all(i, moves, plateau); // get_legal_all ne retourne pas les moves qui vont causer un échec
@@ -1501,6 +1465,7 @@ void promotion_ia(char position, unsigned char nouvelle_piece, unsigned char *pl
     plateau[position] = nouvelle_piece;
 }
 
+// déplace la piece dans plateau[position_piece] à la case position_move, et castle/promote si besoin
 void effectuer_move(char position_piece, char position_move, unsigned char *plateau)
 {
     if (plateau[position_piece] == ROI && position_move == 62) // castle blanc coté roi
@@ -1574,7 +1539,7 @@ void ia_move(char profondeur, char couleur, unsigned char *plateau)
     if (couleur == BLANC)
     {
         debut = clock();
-        minimax(BLANC, 0, plateau, profondeur, alpha, beta);
+        minimax_old(BLANC, 0, plateau, profondeur, alpha, beta);
         fin = clock();
         temp = (float)(fin - debut) / (float)CLOCKS_PER_SEC;
         total = temp;
@@ -1582,7 +1547,7 @@ void ia_move(char profondeur, char couleur, unsigned char *plateau)
     if (couleur == NOIR)
     {
         debut = clock();
-        minimax(NOIR, 1, plateau, profondeur, alpha, beta);
+        minimax_old(NOIR, 1, plateau, profondeur, alpha, beta);
         fin = clock();
         temp = (float)(fin - debut) / (float)CLOCKS_PER_SEC;
         total = temp;

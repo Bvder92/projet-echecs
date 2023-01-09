@@ -60,7 +60,6 @@ typedef struct Entry
 {
     U64 posKey; // position
     int score;  // score associé
-    // Entry *next;
 } Entry;
 
 typedef struct Hash_table
@@ -145,6 +144,7 @@ char verifier_echec(unsigned char *plateau);
 
 char verifier_echec_fast(char couleur, unsigned char *plateau);
 
+char verifier_echec_faste(char couleur, unsigned char *plateau);
 
 char verifier_echec_couleur(char couleur, unsigned char *plateau);
 
@@ -223,7 +223,7 @@ int get_min(int a, int b);
 
 int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta);
 
-int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profondeur);
+int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta);
 
 void test();
 
@@ -235,10 +235,12 @@ void InitHashKeys();
 
 U64 GeneratePosKey(unsigned char *plateau, char tour);
 
-void init_hashtable(Hash_table *hashtable);
+Hash_table *init_hashtable(Hash_table *hashtable);
 
 void add_entry(Hash_table *hashtable, U64 posKey, int score);
 
 int search_table(Hash_table *hashtable, U64 posKey);
+
+void liberation_hashtable(Hash_table * hashtable);
 
 #endif

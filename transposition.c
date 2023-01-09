@@ -93,28 +93,50 @@ void clear_hashtable(Hash_table * table)
     }
 }
 
-void init_hashtable(Hash_table * hashtable)
+Hash_table *init_hashtable(Hash_table * hashtable)
 {
     hashtable = (Hash_table*)malloc(sizeof(hashtable));
+    if (hashtable == NULL)
+    {
+        fprintf(stderr, "\nHASHTABLE NULL :(\n");
+        return NULL;
+    }
 
-    //hashtable->nb_entries = 0;
+    hashtable->nb_entries = 0;
     hashtable->entries = (Entry**)malloc(sizeof(Entry*)*MAX_TABLE_SIZE); //tableau de pointeurs vers des entrées
-
+    if (hashtable->entries == NULL)
+    {
+        fprintf(stderr, "\nENTRIES NULL\n");
+        return NULL;
+    }
     //allocation mémoire de chaque case du tableau:
     for (int i = 0; i<MAX_TABLE_SIZE; i++) 
     {
         hashtable->entries[i] = (Entry*)malloc(sizeof(Entry));
+        if (hashtable->entries[i] == NULL)
+        {
+            fprintf(stderr, "\nEntries[%d] NULL\n", i);
+            return NULL;
+        }
     }
     printf("\nHashTable initialisee avec %d entries\n", hashtable->nb_entries);
+    return hashtable;
 }
 
 void add_entry(Hash_table * hashtable, U64 posKey, int score)
 {
-
+    if (hashtable->nb_entries == MAX_TABLE_SIZE-50)
+    {
+        return;
+    }
     Entry *new_entry = (Entry*)malloc(sizeof(Entry));
+    if (new_entry == NULL)
+    {
+        fprintf(stderr, "\nERREUR MALLOC NEWENTRY\n");
+        return;
+    }
     new_entry->posKey = posKey;
     new_entry->score = score;
-    //new_entry->next = hashtable->entries[hashtable->index];
 
     hashtable->entries[hashtable->nb_entries] = new_entry;
     hashtable->nb_entries++;
@@ -125,12 +147,23 @@ int search_table(Hash_table *hashtable, U64 posKey)
 {
     for (int i = 0; i<hashtable->nb_entries; ++i) //tant que i est inférieur au nombre d'entrées dans la table
     {
-        if (hashtable->entries[i]->posKey = posKey)
+        if (hashtable->entries[i]->posKey == posKey)
         {
             return hashtable->entries[i]->score;
         }
     }
     return INT_MIN; //la clé n'est pas dans la hashtable
+}
+
+void liberation_hashtable(Hash_table * hashtable)
+{
+    int i;
+    for (i = 0; i< hashtable->nb_entries; i++)
+    {
+
+        free(hashtable->entries[i]);
+    }
+    free(hashtable);
 }
 
 /*

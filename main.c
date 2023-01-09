@@ -35,7 +35,11 @@ int main()
     initialiser_fen();
     init_return_minimax();
     InitHashKeys();
-    init_hashtable(hashtable);
+    hashtable = init_hashtable(hashtable);
+    if (hashtable == NULL)
+    {
+        printf("?????");
+    }
     affichage_echequier();
     while (fen->echec_et_mat == -1 && fen->half_move < 50)
     {
@@ -43,15 +47,15 @@ int main()
         nb_pieces_noires = compter_pieces(NOIR, echequier);
         printf("\nSCORE: %d", get_score(echequier));
         printf("\nHASH: %llu", GeneratePosKey(echequier, fen->tour));
+        //add_entry(hashtable, GeneratePosKey(echequier, fen->tour), get_score(echequier));
         printf("\nHalf-moves: %d", fen->half_move);
         printf("\nEndgame: %d\n", fen->endgame);
+        printf("\nHashtable entries: %d\n", hashtable->nb_entries);
 
         if (fen->tour == BLANC)
         {
             // printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(BLANC, echequier), get_bonus_placements_total(BLANC, echequier));
-             ia_move(4, BLANC, echequier);
-            //liste_pieces = liste_moves(BLANC, liste_pieces, echequier);
-            //affichage_liste(liste_pieces);
+            ia_move(4, BLANC, echequier);
             //player_move(BLANC, echequier);
 
             if (compter_pieces(NOIR, echequier) != nb_pieces_noires)
@@ -61,9 +65,7 @@ int main()
         }
         else if (fen->tour == NOIR)
         {
-             ia_move(4, NOIR, echequier);
-            //liste_pieces = liste_moves(NOIR, liste_pieces, echequier);
-            //affichage_liste(liste_pieces);
+            ia_move(4, NOIR, echequier);
             //player_move(NOIR, echequier);
             // printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(NOIR, echequier), get_bonus_placements_total(NOIR, echequier));
 
@@ -73,16 +75,16 @@ int main()
             }
         }
 
+        update_fen(fen);
+        /*if (search_table(hashtable, GeneratePosKey(echequier, fen->tour)) != INT_MIN)
+        {
+            printf("\nLETS GO, poskey presente dans la table\n");
+        }
         else
         {
-            printf("\nFin du jeu, erreur fen->tour");
-            break;
-        }
-
-        update_fen(fen);
+            add_entry(hashtable, GeneratePosKey(echequier, fen->tour), get_score(echequier));
+        }*/
         affichage_echequier();
-
-        // affichage_echequier_fichier();
         nbtours++;
     }
 
@@ -98,6 +100,7 @@ int main()
     {
         printf("\nEgalite: 50 moves a la suite sans captures\nNombre de tours: %d", nbtours);
     }
+    liberation_hashtable(hashtable);
     afficher_liste_pieces(BLANC, echequier);
     afficher_liste_pieces(NOIR, echequier);
     printf("\n\nTemps de recherche total: %f", total_search);
