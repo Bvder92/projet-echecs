@@ -2,25 +2,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <string.h>
 
-//const int PvSize = 0x100000 * 2;
+// const int PvSize = 0x100000 * 2;
 unsigned char get_piece_index(unsigned char piece)
 {
     unsigned char finalpiece;
     if (get_color(piece) == NOIR)
     {
-        if (piece == ROI+PIECE_NOIRE+PIECE_SPECIAL)
+        if (piece == ROI + PIECE_NOIRE + PIECE_SPECIAL)
         {
             finalpiece = 14;
         }
         else
         {
-        finalpiece = (piece - PIECE_NOIRE) + 7;
+            finalpiece = (piece - PIECE_NOIRE) + 7;
         }
         return finalpiece;
     }
 
-    else if (piece == ROI+PIECE_SPECIAL)
+    else if (piece == ROI + PIECE_SPECIAL)
     {
         return 7;
     }
@@ -28,15 +29,15 @@ unsigned char get_piece_index(unsigned char piece)
     return piece;
 }
 
-//initialise les clés avec des nombres aléatoires
-void InitHashKeys()
+// initialise les clés avec des nombres aléatoires
+void init_hashkeys()
 {
     int index = 0;
     int index2 = 0;
 
     for (index = 0; index < 14; ++index)
     {
-        for (index2 = 0; index2<64; ++index2)
+        for (index2 = 0; index2 < 64; ++index2)
         {
             PieceKeys[index][index2] = RAND_64;
         }
@@ -44,20 +45,20 @@ void InitHashKeys()
     SideKey = RAND_64;
 }
 
-//Genere un hash unique pour chaque échequier
-U64 GeneratePosKey(unsigned char * plateau, char tour)
+// Genere un hash unique pour chaque échequier
+U64 generate_posKey(unsigned char *plateau, char tour)
 {
     int sq = 0;
     U64 FinalKey = 0;
     unsigned char piece = VIDE;
 
-    //pieces
-    for (sq = 0; sq<TAILLE_ECHEQUIER; ++sq)
+    // pieces
+    for (sq = 0; sq < TAILLE_ECHEQUIER; ++sq)
     {
         piece = get_piece_index(plateau[sq]);
         if (piece != VIDE)
         {
-            if (piece >= PION && piece<= ROI+PIECE_NOIRE+PIECE_SPECIAL)
+            if (piece >= PION && piece <= ROI + PIECE_NOIRE + PIECE_SPECIAL)
             {
                 FinalKey ^= PieceKeys[piece][sq];
             }
@@ -77,15 +78,15 @@ U64 GeneratePosKey(unsigned char * plateau, char tour)
     return FinalKey;
 }
 
-void clear_hashtable(Hash_table * table)
+void clear_hashtable(Hash_table *table)
 {
     printf("\nCLEAR\n");
-    Entry * entry;
+    Entry *entry;
     int max_entries = MAX_TABLE_SIZE / sizeof(Entry);
     max_entries -= 2;
 
     int index = 0;
-    while(index != MAX_TABLE_SIZE)
+    while (index != MAX_TABLE_SIZE)
     {
         entry = table->entries[index];
         entry->posKey = 0ULL;
@@ -93,9 +94,9 @@ void clear_hashtable(Hash_table * table)
     }
 }
 
-Hash_table *init_hashtable(Hash_table * hashtable)
+Hash_table *init_hashtable(Hash_table *hashtable)
 {
-    hashtable = (Hash_table*)malloc(sizeof(hashtable));
+    hashtable = (Hash_table *)malloc(sizeof(hashtable));
     if (hashtable == NULL)
     {
         fprintf(stderr, "\nHASHTABLE NULL :(\n");
@@ -103,16 +104,16 @@ Hash_table *init_hashtable(Hash_table * hashtable)
     }
 
     hashtable->nb_entries = 0;
-    hashtable->entries = (Entry**)malloc(sizeof(Entry*)*MAX_TABLE_SIZE); //tableau de pointeurs vers des entrées
+    hashtable->entries = (Entry **)malloc(sizeof(Entry *) * MAX_TABLE_SIZE); // tableau de pointeurs vers des entrées
     if (hashtable->entries == NULL)
     {
         fprintf(stderr, "\nENTRIES NULL\n");
         return NULL;
     }
-    //allocation mémoire de chaque case du tableau:
-    for (int i = 0; i<MAX_TABLE_SIZE; i++) 
+    // allocation mémoire de chaque case du tableau:
+    for (int i = 0; i < MAX_TABLE_SIZE; i++)
     {
-        hashtable->entries[i] = (Entry*)malloc(sizeof(Entry));
+        hashtable->entries[i] = (Entry *)malloc(sizeof(Entry));
         if (hashtable->entries[i] == NULL)
         {
             fprintf(stderr, "\nEntries[%d] NULL\n", i);
@@ -123,13 +124,13 @@ Hash_table *init_hashtable(Hash_table * hashtable)
     return hashtable;
 }
 
-void add_entry(Hash_table * hashtable, U64 posKey, int score)
+void add_entry(Hash_table *hashtable, U64 posKey, int score)
 {
-    if (hashtable->nb_entries == MAX_TABLE_SIZE-50)
+    if (hashtable->nb_entries == MAX_TABLE_SIZE - 50)
     {
         return;
     }
-    Entry *new_entry = (Entry*)malloc(sizeof(Entry));
+    Entry *new_entry = (Entry *)malloc(sizeof(Entry));
     if (new_entry == NULL)
     {
         fprintf(stderr, "\nERREUR MALLOC NEWENTRY\n");
@@ -142,23 +143,23 @@ void add_entry(Hash_table * hashtable, U64 posKey, int score)
     hashtable->nb_entries++;
 }
 
-//parcours la hashtable, retourne un score si il existe une entrée avec la même clé, INT_MIN sinon
+// parcours la hashtable, retourne un score si il existe une entrée avec la même clé, INT_MIN sinon
 int search_table(Hash_table *hashtable, U64 posKey)
 {
-    for (int i = 0; i<hashtable->nb_entries; ++i) //tant que i est inférieur au nombre d'entrées dans la table
+    for (int i = 0; i < hashtable->nb_entries; ++i) // tant que i est inférieur au nombre d'entrées dans la table
     {
         if (hashtable->entries[i]->posKey == posKey)
         {
             return hashtable->entries[i]->score;
         }
     }
-    return INT_MIN; //la clé n'est pas dans la hashtable
+    return INT_MIN; // la clé n'est pas dans la hashtable
 }
 
-void liberation_hashtable(Hash_table * hashtable)
+void liberation_hashtable(Hash_table *hashtable)
 {
     int i;
-    for (i = 0; i< hashtable->nb_entries; i++)
+    for (i = 0; i < hashtable->nb_entries; i++)
     {
 
         free(hashtable->entries[i]);
@@ -166,51 +167,49 @@ void liberation_hashtable(Hash_table * hashtable)
     free(hashtable);
 }
 
-/*
-void ClearPvTable(S_PVTABLE * table)
+int count_lines(FILE* file)
 {
-    S_PVENTRY * pvEntry;
-
-    //on utilise un pointeur qui parcours toutes les entries de la table (pointeur++ incrémente de sizeof(élément pointé))
-    for (pvEntry = table->pTable; pvEntry < table->pTable + table->numEntries; pvEntry++)
+    char buf[65536];
+    int counter = 0;
+    for(;;)
     {
-        pvEntry->posKey = 0ULL;
+        size_t res = fread(buf, 1, 65536, file);
+        if (ferror(file))
+            return -1;
+
+        int i;
+        for(i = 0; i < res; i++)
+            if (buf[i] == '\n')
+                counter++;
+
+        if (feof(file))
+            break;
+    }
+
+    return counter;
+}
+
+void fill_from_file(Hash_table *hashtable)
+{
+    FILE *fp = fopen("aaa.txt", "r");
+    if (fp == NULL)
+    {
+        fprintf(stderr, "ERR");
+        return;
+    }
+    int i = 0, int_buf;
+    U64 llu_buf;
+    int nb_lignes = 0;
+
+    nb_lignes = 489703;
+
+    while (i < nb_lignes)
+    {
+        fscanf(fp, "%llu", &llu_buf);
+        fseek(fp, 3, SEEK_CUR); // on décale le pointeur de 3 pour sauter " | "
+        fscanf(fp, "%d", &int_buf);
+        fseek(fp, 1, SEEK_CUR); // on décale le pointeur de 1 pour sauter le "\n"
+        add_entry(hashtable, llu_buf, int_buf);
+        i++;
     }
 }
-
-void InitPvTable(S_PVTABLE * table)
-{
-    table->numEntries = PvSize / sizeof(S_PVENTRY);
-    table->numEntries -= 2;
-    free(table->pTable); //libere le pointeur en cas de réutilisation
-
-    table->pTable = (S_PVENTRY *)malloc(table->numEntries * sizeof(S_PVENTRY));
-    ClearPvTable(table);
-    printf("\nPvTable init complete with %d entries\n", table->numEntries);
-}
-
-void StorePvMove(Plateau *p, int move)
-{
-    int index = p->hash % p->Pvtable->numEntries;
-
-    if (index < 0 || index > p->Pvtable->numEntries - 1)
-    {
-        fprintf(stderr, "\nERREUR STORE\n");
-    }
-    p->Pvtable->pTable[index].position_move = move;
-    p->Pvtable->pTable[index].posKey = p->hash;
-
-}
-
-int SearchPvTable(Plateau *p, int move)
-{
-    printf("\np->hash = %llu, p->Pvtable->numEntries = %d\n", p->hash, p->Pvtable->numEntries);
-    int index = p->hash % p->Pvtable->numEntries;
-
-    if (p->Pvtable->pTable[index].posKey == p->hash)
-    {
-        return p->Pvtable->pTable[index].posKey;
-    }
-    return 0;
-}
-*/

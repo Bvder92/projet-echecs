@@ -80,7 +80,15 @@ const int table_roi_endgame[TAILLE_ECHEQUIER] = {
     -50, -30, -30, -30, -30, -30, -30, -50};
 
 // utilisé pour inverser les tableaux précédents pour les utiliser sur les pieces noires
-const int table_mirroir[TAILLE_ECHEQUIER] = {56, 57, 58, 59, 60, 61, 62, 63, 48, 49, 50, 51, 52, 53, 54, 55, 40, 41, 42, 43, 44, 45, 46, 47, 32, 33, 34, 35, 36, 37, 38, 39, 24, 25, 26, 27, 28, 29, 30, 31, 16, 17, 18, 19, 20, 21, 22, 23, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7};
+const int table_mirroir[TAILLE_ECHEQUIER] = {
+    56, 57, 58, 59, 60, 61, 62, 63,
+    48, 49, 50, 51, 52, 53, 54, 55,
+    40, 41, 42, 43, 44, 45, 46, 47,
+    32, 33, 34, 35, 36, 37, 38, 39,
+    24, 25, 26, 27, 28, 29, 30, 31,
+    16, 17, 18, 19, 20, 21, 22, 23,
+    8, 9, 10, 11, 12, 13, 14, 15,
+    0, 1, 2, 3, 4, 5, 6, 7};
 
 // retourne la valeur de la piece dans position
 int get_valeur_materielle(char position, unsigned char *plateau)
@@ -368,7 +376,7 @@ void test()
 }
 
 // couleur = couleur du joueur qui doit jouer, maximizer = es-ce qu'il veut maximizer ou minimizer son score
-int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta)
+int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta, FILE *fp)
 {
     char couleur_ennemie = get_couleur_ennemie(couleur);
     if (profondeur == 0 || echec_et_mat(couleur, plateau) != -1)
@@ -415,12 +423,12 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                 if (search != INT_MIN) // si le move a déjà été évalué
                 {
                     eval = search; // on récupère direct son éval
-                    // printf("\nmove present dans la table\n");
                 }
                 else
                 {
-                    eval = minimax(couleur_ennemie, 0, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra minimizer)
-                    add_entry(hashtable, posKey, eval);                                       // on ajoute l'évaluation qu'on vient de faire dans la table
+                    eval = minimax(couleur_ennemie, 0, plateau, profondeur - 1, alpha, beta, fp); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra minimizer)
+                    //add_entry(hashtable, posKey, eval);  //ancienne méthode, trop lente
+                    //fprintf(fp, " %llu | %d\n", posKey, eval); //nouvelle méthode, on remplit un fichier avant l'éxécution puis on l'utilise en lecture
                 }
 
                 best_eval = get_max(best_eval, eval);
@@ -480,12 +488,13 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                 if (search != INT_MIN) // si le move a déjà été évalué
                 {
                     eval = search; // on récupère direct son éval
-                    // printf("\nmove present dans la table\n");
+                    //fprintf(fp, "\nEval Recuperee");
                 }
                 else
                 {
-                    eval = minimax(couleur_ennemie, 0, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra minimizer)
-                    add_entry(hashtable, posKey, eval);                                       // on ajoute l'évaluation qu'on vient de faire dans la table
+                    eval = minimax(couleur_ennemie, 0, plateau, profondeur - 1, alpha, beta, fp); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra minimizer)
+                    //add_entry(hashtable, posKey, eval);  //ancienne méthode, trop lente
+                    //fprintf(fp, " %llu | %d\n", posKey, eval); //nouvelle méthode, on remplit un fichier avant l'éxécution puis on l'utilise en lecture
                 }
                 best_eval = get_min(best_eval, eval);
 
@@ -523,6 +532,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
     }
 }
 
+//verision sans la table de hash et le fichier texte
 int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta)
 {
     char couleur_ennemie = get_couleur_ennemie(couleur);
@@ -563,7 +573,7 @@ int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profo
                 // on effectue le move
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau);
 
-                eval = minimax(couleur_ennemie, 0, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra minimizer)
+                eval = minimax_old(couleur_ennemie, 0, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra minimizer)
                 best_eval = get_max(best_eval, eval);
                 alpha = get_max(alpha, eval);
                 if (beta <= alpha)
@@ -599,7 +609,7 @@ int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profo
         return best_eval; // on retourne l'évaluation maximale
     }
 
-    else if (maximizer == 0) // on cherche a minimizer le score
+    else // on cherche a minimizer le score
     {
         best_eval = INT_MAX; // on trouvera forcement plus petit
         liste *liste_pieces = (liste *)malloc(sizeof(liste));
@@ -616,7 +626,7 @@ int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profo
             {
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau); // on effectue le move
 
-                eval = minimax(couleur_ennemie, 1, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra maximizer)
+                eval = minimax_old(couleur_ennemie, 1, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra maximizer)
 
                 best_eval = get_min(best_eval, eval);
 

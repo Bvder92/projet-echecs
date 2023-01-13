@@ -335,6 +335,91 @@ void affichage_echequier_alt()
     }
 }
 
+void init_return_minimax()
+{
+    return_minimax = (best_move *)malloc(sizeof(return_minimax));
+    return_minimax->move = 0;
+    return_minimax->piece = 0;
+    return_minimax->score = 0;
+}
+
+nouvelle_partie select_mode()
+{
+    nouvelle_partie partie;
+    int rep = -1;
+    int joueur_blanc = -1;
+    int profondeur_blanc = -1;
+    int joueur_noir = -1;
+    int profondeur_noir = -1;
+    int debug = -1;
+
+    printf("\n\t***JEU D'ECHECS***\n");
+    while (joueur_blanc != 0 && joueur_blanc != 1)
+    {
+        printf("\nJoueur Blanc: (0:Humain, 1:IA)\n");
+        scanf("%d", &joueur_blanc);
+        if (joueur_blanc != 0 && joueur_blanc != 1)
+        {
+            printf("\nReponse invalide!\n");
+        }
+    }
+
+    while (joueur_noir != 0 && joueur_noir != 1)
+    {
+        printf("\nJoueur Noir: (0:Humain, 1:IA)\n");
+        scanf("%d", &joueur_noir);
+        if (joueur_noir != 0 && joueur_noir != 1)
+        {
+            printf("\nReponse invalide!\n");
+        }
+    }
+
+    if (joueur_blanc == 1)
+    {
+        while (profondeur_blanc <= 0 || profondeur_blanc > 5)
+        {
+            printf("\nProfondeur de l'IA Blanche: (1-5, Recommande: 4)\n");
+            scanf("%d", &profondeur_blanc);
+            if (profondeur_blanc <= 0 || profondeur_blanc > 5)
+            {
+                printf("\nReponse invalide!\n");
+            }
+        }
+    }
+
+    if (joueur_noir == 1)
+    {
+        while (profondeur_noir <= 0 || profondeur_noir > 5)
+        {
+            printf("\nProfondeur de l'IA Noire: (1-5, Recommande: 4)\n");
+            scanf("%d", &profondeur_noir);
+            if (profondeur_noir <= 0 || profondeur_noir > 5)
+            {
+                printf("\nReponse invalide!\n");
+            }
+        }
+    }
+
+    while (debug < 0 || debug > 2)
+    {
+        printf("\nAfficher les infos de debug? (0:Non, 1:Oui, 2:Seulement a la fin)\n");
+        scanf("%d", &debug);
+        if (debug < 0 || debug > 2)
+        {
+            printf("\nReponse invalide!\n");
+        }
+    }
+
+    partie.joueur_blanc = joueur_blanc;
+    partie.joueur_noir = joueur_noir;
+    partie.profondeur_blanc = profondeur_blanc;
+    partie.profondeur_noir = profondeur_noir;
+    partie.debug = debug;
+
+    return partie;
+}
+
+// remplit l'echequier et initialise les structures
 void initialiser_jeu()
 {
     char i;
@@ -366,42 +451,25 @@ void initialiser_jeu()
     echequier[61] = FOU;
     echequier[62] = CAVALIER;
     echequier[63] = TOUR;
+    initialiser_fen();
+    init_return_minimax();
+    init_hashkeys();
+    hashtable = init_hashtable(hashtable);
 }
 
 void initialiser_fen()
 {
     fen = (FEN *)malloc(sizeof(FEN));
     fen->tour = BLANC;
+    fen->nb_pcs_w = 16;
+    fen->nb_pcs_b = 16;
+    fen->nb_tours = 0;
     fen->half_move = 0;
     fen->full_move = 0;
     fen->echec = -1;
     fen->echec_et_mat = -1;
     fen->capture = 0;
 }
-
-/*Plateau * init_plateau()
-{
-    Plateau * nouveau = (Plateau *)malloc(sizeof(Plateau));
-
-    nouveau->plateau = (unsigned char*)malloc(sizeof(unsigned char)* TAILLE_ECHEQUIER);
-    nouveau->plateau = copie_echequier(echequier, nouveau->plateau);
-    nouveau->hash = GeneratePosKey(nouveau->plateau, BLANC);
-
-    nouveau->Pvtable->numEntries = 1;
-
-    return nouveau;
-}
-
-Plateau * update_plateau(Plateau *P)
-{
-    for(int i = 0; i<TAILLE_ECHEQUIER; ++i)
-    {
-        P->plateau[i] = echequier[i];
-    }
-    P->hash = GeneratePosKey(P->plateau, fen.tour);
-
-    return P;
-}*/
 
 // affiche l'initiale d'une piece, utilisée pour affichage_echequier
 char print_piece(unsigned char position)
@@ -573,21 +641,22 @@ void update_fen(FEN *fen)
 
     if (fen->tour == BLANC)
     {
-        // printf("fen->tour devient NOIR\n");
         fen->tour = NOIR;
         fen->full_move++;
     }
     else if (fen->tour == NOIR)
     {
-        // printf("fen->tour devient BLANC\n");
         fen->tour = BLANC;
     }
-
     else
     {
         printf("\nERREUR, fen->tour = %d\n", fen->tour);
         fen->tour = -1;
     }
+
+    fen->nb_pcs_b = compter_pieces(NOIR, echequier);
+    fen->nb_pcs_w = compter_pieces(BLANC, echequier);
+    fen->nb_tours++;
 
     fen->echec = verifier_echec(echequier);
     if (fen->echec == BLANC)
@@ -598,23 +667,8 @@ void update_fen(FEN *fen)
     {
         fen->echec_et_mat = echec_et_mat(NOIR, echequier);
     }
-    /*int echec = verifier_echec_couleur(fen->tour, echequier);
-    if (echec == NOIR)
-    {
-        fen->echec = NOIR;
-    }
-    else if (echec == BLANC)
-    {
-        fen->echec = BLANC;
-    }
-
-    if (fen->echec != -1)
-    {
-        fen->echec_et_mat = echec_et_mat(fen->echec, echequier);
-    }*/
 
     fen->capture = 0;
-
     fen->endgame = check_endgame(echequier);
 }
 
@@ -1115,7 +1169,7 @@ liste *retirer_echec(char position, liste *moves, unsigned char *plateau)
         effectuer_move(position, tmp->valeur, echequier_tmp);
 
         // on supprime le move de la liste si il donne lieu a un echec
-        if (verifier_echec_fast(couleur, echequier_tmp) != -1)
+        if (verifier_echec_fast(couleur, echequier_tmp) == couleur)
         {
             // printf("\nECHEC, SUPPRESSION DU MOVE %d\n", tmp->valeur);
             moves = suppression_valeur(moves, tmp->valeur);
@@ -1170,7 +1224,6 @@ char verifier_echec(unsigned char *plateau)
             }
         }
     }
-    free(moves);
     return echec;
 }
 
@@ -1183,11 +1236,11 @@ char verifier_echec_fast(char couleur, unsigned char *plateau)
 
     if (couleur == BLANC) // si couleur == blanc, on cherche dans les pieces noires
     {
-        nb_pieces = compter_pieces(NOIR, plateau);        // on recupere le nombre de pieces de l'ennemi
-        i = 0;                                            // i = 0 car on regarde les moves des noirs, qui commencent a echequier[0]
-        while (j < nb_pieces - 1 && i < TAILLE_ECHEQUIER) // tant qu'il y a des pieces a analyser (-1 car on skip les rois)
+        nb_pieces = compter_pieces(NOIR, plateau);    // on recupere le nombre de pieces de l'ennemi
+        i = 0;                                        // i = 0 car on regarde les moves des noirs, qui commencent a echequier[0]
+        while (j < nb_pieces && i < TAILLE_ECHEQUIER) // tant qu'il y a des pieces a analyser (-1 car on skip les rois)
         {
-            if (get_color(plateau[i]) == NOIR && plateau[i] != ROI + PIECE_NOIRE && plateau[i] != ROI + PIECE_NOIRE + PIECE_SPECIAL ) // si la piece est noire
+            if (get_color(plateau[i]) == NOIR) // si la piece est noire
             {
                 j++;                                      // on est sur une piece noire (non roi)
                 moves = get_legal_any(i, moves, plateau); // on récupère ses moves
@@ -1222,7 +1275,7 @@ char verifier_echec_fast(char couleur, unsigned char *plateau)
         i = TAILLE_ECHEQUIER - 1; // car les blancs commencent en bas
         while (j < nb_pieces && i >= 0)
         {
-            if (get_color(plateau[i]) == BLANC && plateau[i] != VIDE && plateau[i] != ROI && plateau[i] != ROI + PIECE_SPECIAL)
+            if (get_color(plateau[i]) == BLANC)
             {
                 j++; // on est sur une piece blanche(non roi)
                 moves = get_legal_any(i, moves, plateau);
@@ -1528,10 +1581,16 @@ void effectuer_move(char position_piece, char position_move, unsigned char *plat
 }
 
 // apppelle minimax pour savoir le meilleur move possible, puis l'effectue
-void ia_move(char profondeur, char couleur, unsigned char *plateau)
+void ia_move(char profondeur, char couleur, int debug, unsigned char *plateau)
 {
     int alpha = INT_MIN;
     int beta = INT_MAX;
+    FILE *fp = fopen("hashtable.txt", "a");
+    if (fopen == NULL)
+    {
+        fprintf(stderr, "\nERREUR FOPEN\n");
+        return;
+    }
 
     float total = 0.0, temp;
     clock_t debut, fin;
@@ -1563,7 +1622,10 @@ void ia_move(char profondeur, char couleur, unsigned char *plateau)
     print_color(plateau[return_minimax->move]);
     printf("(%d,%d), ", get_colonne(return_minimax->move), get_ligne(return_minimax->move));
     printf("Score: %d\n", return_minimax->score);
-    printf("\t***Temps de recherche: %f***\n", temp);
+    if (debug == 1)
+    {
+        printf("\t***Temps de recherche: %f***\n", temp);
+    }
     effectuer_move(return_minimax->piece, return_minimax->move, plateau);
 }
 

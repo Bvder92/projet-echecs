@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #ifndef __CHESS_H__
 
 #define __CHESS_H_
@@ -9,6 +11,8 @@
 #define BLANC 1
 #define NOIR 2
 #define U64 unsigned long long
+#define HUMAIN 0
+#define IA 1
 
 #define PION 1
 #define CAVALIER 2
@@ -26,7 +30,14 @@
 #define VALEUR_REINE 90
 #define VALEUR_ROI 2000
 
-#define MAX_TABLE_SIZE 1000000
+#define PION_V 100
+#define CAVALIER_V 280
+#define FOU_V 320
+#define TOUR_V 479
+#define REINE_V 929
+#define ROI_V 60000
+
+#define MAX_TABLE_SIZE 1000000 //1 million
 #define RAND_64 ((U64)rand() |       \
                  (U64)rand() << 15 | \
                  (U64)rand() << 30 | \
@@ -39,10 +50,23 @@ typedef struct liste
     struct liste *next;
 } liste;
 
+typedef struct nouvelle_partie
+{
+    int joueur_blanc;
+    int joueur_noir;
+    int profondeur_blanc;
+    int profondeur_noir;
+    int quitter;
+    int debug;
+} nouvelle_partie;
+
 typedef struct FEN
 {
     int tour;         // BLANC OU NOIR (1 ou 2)
-    int half_move;    // incrémenté a chaque tour
+    int nb_pcs_w;     //NOMBRE DE PIECES BLANCHES
+    int nb_pcs_b;     //NOMBRE DE PIECES NOIRES
+    int nb_tours;     //incrémenté a chaque tour
+    int half_move;    // incrémenté a chaque tour, réinitialisé après une capture
     char full_move;   // incrémenté a chaque tour des noirs
     int echec;        // -1 par défaut, prend la couleur du roi en échec
     int echec_et_mat; // -1 par défaut, prend la couleur du perdant (NOIR ou BLANC)
@@ -126,6 +150,8 @@ int affichage_echequier_fichier();
 
 void affichage_echequier_alt();
 
+nouvelle_partie select_mode();
+
 void initialiser_jeu();
 
 void initialiser_fen();
@@ -184,7 +210,7 @@ char choisir_move(char position, unsigned char *plateau);
 
 void effectuer_move(char position_piece, char position_move, unsigned char *plateau);
 
-void ia_move(char profondeur, char couleur, unsigned char *plateau);
+void ia_move(char profondeur, char couleur, int debug, unsigned char *plateau);
 
 void player_move(char couleur, unsigned char *plateau);
 
@@ -221,7 +247,7 @@ int get_max(int a, int b);
 
 int get_min(int a, int b);
 
-int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta);
+int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta, FILE * fp);
 
 int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta);
 
@@ -231,9 +257,9 @@ void test();
 // FICHIER TRANSPO:
 ***************************/
 
-void InitHashKeys();
+void init_hashkeys();
 
-U64 GeneratePosKey(unsigned char *plateau, char tour);
+U64 generate_posKey(unsigned char *plateau, char tour);
 
 Hash_table *init_hashtable(Hash_table *hashtable);
 
@@ -242,5 +268,8 @@ void add_entry(Hash_table *hashtable, U64 posKey, int score);
 int search_table(Hash_table *hashtable, U64 posKey);
 
 void liberation_hashtable(Hash_table * hashtable);
+
+void fill_from_file(Hash_table * hashtable);
+
 
 #endif
