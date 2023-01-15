@@ -5,7 +5,7 @@
 #include <time.h>
 #include <string.h>
 
-liste *creation_maillon(char n)
+liste *creation_maillon(int_fast8_t n)
 {
     liste *element = (liste *)malloc(sizeof(liste));
     element->valeur = n;
@@ -14,7 +14,7 @@ liste *creation_maillon(char n)
 }
 
 // 1 si vide, 0 sinon
-char liste_vide(liste *l)
+int_fast8_t liste_vide(liste *l)
 {
     if (l == NULL)
         return 1;
@@ -96,7 +96,7 @@ liste *suppression_queue(liste *l)
 }
 
 // retourne 1 si la valeur e est présente dans la liste, 0 sinon
-char recherche(liste *l, char e)
+int_fast8_t recherche(liste *l, int_fast8_t e)
 {
     if (l == NULL)
         return 0;
@@ -113,7 +113,7 @@ char recherche(liste *l, char e)
 }
 
 // supprime la valeur m de la liste
-liste *suppression_valeur(liste *l, char m)
+liste *suppression_valeur(liste *l, int_fast8_t m)
 {
     if (l == NULL)
         return NULL;
@@ -130,7 +130,7 @@ liste *suppression_valeur(liste *l, char m)
 }
 
 // recherche et retourne la valeur du nieme maillon de la liste
-char recuperer_valeur(liste *l, char n)
+int_fast8_t recuperer_valeur(liste *l, int_fast8_t n)
 {
     for (int i = 0; i < n; ++i)
     {
@@ -163,26 +163,26 @@ Fonctions echecs:
 ************************* */
 
 // retourne une position à partir d'une ligne et colonne:
-char get_pos(char ligne, char colonne)
+int_fast8_t get_pos(int_fast8_t ligne, int_fast8_t colonne)
 {
-    char i = ligne * 8;
+    int_fast8_t i = ligne * 8;
     return (i + colonne);
 }
 
-char get_ligne(char position)
+int_fast8_t get_ligne(int_fast8_t position)
 {
     return (position / 8);
 }
 
-char get_colonne(char position)
+int_fast8_t get_colonne(int_fast8_t position)
 {
     return (position - (get_ligne(position) * 8));
 }
 
-char compter_pieces(char couleur, unsigned char *plateau)
+int_fast8_t compter_pieces(int_fast8_t couleur, uint_fast8_t *plateau)
 {
-    char c = 0;
-    char i = 0;
+    int_fast8_t c = 0;
+    int_fast8_t i = 0;
     while (i < TAILLE_ECHEQUIER && c < 16)
     {
         if (get_color(plateau[i]) == couleur)
@@ -194,7 +194,7 @@ char compter_pieces(char couleur, unsigned char *plateau)
     return c;
 }
 
-char get_color(unsigned char piece)
+int_fast8_t get_color(uint_fast8_t piece)
 {
     if (piece > 128)
     {
@@ -211,9 +211,9 @@ char get_color(unsigned char piece)
 }
 
 // retourne 1 si toutes les cases entre a et b sont vides
-char vide(char a, char b, unsigned char *plateau)
+int_fast8_t vide(int_fast8_t a, int_fast8_t b, uint_fast8_t *plateau)
 {
-    for (char i = a; i < b; ++i)
+    for (int_fast8_t i = a; i < b; ++i)
     {
         if (plateau[i] != VIDE)
             return 0;
@@ -221,7 +221,7 @@ char vide(char a, char b, unsigned char *plateau)
     return 1;
 }
 
-void afficher_liste_pieces(char couleur, unsigned char *plateau)
+void afficher_liste_pieces(int_fast8_t couleur, uint_fast8_t *plateau)
 {
     int i;
     int piece = ROI;
@@ -264,10 +264,10 @@ void afficher_liste_pieces(char couleur, unsigned char *plateau)
 
 void affichage_echequier()
 {
-    char c = 0;
+    int_fast8_t c = 0;
     printf("     | ~0~ | ~1~ | ~2~ | ~3~ | ~4~ | ~5~ | ~6~ | ~7~ |\n");
     printf("+----+-----+-----+-----+-----+-----+-----+-----+-----+\n");
-    for (char i = 0; i < TAILLE_ECHEQUIER; ++i)
+    for (int_fast8_t i = 0; i < TAILLE_ECHEQUIER; ++i)
     {
         if (i % 8 == 0)
         {
@@ -292,10 +292,10 @@ int affichage_echequier_fichier()
         return 0;
     }
 
-    char c = 0;
+    int_fast8_t c = 0;
     fprintf(fp, "     | ~0~ | ~1~ | ~2~ | ~3~ | ~4~ | ~5~ | ~6~ | ~7~ |\n");
     fprintf(fp, "+----+-----+-----+-----+-----+-----+-----+-----+-----+\n");
-    for (char i = 0; i < TAILLE_ECHEQUIER; ++i)
+    for (int_fast8_t i = 0; i < TAILLE_ECHEQUIER; ++i)
     {
         if (i % 8 == 0)
         {
@@ -317,9 +317,9 @@ int affichage_echequier_fichier()
 
 void affichage_echequier_alt()
 {
-    char c = 0;
+    int_fast8_t c = 0;
     printf("    0  1  2  3  4  5  6  7  \n\n");
-    for (char i = 0; i < TAILLE_ECHEQUIER; ++i)
+    for (int_fast8_t i = 0; i < TAILLE_ECHEQUIER; ++i)
     {
         if (i % 8 == 0)
         {
@@ -422,7 +422,7 @@ nouvelle_partie select_mode()
 // remplit l'echequier et initialise les structures
 void initialiser_jeu()
 {
-    char i;
+    int_fast8_t i;
     echequier[0] = TOUR + PIECE_NOIRE;
     echequier[1] = CAVALIER + PIECE_NOIRE;
     echequier[2] = FOU + PIECE_NOIRE;
@@ -472,7 +472,7 @@ void initialiser_fen()
 }
 
 // affiche l'initiale d'une piece, utilisée pour affichage_echequier
-char print_piece(unsigned char position)
+char print_piece(uint_fast8_t position)
 {
     char c;
     switch (position)
@@ -531,7 +531,7 @@ char print_piece(unsigned char position)
     return c;
 }
 
-void print_name(unsigned char piece)
+void print_name(uint_fast8_t piece)
 {
     switch (piece)
     {
@@ -572,7 +572,7 @@ void print_name(unsigned char piece)
     }
 }
 
-void print_color(unsigned char piece)
+void print_color(uint_fast8_t piece)
 {
     if (piece > 128)
     {
@@ -589,7 +589,7 @@ void print_color(unsigned char piece)
 }
 
 // retourne la position de la piece choisie par l'utilisateur
-int select_piece(char tour, unsigned char *plateau)
+int select_piece(int_fast8_t tour, uint_fast8_t *plateau)
 {
     liste *liste_pieces = (liste *)malloc(sizeof(liste));
     liste_pieces = NULL;
@@ -674,14 +674,14 @@ void update_fen(FEN *fen)
 
 // retourne 1 si on est en end game, 0 sinon
 // vérifie que les 2 côtés n'aient pas de reine ou que ceux qui en ont n'aient qu'une piece mineure max
-char check_endgame(unsigned char *plateau)
+int_fast8_t check_endgame(uint_fast8_t *plateau)
 {
-    char wq = 0;  // reine blanche
-    char bq = 0;  // reine noire
-    char wpieces; // pieces importantes blanches
-    char bpieces; // pieces importantes noires
-    char nb_piecesw;
-    char nb_piecesb;
+    int_fast8_t wq = 0;  // reine blanche
+    int_fast8_t bq = 0;  // reine noire
+    int_fast8_t wpieces; // pieces importantes blanches
+    int_fast8_t bpieces; // pieces importantes noires
+    int_fast8_t nb_piecesw;
+    int_fast8_t nb_piecesb;
     int i;
     for (i = 0; i < TAILLE_ECHEQUIER; ++i)
     {
@@ -743,7 +743,7 @@ char check_endgame(unsigned char *plateau)
 }
 
 // parametre 1 = tableau original, parametre 2 = nouveau tableau
-unsigned char *copie_echequier(unsigned char *plateau, unsigned char *tab)
+uint_fast8_t *copie_echequier(uint_fast8_t *plateau, uint_fast8_t *tab)
 {
     for (int i = 0; i < TAILLE_ECHEQUIER; ++i)
     {
@@ -787,7 +787,7 @@ int get_pos_roi(int couleur)
 RECUPERATION DE MOVES:
 **********************************/
 
-liste *get_legal_pion_blanc(char position, liste *moves, unsigned char *plateau)
+liste *get_legal_pion_blanc(int_fast8_t position, liste *moves, uint_fast8_t *plateau)
 {
 
     // si la case devant le pion est vide, on peut avancer:
@@ -819,7 +819,7 @@ liste *get_legal_pion_blanc(char position, liste *moves, unsigned char *plateau)
     return moves;
 }
 
-liste *get_legal_pion_noir(char position, liste *moves, unsigned char *plateau)
+liste *get_legal_pion_noir(int_fast8_t position, liste *moves, uint_fast8_t *plateau)
 {
 
     if (plateau[position + 8] == VIDE)
@@ -848,11 +848,11 @@ liste *get_legal_pion_noir(char position, liste *moves, unsigned char *plateau)
     return moves;
 }
 
-liste *get_legal_cavalier(char position, liste *moves, unsigned char *plateau)
+liste *get_legal_cavalier(int_fast8_t position, liste *moves, uint_fast8_t *plateau)
 {
-    char ligne = get_ligne(position);
-    char colonne = get_colonne(position);
-    char couleur = get_color(plateau[position]);
+    int_fast8_t ligne = get_ligne(position);
+    int_fast8_t colonne = get_colonne(position);
+    int_fast8_t couleur = get_color(plateau[position]);
 
     if (position - 17 >= 0 && colonne >= 1 && ligne >= 2 && get_color(plateau[position - 17]) != couleur)
     {
@@ -891,11 +891,11 @@ liste *get_legal_cavalier(char position, liste *moves, unsigned char *plateau)
     return moves;
 }
 
-liste *get_legal_tour(char position, liste *moves, unsigned char *plateau)
+liste *get_legal_tour(int_fast8_t position, liste *moves, uint_fast8_t *plateau)
 {
-    char ligne = get_ligne(position);
-    char colonne = get_colonne(position);
-    char couleur = get_color(plateau[position]);
+    int_fast8_t ligne = get_ligne(position);
+    int_fast8_t colonne = get_colonne(position);
+    int_fast8_t couleur = get_color(plateau[position]);
     int i, j;
 
     for (i = position - 8; i >= 0; i = i - 8)
@@ -956,12 +956,12 @@ liste *get_legal_tour(char position, liste *moves, unsigned char *plateau)
     return moves;
 }
 
-liste *get_legal_fou(char position, liste *moves, unsigned char *plateau)
+liste *get_legal_fou(int_fast8_t position, liste *moves, uint_fast8_t *plateau)
 {
-    char ligne = get_ligne(position);
-    char colonne = get_colonne(position);
+    int_fast8_t ligne = get_ligne(position);
+    int_fast8_t colonne = get_colonne(position);
     int i;
-    char couleur = get_color(plateau[position]);
+    int_fast8_t couleur = get_color(plateau[position]);
 
     i = position - 9;
     while ((get_colonne(i) < colonne) && (i >= 0))
@@ -1018,11 +1018,11 @@ liste *get_legal_fou(char position, liste *moves, unsigned char *plateau)
     return moves;
 }
 
-liste *get_legal_roi(char position, liste *moves, unsigned char *plateau)
+liste *get_legal_roi(int_fast8_t position, liste *moves, uint_fast8_t *plateau)
 {
-    char ligne = get_ligne(position);
-    char colonne = get_colonne(position);
-    char couleur = get_color(plateau[position]);
+    int_fast8_t ligne = get_ligne(position);
+    int_fast8_t colonne = get_colonne(position);
+    int_fast8_t couleur = get_color(plateau[position]);
 
     if (colonne != 0 && ligne != 0 && get_color(plateau[position - 9]) != couleur)
     {
@@ -1080,7 +1080,7 @@ liste *get_legal_roi(char position, liste *moves, unsigned char *plateau)
     return moves;
 }
 
-liste *get_legal_reine(char position, liste *moves, unsigned char *plateau)
+liste *get_legal_reine(int_fast8_t position, liste *moves, uint_fast8_t *plateau)
 {
     liste *moves_fou = (liste *)malloc(sizeof(liste));
     liste *moves_tour = (liste *)malloc(sizeof(liste));
@@ -1110,7 +1110,7 @@ liste *get_legal_reine(char position, liste *moves, unsigned char *plateau)
 }
 
 // appelle get_legal sur la piece dans plateau[position]
-liste *get_legal_any(char position, liste *moves, unsigned char *plateau)
+liste *get_legal_any(int_fast8_t position, liste *moves, uint_fast8_t *plateau)
 {
     switch (plateau[position])
     {
@@ -1153,19 +1153,19 @@ liste *get_legal_any(char position, liste *moves, unsigned char *plateau)
 }
 
 // retire les moves qui vont donner lieu a un echec de la liste de moves d'une piece
-liste *retirer_echec(char position, liste *moves, unsigned char *plateau)
+liste *retirer_echec(int_fast8_t position, liste *moves, uint_fast8_t *plateau)
 {
-    char couleur = get_color(plateau[position]);
-    char couleur_ennemie = get_couleur_ennemie(couleur);
+    int_fast8_t couleur = get_color(plateau[position]);
+    int_fast8_t couleur_ennemie = get_couleur_ennemie(couleur);
     int i = 0;
     liste *tmp = moves;
     liste *tmptmp;
-    unsigned char *echequier_tmp = (unsigned char *)malloc(sizeof(unsigned char) * TAILLE_ECHEQUIER);
+    uint_fast8_t *echequier_tmp = (uint_fast8_t *)malloc(sizeof(uint_fast8_t) * TAILLE_ECHEQUIER);
     while (tmp != NULL)
     {
         tmptmp = tmp->next; // comme on va supprimer un élément, pas sur de ce qu'il va se passer a tmp->next donc on le save avant
         // on effectue le move
-        memcpy(echequier_tmp, plateau, TAILLE_ECHEQUIER * sizeof(unsigned char));
+        memcpy(echequier_tmp, plateau, TAILLE_ECHEQUIER * sizeof(uint_fast8_t));
         effectuer_move(position, tmp->valeur, echequier_tmp);
 
         // on supprime le move de la liste si il donne lieu a un echec
@@ -1182,7 +1182,7 @@ liste *retirer_echec(char position, liste *moves, unsigned char *plateau)
     return moves;
 }
 
-liste *get_legal_all(char position, liste *moves, unsigned char *plateau)
+liste *get_legal_all(int_fast8_t position, liste *moves, uint_fast8_t *plateau)
 {
     moves = get_legal_any(position, moves, plateau);
     moves = retirer_echec(position, moves, plateau);
@@ -1191,7 +1191,7 @@ liste *get_legal_all(char position, liste *moves, unsigned char *plateau)
 }
 
 // parcours les moves de toutes les pieces et retourne la couleur du joueur en échec, -1 si aucun
-char verifier_echec(unsigned char *plateau)
+int_fast8_t verifier_echec(uint_fast8_t *plateau)
 {
     liste *moves = (liste *)malloc(sizeof(liste));
     moves = NULL;
@@ -1227,12 +1227,12 @@ char verifier_echec(unsigned char *plateau)
     return echec;
 }
 
-char verifier_echec_fast(char couleur, unsigned char *plateau)
+int_fast8_t verifier_echec_fast(int_fast8_t couleur, uint_fast8_t *plateau)
 {
     liste *moves = (liste *)malloc(sizeof(liste));
     moves = NULL;
     liste *tmp, *t;
-    char i, j = 0, nb_pieces, echec = -1;
+    int_fast8_t i, j = 0, nb_pieces, echec = -1;
 
     if (couleur == BLANC) // si couleur == blanc, on cherche dans les pieces noires
     {
@@ -1308,14 +1308,14 @@ char verifier_echec_fast(char couleur, unsigned char *plateau)
 }
 
 // liste des pieces de couleur qui peuvent bouger
-liste *liste_moves(char couleur, liste *liste_pieces, unsigned char *plateau)
+liste *liste_moves(int_fast8_t couleur, liste *liste_pieces, uint_fast8_t *plateau)
 {
-    char i, j = 0;
+    int_fast8_t i, j = 0;
     liste *moves = (liste *)malloc(sizeof(liste));
     moves = NULL;
     liste_pieces = NULL;
 
-    char nb_pieces = compter_pieces(couleur, plateau); // nombre de pieces sur l'echequier
+    int_fast8_t nb_pieces = compter_pieces(couleur, plateau); // nombre de pieces sur l'echequier
 
     while (i < TAILLE_ECHEQUIER && j < nb_pieces)
     {
@@ -1344,7 +1344,7 @@ liste *liste_moves(char couleur, liste *liste_pieces, unsigned char *plateau)
     return liste_pieces;
 }
 
-void promotion_user(char position, char piece, unsigned char *plateau)
+void promotion_user(int_fast8_t position, int_fast8_t piece, uint_fast8_t *plateau)
 {
     switch (piece)
     {
@@ -1410,7 +1410,7 @@ void promotion_user(char position, char piece, unsigned char *plateau)
 }
 
 // retourne la couleur du perdant, ou -1
-char echec_et_mat(char couleur, unsigned char *plateau)
+int_fast8_t echec_et_mat(int_fast8_t couleur, uint_fast8_t *plateau)
 {
 
     liste *liste_pieces = (liste *)malloc(sizeof(liste));
@@ -1442,16 +1442,16 @@ char echec_et_mat(char couleur, unsigned char *plateau)
 }
 
 // propose tous les moves dispo a l'utilisateur et retourne le move choisi:
-char choisir_move(char position, unsigned char *plateau)
+int_fast8_t choisir_move(int_fast8_t position, uint_fast8_t *plateau)
 {
     liste *moves = (liste *)malloc(sizeof(liste));
     moves = NULL;
     moves = get_legal_all(position, moves, plateau); // get_legal_any car si on appelle bouger sur une piece, c'est quelle peut bouger
     liste *tmp = moves;
     liste *tmptmp = moves;
-    char i = 0;
+    int_fast8_t i = 0;
     int j = 0;
-    char rep;
+    int_fast8_t rep;
 
     printf("\nPiece selectionnee: ");
     print_name(plateau[position]);
@@ -1490,10 +1490,10 @@ char choisir_move(char position, unsigned char *plateau)
     // promotion pour l'utilisateur
     /*if (plateau[position] == PION || plateau[position] == PION + PIECE_NOIRE)
     {
-        char move2 = recuperer_valeur(tmp, rep);
+        int_fast8_t move2 = recuperer_valeur(tmp, rep);
         if (plateau[move2] >= 0 && plateau[move2] <= 7 && plateau[move2] >= 56 && plateau[move2] <= 63)
         {
-            char promo;
+            int_fast8_t promo;
             printf("\nVOUS ETES EN SITUATION DE PROMOTION, VEUILLEZ SELECTIONNER UNE PIECE PARMIS = 1 : DAME, 2 : TOUR, 3 : FOU, 4 : CAVALIER\n");
             scanf("%d", &promo);
             promotion_user(position, promo, plateau);
@@ -1512,14 +1512,14 @@ char choisir_move(char position, unsigned char *plateau)
     return rep;
 }
 
-void promotion_ia(char position, unsigned char nouvelle_piece, unsigned char *plateau)
+void promotion_ia(int_fast8_t position, uint_fast8_t nouvelle_piece, uint_fast8_t *plateau)
 {
     printf("\nappel promotion\n");
     plateau[position] = nouvelle_piece;
 }
 
 // déplace la piece dans plateau[position_piece] à la case position_move, et castle/promote si besoin
-void effectuer_move(char position_piece, char position_move, unsigned char *plateau)
+void effectuer_move(int_fast8_t position_piece, int_fast8_t position_move, uint_fast8_t *plateau)
 {
     if (plateau[position_piece] == ROI && position_move == 62) // castle blanc coté roi
     {
@@ -1556,13 +1556,13 @@ void effectuer_move(char position_piece, char position_move, unsigned char *plat
     // position move car on part du principe que le pion n'a pas encore bougé donc regarder sa position avant son move est inutile
     else if (plateau[position_piece] == PION && get_ligne(position_move) == 0) // pion blanc ligne 0
     {
-        unsigned char nouvelle_piece = REINE;
+        uint_fast8_t nouvelle_piece = REINE;
         plateau[position_move] = nouvelle_piece;
         plateau[position_piece] = VIDE;
     }
     else if (plateau[position_piece] == PION + PIECE_NOIRE && get_ligne(position_move) == 7) // pion noir ligne 7
     {
-        unsigned char nouvelle_piece = REINE + PIECE_NOIRE;
+        uint_fast8_t nouvelle_piece = REINE + PIECE_NOIRE;
         plateau[position_move] = nouvelle_piece;
         plateau[position_piece] = VIDE;
     }
@@ -1581,7 +1581,7 @@ void effectuer_move(char position_piece, char position_move, unsigned char *plat
 }
 
 // apppelle minimax pour savoir le meilleur move possible, puis l'effectue
-void ia_move(char profondeur, char couleur, int debug, unsigned char *plateau)
+void ia_move(int_fast8_t profondeur, int_fast8_t couleur, int debug, uint_fast8_t *plateau)
 {
     int alpha = INT_MIN;
     int beta = INT_MAX;
@@ -1629,9 +1629,9 @@ void ia_move(char profondeur, char couleur, int debug, unsigned char *plateau)
     effectuer_move(return_minimax->piece, return_minimax->move, plateau);
 }
 
-void player_move(char couleur, unsigned char *plateau)
+void player_move(int_fast8_t couleur, uint_fast8_t *plateau)
 {
-    char move;
+    int_fast8_t move;
     int position;
 
     position = select_piece(couleur, plateau);

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
-unsigned char echequier[TAILLE_ECHEQUIER];
+uint_fast8_t echequier[TAILLE_ECHEQUIER];
 U64 PieceKeys[14][64];
 U64 SideKey;
 FEN *fen;

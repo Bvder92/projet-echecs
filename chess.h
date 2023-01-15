@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdint.h>
 
 #ifndef __CHESS_H__
 
@@ -46,7 +47,7 @@
 
 typedef struct liste
 {
-    unsigned char valeur;
+    uint_fast8_t valeur;
     struct liste *next;
 } liste;
 
@@ -67,16 +68,16 @@ typedef struct FEN
     int nb_pcs_b;     //NOMBRE DE PIECES NOIRES
     int nb_tours;     //incrémenté a chaque tour
     int half_move;    // incrémenté a chaque tour, réinitialisé après une capture
-    char full_move;   // incrémenté a chaque tour des noirs
+    int_fast8_t full_move;   // incrémenté a chaque tour des noirs
     int echec;        // -1 par défaut, prend la couleur du roi en échec
     int echec_et_mat; // -1 par défaut, prend la couleur du perdant (NOIR ou BLANC)
-    char capture;     // 0 par défaut, 1 si le dernier move etait une capture
-    char endgame;     // 0 par défaut, 1 quand on est en endgame
+    int_fast8_t capture;     // 0 par défaut, 1 si le dernier move etait une capture
+    int_fast8_t endgame;     // 0 par défaut, 1 quand on est en endgame
 } FEN;
 typedef struct best_move
 {
-    unsigned char piece;
-    char move;
+    uint_fast8_t piece;
+    int_fast8_t move;
     int score;
 } best_move;
 
@@ -94,22 +95,22 @@ typedef struct Hash_table
 
 typedef struct Plateau // plateau + key
 {
-    unsigned char *plateau;
+    uint_fast8_t *plateau;
     U64 hash;
 } Plateau;
 
 extern best_move *return_minimax;
 extern FEN *fen;
 extern Hash_table *hashtable;
-extern unsigned char echequier[TAILLE_ECHEQUIER];
+extern uint_fast8_t echequier[TAILLE_ECHEQUIER];
 extern U64 PieceKeys[14][64];
 extern U64 SideKey;
 extern double total_search;
 
 // FONCTIONS LISTE:
-liste *creation_maillon(char n);
+liste *creation_maillon(int_fast8_t n);
 
-char liste_vide(liste *l);
+int_fast8_t liste_vide(liste *l);
 
 void affichage_liste(liste *l);
 
@@ -121,27 +122,27 @@ liste *ajout_queue(liste *l, liste *m);
 
 liste *suppression_queue(liste *l);
 
-char recherche(liste *l, char e);
+int_fast8_t recherche(liste *l, int_fast8_t e);
 
-liste *suppression_valeur(liste *l, char m);
+liste *suppression_valeur(liste *l, int_fast8_t m);
 
 void liberation(liste *l);
 
 // FONCTIONS INFORMATIVES:
 
-char get_pos(char ligne, char colonne);
+int_fast8_t get_pos(int_fast8_t ligne, int_fast8_t colonne);
 
-char get_ligne(char position);
+int_fast8_t get_ligne(int_fast8_t position);
 
-char get_colonne(char position);
+int_fast8_t get_colonne(int_fast8_t position);
 
-char compter_pieces(char couleur, unsigned char *plateau);
+int_fast8_t compter_pieces(int_fast8_t couleur, uint_fast8_t *plateau);
 
-char get_color(unsigned char piece);
+int_fast8_t get_color(uint_fast8_t piece);
 
-char vide(char a, char b, unsigned char *plateau);
+int_fast8_t vide(int_fast8_t a, int_fast8_t b, uint_fast8_t *plateau);
 
-void afficher_liste_pieces(char couleur, unsigned char *plateau);
+void afficher_liste_pieces(int_fast8_t couleur, uint_fast8_t *plateau);
 
 // FONCTIONS DE BASE DU JEU:
 void affichage_echequier();
@@ -156,67 +157,67 @@ void initialiser_jeu();
 
 void initialiser_fen();
 
-char print_piece(unsigned char position);
+char print_piece(uint_fast8_t position);
 
-void print_name(unsigned char piece);
+void print_name(uint_fast8_t piece);
 
-void print_color(unsigned char piece);
+void print_color(uint_fast8_t piece);
 
-int select_piece(char tour, unsigned char *plateau);
+int select_piece(int_fast8_t tour, uint_fast8_t *plateau);
 
 void update_fen(FEN *fen);
 
-char verifier_echec(unsigned char *plateau);
+int_fast8_t verifier_echec(uint_fast8_t *plateau);
 
-char verifier_echec_fast(char couleur, unsigned char *plateau);
+int_fast8_t verifier_echec_fast(int_fast8_t couleur, uint_fast8_t *plateau);
 
-char verifier_echec_faste(char couleur, unsigned char *plateau);
+int_fast8_t verifier_echec_faste(int_fast8_t couleur, uint_fast8_t *plateau);
 
-char verifier_echec_couleur(char couleur, unsigned char *plateau);
+int_fast8_t verifier_echec_couleur(int_fast8_t couleur, uint_fast8_t *plateau);
 
-char check_endgame(unsigned char *plateau);
+int_fast8_t check_endgame(uint_fast8_t *plateau);
 
 // FONCTIONS DE FORMATTAGE DE TABLEAUX:
 
-unsigned char *copie_echequier(unsigned char *plateau, unsigned char *tab);
+uint_fast8_t *copie_echequier(uint_fast8_t *plateau, uint_fast8_t *tab);
 
 // FONCTIONS DE RECUPERATION DE MOVES:
 
-liste *get_legal_pion_blanc(char position, liste *moves, unsigned char *plateau);
+liste *get_legal_pion_blanc(int_fast8_t position, liste *moves, uint_fast8_t *plateau);
 
-liste *get_legal_pion_noir(char position, liste *moves, unsigned char *plateau);
+liste *get_legal_pion_noir(int_fast8_t position, liste *moves, uint_fast8_t *plateau);
 
-liste *get_legal_cavalier(char position, liste *moves, unsigned char *plateau);
+liste *get_legal_cavalier(int_fast8_t position, liste *moves, uint_fast8_t *plateau);
 
-liste *get_legal_tour(char position, liste *moves, unsigned char *plateau);
+liste *get_legal_tour(int_fast8_t position, liste *moves, uint_fast8_t *plateau);
 
-liste *get_legal_fou(char position, liste *moves, unsigned char *plateau);
+liste *get_legal_fou(int_fast8_t position, liste *moves, uint_fast8_t *plateau);
 
-liste *get_legal_roi(char position, liste *moves, unsigned char *plateau);
+liste *get_legal_roi(int_fast8_t position, liste *moves, uint_fast8_t *plateau);
 
-liste *get_legal_reine(char position, liste *moves, unsigned char *plateau);
+liste *get_legal_reine(int_fast8_t position, liste *moves, uint_fast8_t *plateau);
 
-liste *get_legal_any(char position, liste *moves, unsigned char *plateau);
+liste *get_legal_any(int_fast8_t position, liste *moves, uint_fast8_t *plateau);
 
-liste *get_legal_all(char position, liste *moves, unsigned char *plateau);
+liste *get_legal_all(int_fast8_t position, liste *moves, uint_fast8_t *plateau);
 
-liste *retirer_echec(char position, liste *moves, unsigned char *plateau);
+liste *retirer_echec(int_fast8_t position, liste *moves, uint_fast8_t *plateau);
 
-liste *liste_moves(char couleur, liste *liste_pieces, unsigned char *plateau);
+liste *liste_moves(int_fast8_t couleur, liste *liste_pieces, uint_fast8_t *plateau);
 
-char echec_et_mat(char couleur, unsigned char *plateau);
+int_fast8_t echec_et_mat(int_fast8_t couleur, uint_fast8_t *plateau);
 
-char choisir_move(char position, unsigned char *plateau);
+int_fast8_t choisir_move(int_fast8_t position, uint_fast8_t *plateau);
 
-void effectuer_move(char position_piece, char position_move, unsigned char *plateau);
+void effectuer_move(int_fast8_t position_piece, int_fast8_t position_move, uint_fast8_t *plateau);
 
-void ia_move(char profondeur, char couleur, int debug, unsigned char *plateau);
+void ia_move(int_fast8_t profondeur, int_fast8_t couleur, int debug, uint_fast8_t *plateau);
 
-void player_move(char couleur, unsigned char *plateau);
+void player_move(int_fast8_t couleur, uint_fast8_t *plateau);
 
-void promotion_ia(char position, unsigned char nouvelle_piece, unsigned char *plateau);
+void promotion_ia(int_fast8_t position, uint_fast8_t nouvelle_piece, uint_fast8_t *plateau);
 
-void promotion_user(char position, char piece, unsigned char *plateau);
+void promotion_user(int_fast8_t position, int_fast8_t piece, uint_fast8_t *plateau);
 
 /* ************************
 // FICHIER IA:
@@ -224,32 +225,32 @@ void promotion_user(char position, char piece, unsigned char *plateau);
 
 // FONCITONS SCORE:
 
-int get_valeur_materielle(char position, unsigned char *plateau);
+int get_valeur_materielle(int_fast8_t position, uint_fast8_t *plateau);
 
-int get_valeur_materielle_totale(char couleur, unsigned char *plateau);
+int get_valeur_materielle_totale(int_fast8_t couleur, uint_fast8_t *plateau);
 
-int get_bonus_placements(unsigned char piece, char position);
+int get_bonus_placements(uint_fast8_t piece, int_fast8_t position);
 
-int get_bonus_placements_total(char couleur, unsigned char *plateau);
+int get_bonus_placements_total(int_fast8_t couleur, uint_fast8_t *plateau);
 
-int get_score_couleur(char couleur, unsigned char *plateau);
+int get_score_couleur(int_fast8_t couleur, uint_fast8_t *plateau);
 
-int get_score(unsigned char *plateau);
+int get_score(uint_fast8_t *plateau);
 
-int get_newscore(unsigned char *plateau);
+int get_newscore(uint_fast8_t *plateau);
 
 // MINIMAX:
-char get_minimizer(char maximizer);
+int_fast8_t get_minimizer(int_fast8_t maximizer);
 
-char get_couleur_ennemie(char couleur);
+int_fast8_t get_couleur_ennemie(int_fast8_t couleur);
 
 int get_max(int a, int b);
 
 int get_min(int a, int b);
 
-int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta, FILE * fp);
+int minimax(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, int_fast8_t profondeur, int alpha, int beta, FILE * fp);
 
-int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta);
+int minimax_old(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, int_fast8_t profondeur, int alpha, int beta);
 
 void test();
 
@@ -259,7 +260,7 @@ void test();
 
 void init_hashkeys();
 
-U64 generate_posKey(unsigned char *plateau, char tour);
+U64 generate_posKey(uint_fast8_t *plateau, int_fast8_t tour);
 
 Hash_table *init_hashtable(Hash_table *hashtable);
 

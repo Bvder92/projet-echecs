@@ -91,7 +91,7 @@ const int table_mirroir[TAILLE_ECHEQUIER] = {
     0, 1, 2, 3, 4, 5, 6, 7};
 
 // retourne la valeur de la piece dans position
-int get_valeur_materielle(char position, unsigned char *plateau)
+int get_valeur_materielle(int_fast8_t position, uint_fast8_t *plateau)
 {
     int valeur;
     switch (plateau[position])
@@ -134,7 +134,7 @@ int get_valeur_materielle(char position, unsigned char *plateau)
     return valeur;
 }
 
-int get_bonus_placements(unsigned char piece, char position)
+int get_bonus_placements(uint_fast8_t piece, int_fast8_t position)
 {
     switch (piece)
     {
@@ -204,10 +204,10 @@ int get_bonus_placements(unsigned char piece, char position)
 }
 
 // retourne la somme des valeurs des bonus de placement pour chaque piece d'une couleur donnée
-int get_bonus_placements_total(char couleur, unsigned char *plateau)
+int get_bonus_placements_total(int_fast8_t couleur, uint_fast8_t *plateau)
 {
-    char nb_pieces = compter_pieces(couleur, plateau); // nombre de pieces de "couleur" présentes sur l'echequier
-    char i, j = 0;
+    int_fast8_t nb_pieces = compter_pieces(couleur, plateau); // nombre de pieces de "couleur" présentes sur l'echequier
+    int_fast8_t i, j = 0;
     int materiel_total, bonus_total;
 
     if (couleur == NOIR) // les pieces noires commencent la partie entre echequier[0] et 16, i commence donc à 0
@@ -239,10 +239,10 @@ int get_bonus_placements_total(char couleur, unsigned char *plateau)
     return bonus_total;
 }
 // retourne la somme de la valeur des pieces d'une couleur passée en parametre
-int get_valeur_materielle_totale(char couleur, unsigned char *plateau)
+int get_valeur_materielle_totale(int_fast8_t couleur, uint_fast8_t *plateau)
 {
-    char i, j = 0;
-    char nb_pieces = compter_pieces(couleur, plateau);
+    int_fast8_t i, j = 0;
+    int_fast8_t nb_pieces = compter_pieces(couleur, plateau);
     int materiel_total = 0;
 
     if (couleur == NOIR)
@@ -275,9 +275,9 @@ int get_valeur_materielle_totale(char couleur, unsigned char *plateau)
 }
 
 // retourne la somme des valeurs des bonus de placement pour chaque piece d'une couleur donnée
-int get_score_couleur(char couleur, unsigned char *plateau)
+int get_score_couleur(int_fast8_t couleur, uint_fast8_t *plateau)
 {
-    char nb_pieces = compter_pieces(couleur, plateau);
+    int_fast8_t nb_pieces = compter_pieces(couleur, plateau);
     int i, j = 0;
     int bonus_total = 0, materiel_total = 0;
 
@@ -313,7 +313,7 @@ int get_score_couleur(char couleur, unsigned char *plateau)
 }
 
 // retourne le score total de l'echequier passé en argument, score calculé par rapport aux noirs
-int get_score(unsigned char *plateau)
+int get_score(uint_fast8_t *plateau)
 {
     // score = valeur materielle + placements
     // int score_noir = get_valeur_materielle_totale(NOIR, plateau) + get_bonus_placements_total(NOIR, plateau);
@@ -322,7 +322,7 @@ int get_score(unsigned char *plateau)
     return get_score_couleur(NOIR, plateau) - get_score_couleur(BLANC, plateau);
 }
 
-int get_newscore(unsigned char *plateau)
+int get_newscore(uint_fast8_t *plateau)
 {
     return (get_score_couleur(NOIR, plateau) - get_score_couleur(BLANC, plateau));
 }
@@ -345,7 +345,7 @@ int get_min(int a, int b)
 }
 
 // retourne 0 si on lui passe 1, et 1 si on lui passe 0
-char get_minimizer(char maximizer)
+int_fast8_t get_minimizer(int_fast8_t maximizer)
 {
     if (maximizer == 1)
     {
@@ -355,7 +355,7 @@ char get_minimizer(char maximizer)
         return 1;
 }
 
-char get_couleur_ennemie(char couleur)
+int_fast8_t get_couleur_ennemie(int_fast8_t couleur)
 {
     if (couleur == NOIR)
     {
@@ -376,28 +376,28 @@ void test()
 }
 
 // couleur = couleur du joueur qui doit jouer, maximizer = es-ce qu'il veut maximizer ou minimizer son score
-int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta, FILE *fp)
+int minimax(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, int_fast8_t profondeur, int alpha, int beta, FILE *fp)
 {
-    char couleur_ennemie = get_couleur_ennemie(couleur);
+    int_fast8_t couleur_ennemie = get_couleur_ennemie(couleur);
     if (profondeur == 0 || echec_et_mat(couleur, plateau) != -1)
     {
         // printf("profondeur = 0");
         return get_score(plateau);
     }
 
-    char meilleur_move;
-    unsigned char meilleure_piece;
+    int_fast8_t meilleur_move;
+    uint_fast8_t meilleure_piece;
 
-    char minimizer = get_minimizer(maximizer);
+    int_fast8_t minimizer = get_minimizer(maximizer);
 
     int best_eval;
     int eval;
     int search;
     U64 posKey;
 
-    char i = 0;
-    unsigned char *plateau_backup = (unsigned char *)malloc(sizeof(unsigned char) * TAILLE_ECHEQUIER);
-    memcpy(plateau_backup, plateau, TAILLE_ECHEQUIER * sizeof(unsigned char)); // utilisé pour reset l'echequier après qu'on ait testé un move
+    int_fast8_t i = 0;
+    uint_fast8_t *plateau_backup = (uint_fast8_t *)malloc(sizeof(uint_fast8_t) * TAILLE_ECHEQUIER);
+    memcpy(plateau_backup, plateau, TAILLE_ECHEQUIER * sizeof(uint_fast8_t)); // utilisé pour reset l'echequier après qu'on ait testé un move
 
     if (maximizer == 1) // on cherche a maximizer le score
     {
@@ -418,7 +418,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                 // on effectue le move
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau);
 
-                posKey = GeneratePosKey(plateau, couleur);
+                posKey = generate_posKey(plateau, couleur);
                 search = search_table(hashtable, posKey);
                 if (search != INT_MIN) // si le move a déjà été évalué
                 {
@@ -435,7 +435,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                 alpha = get_max(alpha, eval);
                 if (beta <= alpha)
                 {
-                    memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(unsigned char));
+                    memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(uint_fast8_t));
                     moves = moves->next;
                     break;
                 }
@@ -448,7 +448,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                 }
 
                 // reset le plateau puis incrémente la liste des moves
-                memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(unsigned char));
+                memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(uint_fast8_t));
                 moves = moves->next;
             }
             // liberation de moves avant la prochaine itération:
@@ -483,7 +483,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
             {
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau); // on effectue le move
 
-                posKey = GeneratePosKey(plateau, couleur);
+                posKey = generate_posKey(plateau, couleur);
                 search = search_table(hashtable, posKey);
                 if (search != INT_MIN) // si le move a déjà été évalué
                 {
@@ -501,7 +501,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                 beta = get_min(beta, eval);
                 if (beta <= alpha)
                 {
-                    memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(unsigned char));
+                    memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(uint_fast8_t));
                     moves = moves->next;
                     break;
                 }
@@ -514,7 +514,7 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
                     best_eval = eval;
                 }
 
-                memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(unsigned char));
+                memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(uint_fast8_t));
                 moves = moves->next;
             }
 
@@ -533,26 +533,26 @@ int minimax(char couleur, char maximizer, unsigned char *plateau, char profondeu
 }
 
 //verision sans la table de hash et le fichier texte
-int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profondeur, int alpha, int beta)
+int minimax_old(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, int_fast8_t profondeur, int alpha, int beta)
 {
-    char couleur_ennemie = get_couleur_ennemie(couleur);
+    int_fast8_t couleur_ennemie = get_couleur_ennemie(couleur);
     if (profondeur == 0 || echec_et_mat(couleur, plateau) != -1)
     {
         // printf("profondeur = 0");
         return get_score(plateau);
     }
 
-    char meilleur_move;
-    unsigned char meilleure_piece;
+    int_fast8_t meilleur_move;
+    uint_fast8_t meilleure_piece;
 
-    char minimizer = get_minimizer(maximizer);
+    int_fast8_t minimizer = get_minimizer(maximizer);
 
     int best_eval;
     int eval;
 
-    char i = 0;
-    unsigned char *plateau_backup = (unsigned char *)malloc(sizeof(unsigned char) * TAILLE_ECHEQUIER);
-    memcpy(plateau_backup, plateau, TAILLE_ECHEQUIER * sizeof(unsigned char)); // utilisé pour reset l'echequier après qu'on ait testé un move
+    int_fast8_t i = 0;
+    uint_fast8_t *plateau_backup = (uint_fast8_t *)malloc(sizeof(uint_fast8_t) * TAILLE_ECHEQUIER);
+    memcpy(plateau_backup, plateau, TAILLE_ECHEQUIER * sizeof(uint_fast8_t)); // utilisé pour reset l'echequier après qu'on ait testé un move
 
     if (maximizer == 1) // on cherche a maximizer le score
     {
@@ -578,7 +578,7 @@ int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profo
                 alpha = get_max(alpha, eval);
                 if (beta <= alpha)
                 {
-                    memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(unsigned char));
+                    memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(uint_fast8_t));
                     moves = moves->next;
                     break;
                 }
@@ -591,7 +591,7 @@ int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profo
                 }
 
                 // reset le plateau puis incrémente la liste des moves
-                memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(unsigned char));
+                memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(uint_fast8_t));
                 moves = moves->next;
             }
             // liberation de moves avant la prochaine itération:
@@ -633,7 +633,7 @@ int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profo
                 beta = get_min(beta, eval);
                 if (beta <= alpha)
                 {
-                    memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(unsigned char));
+                    memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(uint_fast8_t));
                     moves = moves->next;
                     break;
                 }
@@ -646,7 +646,7 @@ int minimax_old(char couleur, char maximizer, unsigned char *plateau, char profo
                     best_eval = eval;
                 }
 
-                memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(unsigned char));
+                memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(uint_fast8_t));
                 moves = moves->next;
             }
 

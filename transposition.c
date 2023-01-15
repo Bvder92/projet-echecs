@@ -5,9 +5,9 @@
 #include <string.h>
 
 // const int PvSize = 0x100000 * 2;
-unsigned char get_piece_index(unsigned char piece)
+uint_fast8_t get_piece_index(uint_fast8_t piece)
 {
-    unsigned char finalpiece;
+    uint_fast8_t finalpiece;
     if (get_color(piece) == NOIR)
     {
         if (piece == ROI + PIECE_NOIRE + PIECE_SPECIAL)
@@ -46,11 +46,11 @@ void init_hashkeys()
 }
 
 // Genere un hash unique pour chaque échequier
-U64 generate_posKey(unsigned char *plateau, char tour)
+U64 generate_posKey(uint_fast8_t *plateau, int_fast8_t tour)
 {
     int sq = 0;
     U64 FinalKey = 0;
-    unsigned char piece = VIDE;
+    uint_fast8_t piece = VIDE;
 
     // pieces
     for (sq = 0; sq < TAILLE_ECHEQUIER; ++sq)
@@ -169,7 +169,7 @@ void liberation_hashtable(Hash_table *hashtable)
 
 int count_lines(FILE* file)
 {
-    char buf[65536];
+    int_fast8_t buf[65536];
     int counter = 0;
     for(;;)
     {

@@ -2,7 +2,7 @@ FROM debian:bullseye
 
 WORKDIR /projet
 
-RUN apt-get update && apt-get install -y neofetch gcc make git 
+RUN apt-get update && apt-get install -y gcc make git 
 
 COPY . /projet
 
