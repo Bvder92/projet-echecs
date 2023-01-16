@@ -11,7 +11,7 @@
 #define VIDE 0
 #define BLANC 1
 #define NOIR 2
-#define U64 unsigned long long
+#define U64 uint64_t
 #define HUMAIN 0
 #define IA 1
 
@@ -32,6 +32,7 @@
 #define VALEUR_ROI 2000
 
 #define MAX_TABLE_SIZE 1000000 //1 million
+#define NB_LIGNES 489703
 #define RAND_64 ((U64)rand() |       \
                  (U64)rand() << 15 | \
                  (U64)rand() << 30 | \
@@ -240,6 +241,5 @@ void liberation_hashtable(Hash_table * hashtable);
 void fill_from_file(Hash_table * hashtable);
 
 int minimax_ht(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, int_fast8_t profondeur, int alpha, int beta, FILE * fp);
-
 
 #endif

@@ -78,22 +78,6 @@ U64 generate_posKey(uint_fast8_t *plateau, int_fast8_t tour)
     return FinalKey;
 }
 
-void clear_hashtable(Hash_table *table)
-{
-    printf("\nCLEAR\n");
-    Entry *entry;
-    int max_entries = MAX_TABLE_SIZE / sizeof(Entry);
-    max_entries -= 2;
-
-    int index = 0;
-    while (index != MAX_TABLE_SIZE)
-    {
-        entry = table->entries[index];
-        entry->posKey = 0ULL;
-        index++;
-    }
-}
-
 Hash_table *init_hashtable(Hash_table *hashtable)
 {
     hashtable = (Hash_table *)malloc(sizeof(hashtable));
@@ -168,28 +152,6 @@ void liberation_hashtable(Hash_table *hashtable)
     free(hashtable);
 }
 
-int count_lines(FILE* file)
-{
-    int_fast8_t buf[65536];
-    int counter = 0;
-    for(;;)
-    {
-        size_t res = fread(buf, 1, 65536, file);
-        if (ferror(file))
-            return -1;
-
-        int i;
-        for(i = 0; i < res; i++)
-            if (buf[i] == '\n')
-                counter++;
-
-        if (feof(file))
-            break;
-    }
-
-    return counter;
-}
-
 void fill_from_file(Hash_table *hashtable)
 {
     FILE *fp = fopen("aaa.txt", "r");
@@ -200,11 +162,8 @@ void fill_from_file(Hash_table *hashtable)
     }
     int i = 0, int_buf;
     U64 llu_buf;
-    int nb_lignes = 0;
 
-    nb_lignes = 489703;
-
-    while (i < nb_lignes)
+    while (i < NB_LIGNES)
     {
         fscanf(fp, "%llu", &llu_buf);
         fseek(fp, 3, SEEK_CUR); // on décale le pointeur de 3 pour sauter " | "
@@ -214,7 +173,6 @@ void fill_from_file(Hash_table *hashtable)
         i++;
     }
 }
-
 
 // couleur = couleur du joueur qui doit jouer, maximizer = es-ce qu'il veut maximizer ou minimizer son score
 int minimax_ht(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, int_fast8_t profondeur, int alpha, int beta, FILE *fp)
