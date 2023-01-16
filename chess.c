@@ -13,14 +13,6 @@ liste *creation_maillon(int_fast8_t n)
     return element;
 }
 
-// 1 si vide, 0 sinon
-int_fast8_t liste_vide(liste *l)
-{
-    if (l == NULL)
-        return 1;
-    return 0;
-}
-
 void affichage_liste(liste *l)
 {
     while (l != NULL)
@@ -56,45 +48,6 @@ liste *ajout_tete(liste *l, liste *m)
     return m;
 }
 
-// supprime l'element en tete (tete = premier element de la liste):
-liste *supprimer_tete(liste *l)
-{
-    if (l == NULL)
-        return NULL;
-    liste *tmp = l->next;
-    free(l);
-    return tmp;
-}
-
-liste *ajout_queue(liste *l, liste *m)
-{
-    if (l == NULL)
-        return m;
-
-    liste *tmp = l;
-    while (tmp->next != NULL)
-    {
-        tmp = tmp->next;
-    }
-    tmp->next = m;
-    return l;
-}
-
-liste *suppression_queue(liste *l)
-{
-    if (l == NULL || l->next == NULL)
-        return NULL;
-
-    liste *tmp = l;
-    while (tmp->next->next != NULL)
-    {
-        tmp = tmp->next;
-    }
-    free(tmp->next);
-    tmp->next = NULL;
-    return l;
-}
-
 // retourne 1 si la valeur e est présente dans la liste, 0 sinon
 int_fast8_t recherche(liste *l, int_fast8_t e)
 {
@@ -127,24 +80,6 @@ liste *suppression_valeur(liste *l, int_fast8_t m)
 
     l->next = suppression_valeur(l->next, m);
     return l;
-}
-
-// recherche et retourne la valeur du nieme maillon de la liste
-int_fast8_t recuperer_valeur(liste *l, int_fast8_t n)
-{
-    for (int i = 0; i < n; ++i)
-    {
-        if (l->next != NULL)
-        {
-            l = l->next;
-        }
-        else
-        {
-            fprintf(stderr, "\nErreur recuperer_valeur\n");
-            return 1;
-        }
-    }
-    return l->valeur;
 }
 
 void liberation(liste *l)
@@ -335,14 +270,6 @@ void affichage_echequier_alt()
     }
 }
 
-void init_return_minimax()
-{
-    return_minimax = (best_move *)malloc(sizeof(return_minimax));
-    return_minimax->move = 0;
-    return_minimax->piece = 0;
-    return_minimax->score = 0;
-}
-
 nouvelle_partie select_mode()
 {
     nouvelle_partie partie;
@@ -471,10 +398,17 @@ void initialiser_fen()
     fen->capture = 0;
 }
 
-// affiche l'initiale d'une piece, utilisée pour affichage_echequier
-char print_piece(uint_fast8_t position)
+void init_return_minimax()
 {
-    char c;
+    return_minimax = (best_move *)malloc(sizeof(return_minimax));
+    return_minimax->move = 0;
+    return_minimax->piece = 0;
+    return_minimax->score = 0;
+}
+// affiche l'initiale d'une piece, utilisée pour affichage_echequier
+int_fast8_t print_piece(uint_fast8_t position)
+{
+    int_fast8_t c;
     switch (position)
     {
     case VIDE:
@@ -750,37 +684,6 @@ uint_fast8_t *copie_echequier(uint_fast8_t *plateau, uint_fast8_t *tab)
         tab[i] = plateau[i];
     }
     return tab;
-}
-
-int get_pos_roi(int couleur)
-{
-    int i = 0;
-    if (couleur == NOIR)
-    {
-        while (i < TAILLE_ECHEQUIER)
-        {
-            if (echequier[i] == ROI + PIECE_NOIRE || echequier[i] == ROI + PIECE_NOIRE + PIECE_SPECIAL)
-            {
-                return i;
-            }
-            i++;
-        }
-    }
-    else if (couleur == BLANC)
-    {
-        while (i < TAILLE_ECHEQUIER)
-        {
-            if (echequier[i] == ROI || echequier[i] == ROI + PIECE_SPECIAL)
-            {
-                return i;
-            }
-            i++;
-        }
-    }
-    else
-    {
-        return -1;
-    }
 }
 
 /* ********************************
@@ -1247,7 +1150,7 @@ int_fast8_t verifier_echec_fast(int_fast8_t couleur, uint_fast8_t *plateau)
                 tmp = moves;
                 while (tmp != NULL) // pour chaque move de la piece
                 {
-                    if (plateau[tmp->valeur] == ROI || plateau[tmp->valeur] == ROI + PIECE_SPECIAL) // si le move contient un roi on peut s'arreter
+                    if (plateau[tmp->valeur] == ROI || plateau[tmp->valeur] == ROI + PIECE_SPECIAL) // si le move contient un roi                                           on peut s'arreter
                     {
                         while (moves != NULL)
                         {
@@ -1269,7 +1172,7 @@ int_fast8_t verifier_echec_fast(int_fast8_t couleur, uint_fast8_t *plateau)
             i++;
         }
     }
-    else
+    else if (couleur == NOIR) // on va chercher dans les moves des blancs
     {
         nb_pieces = compter_pieces(BLANC, plateau);
         i = TAILLE_ECHEQUIER - 1; // car les blancs commencent en bas
@@ -1277,7 +1180,7 @@ int_fast8_t verifier_echec_fast(int_fast8_t couleur, uint_fast8_t *plateau)
         {
             if (get_color(plateau[i]) == BLANC)
             {
-                j++; // on est sur une piece blanche(non roi)
+                j++; // on est sur une piece blanche
                 moves = get_legal_any(i, moves, plateau);
                 tmp = moves;
                 while (tmp != NULL)
@@ -1315,8 +1218,7 @@ liste *liste_moves(int_fast8_t couleur, liste *liste_pieces, uint_fast8_t *plate
     moves = NULL;
     liste_pieces = NULL;
 
-    int_fast8_t nb_pieces = compter_pieces(couleur, plateau); // nombre de pieces sur l'echequier
-
+    int_fast8_t nb_pieces = compter_pieces(couleur, plateau); // nombre de pieces de couleur
     while (i < TAILLE_ECHEQUIER && j < nb_pieces)
     {
         // on regarde les moves dispo pour chaque piece alliée qu'on trouve
@@ -1342,71 +1244,6 @@ liste *liste_moves(int_fast8_t couleur, liste *liste_pieces, uint_fast8_t *plate
     }
 
     return liste_pieces;
-}
-
-void promotion_user(int_fast8_t position, int_fast8_t piece, uint_fast8_t *plateau)
-{
-    switch (piece)
-    {
-    case 1:
-        printf("changement de PION en DAME\n");
-        break;
-    case 2:
-        printf("changement de PION en TOUR\n");
-        break;
-    case 3:
-        printf("changement de PION en FOU\n");
-        break;
-    case 4:
-        printf("changement de PION en CAVALIER\n");
-        break;
-    default:
-        printf("ERREUR! promotion impossible : selectionnez une dame, une tour, un fou ou un cavalier !\n");
-        return;
-    }
-    if (get_color(position) == 1)
-    { // le pion est noir
-        switch (piece)
-        {
-        case 1:
-            plateau[position] = REINE + PIECE_NOIRE;
-            break;
-        case 2:
-            plateau[position] = TOUR + PIECE_NOIRE;
-            break;
-        case 3:
-            plateau[position] = FOU + PIECE_NOIRE;
-            break;
-        case 4:
-            plateau[position] = CAVALIER + PIECE_NOIRE;
-            break;
-        default:
-            printf("erreur tableau\n");
-            return;
-        }
-    }
-    else if (get_color(position) == 0)
-    { // le pion est blanc
-        switch (piece)
-        {
-        case 1:
-            plateau[position] = REINE;
-            break;
-        case 2:
-            plateau[position] = TOUR;
-            break;
-        case 3:
-            plateau[position] = FOU;
-            break;
-        case 4:
-            plateau[position] = CAVALIER;
-            break;
-        default:
-            printf("erreur tableau\n");
-            return;
-        }
-    }
-    printf("PROMOTION EFFECTUÉE !\n");
 }
 
 // retourne la couleur du perdant, ou -1
@@ -1487,19 +1324,6 @@ int_fast8_t choisir_move(int_fast8_t position, uint_fast8_t *plateau)
     }
     rep = tmptmp->valeur;
 
-    // promotion pour l'utilisateur
-    /*if (plateau[position] == PION || plateau[position] == PION + PIECE_NOIRE)
-    {
-        int_fast8_t move2 = recuperer_valeur(tmp, rep);
-        if (plateau[move2] >= 0 && plateau[move2] <= 7 && plateau[move2] >= 56 && plateau[move2] <= 63)
-        {
-            int_fast8_t promo;
-            printf("\nVOUS ETES EN SITUATION DE PROMOTION, VEUILLEZ SELECTIONNER UNE PIECE PARMIS = 1 : DAME, 2 : TOUR, 3 : FOU, 4 : CAVALIER\n");
-            scanf("%d", &promo);
-            promotion_user(position, promo, plateau);
-        }
-    }*/
-
     liste *t = moves;
     while (moves != NULL)
     {
@@ -1510,12 +1334,6 @@ int_fast8_t choisir_move(int_fast8_t position, uint_fast8_t *plateau)
     t = tmp = tmptmp = NULL;
 
     return rep;
-}
-
-void promotion_ia(int_fast8_t position, uint_fast8_t nouvelle_piece, uint_fast8_t *plateau)
-{
-    printf("\nappel promotion\n");
-    plateau[position] = nouvelle_piece;
 }
 
 // déplace la piece dans plateau[position_piece] à la case position_move, et castle/promote si besoin
@@ -1598,7 +1416,7 @@ void ia_move(int_fast8_t profondeur, int_fast8_t couleur, int debug, uint_fast8_
     if (couleur == BLANC)
     {
         debut = clock();
-        minimax_old(BLANC, 0, plateau, profondeur, alpha, beta);
+        minimax(BLANC, 0, plateau, profondeur, alpha, beta);
         fin = clock();
         temp = (float)(fin - debut) / (float)CLOCKS_PER_SEC;
         total = temp;
@@ -1606,7 +1424,7 @@ void ia_move(int_fast8_t profondeur, int_fast8_t couleur, int debug, uint_fast8_
     if (couleur == NOIR)
     {
         debut = clock();
-        minimax_old(NOIR, 1, plateau, profondeur, alpha, beta);
+        minimax(NOIR, 1, plateau, profondeur, alpha, beta);
         fin = clock();
         temp = (float)(fin - debut) / (float)CLOCKS_PER_SEC;
         total = temp;

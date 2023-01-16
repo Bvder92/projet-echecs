@@ -80,6 +80,7 @@ const int table_roi_endgame[TAILLE_ECHEQUIER] = {
     -50, -30, -30, -30, -30, -30, -30, -50};
 
 // utilisé pour inverser les tableaux précédents pour les utiliser sur les pieces noires
+
 const int table_mirroir[TAILLE_ECHEQUIER] = {
     56, 57, 58, 59, 60, 61, 62, 63,
     48, 49, 50, 51, 52, 53, 54, 55,
@@ -375,8 +376,8 @@ void test()
     printf("Score materiel: %d, placements: %d\n", get_valeur_materielle_totale(NOIR, echequier), get_bonus_placements_total(NOIR, echequier));
 }
 
-// couleur = couleur du joueur qui doit jouer, maximizer = es-ce qu'il veut maximizer ou minimizer son score
-int minimax(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, int_fast8_t profondeur, int alpha, int beta, FILE *fp)
+// verision sans la table de hash et le fichier texte
+int minimax(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, int_fast8_t profondeur, int alpha, int beta)
 {
     int_fast8_t couleur_ennemie = get_couleur_ennemie(couleur);
     if (profondeur == 0 || echec_et_mat(couleur, plateau) != -1)
@@ -392,8 +393,6 @@ int minimax(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, i
 
     int best_eval;
     int eval;
-    int search;
-    U64 posKey;
 
     int_fast8_t i = 0;
     uint_fast8_t *plateau_backup = (uint_fast8_t *)malloc(sizeof(uint_fast8_t) * TAILLE_ECHEQUIER);
@@ -418,23 +417,13 @@ int minimax(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, i
                 // on effectue le move
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau);
 
-                posKey = generate_posKey(plateau, couleur);
-                search = search_table(hashtable, posKey);
-                if (search != INT_MIN) // si le move a déjà été évalué
-                {
-                    eval = search; // on récupère direct son éval
-                }
-                else
-                {
-                    eval = minimax(couleur_ennemie, 0, plateau, profondeur - 1, alpha, beta, fp); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra minimizer)
-                    //add_entry(hashtable, posKey, eval);  //ancienne méthode, trop lente
-                    //fprintf(fp, " %llu | %d\n", posKey, eval); //nouvelle méthode, on remplit un fichier avant l'éxécution puis on l'utilise en lecture
-                }
-
+                // evaluation de l'echiquier engendré:
+                eval = minimax(couleur_ennemie, 0, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra minimizer)
                 best_eval = get_max(best_eval, eval);
                 alpha = get_max(alpha, eval);
                 if (beta <= alpha)
                 {
+                    // on réinitialise le plateau
                     memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(uint_fast8_t));
                     moves = moves->next;
                     break;
@@ -483,150 +472,7 @@ int minimax(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, i
             {
                 effectuer_move(liste_pieces->valeur, moves->valeur, plateau); // on effectue le move
 
-                posKey = generate_posKey(plateau, couleur);
-                search = search_table(hashtable, posKey);
-                if (search != INT_MIN) // si le move a déjà été évalué
-                {
-                    eval = search; // on récupère direct son éval
-                    //fprintf(fp, "\nEval Recuperee");
-                }
-                else
-                {
-                    eval = minimax(couleur_ennemie, 0, plateau, profondeur - 1, alpha, beta, fp); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra minimizer)
-                    //add_entry(hashtable, posKey, eval);  //ancienne méthode, trop lente
-                    //fprintf(fp, " %llu | %d\n", posKey, eval); //nouvelle méthode, on remplit un fichier avant l'éxécution puis on l'utilise en lecture
-                }
-                best_eval = get_min(best_eval, eval);
-
-                beta = get_min(beta, eval);
-                if (beta <= alpha)
-                {
-                    memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(uint_fast8_t));
-                    moves = moves->next;
-                    break;
-                }
-
-                if (eval == best_eval) // on a trouvé un nouveau score minimal
-                {
-                    meilleur_move = moves->valeur;
-                    meilleure_piece = liste_pieces->valeur;
-
-                    best_eval = eval;
-                }
-
-                memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(uint_fast8_t));
-                moves = moves->next;
-            }
-
-            liberation(moves);
-            liste_pieces = liste_pieces->next;
-        }
-        liberation(liste_pieces);
-        free(plateau_backup);
-
-        return_minimax->score = best_eval;
-        return_minimax->piece = meilleure_piece;
-        return_minimax->move = meilleur_move;
-
-        return best_eval;
-    }
-}
-
-//verision sans la table de hash et le fichier texte
-int minimax_old(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, int_fast8_t profondeur, int alpha, int beta)
-{
-    int_fast8_t couleur_ennemie = get_couleur_ennemie(couleur);
-    if (profondeur == 0 || echec_et_mat(couleur, plateau) != -1)
-    {
-        // printf("profondeur = 0");
-        return get_score(plateau);
-    }
-
-    int_fast8_t meilleur_move;
-    uint_fast8_t meilleure_piece;
-
-    int_fast8_t minimizer = get_minimizer(maximizer);
-
-    int best_eval;
-    int eval;
-
-    int_fast8_t i = 0;
-    uint_fast8_t *plateau_backup = (uint_fast8_t *)malloc(sizeof(uint_fast8_t) * TAILLE_ECHEQUIER);
-    memcpy(plateau_backup, plateau, TAILLE_ECHEQUIER * sizeof(uint_fast8_t)); // utilisé pour reset l'echequier après qu'on ait testé un move
-
-    if (maximizer == 1) // on cherche a maximizer le score
-    {
-        best_eval = INT_MIN; // int min car on veut maximizer -> on commence au minimum
-
-        liste *liste_pieces = (liste *)malloc(sizeof(liste)); // liste des pieces pouvant bouger
-        liste_pieces = NULL;
-        liste_pieces = liste_moves(couleur, liste_pieces, plateau);
-
-        while (liste_pieces != NULL) // POUR CHAQUE PIECE POUVANT BOUGER:
-        {
-            liste *moves = (liste *)malloc(sizeof(liste)); // liste des moves d'une piece
-            moves = NULL;
-            moves = get_legal_all(liste_pieces->valeur, moves, plateau);
-
-            while (moves != NULL) // POUR CHAQUE MOVE DE LA PIECE:
-            {
-                // on effectue le move
-                effectuer_move(liste_pieces->valeur, moves->valeur, plateau);
-
-                eval = minimax_old(couleur_ennemie, 0, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra minimizer)
-                best_eval = get_max(best_eval, eval);
-                alpha = get_max(alpha, eval);
-                if (beta <= alpha)
-                {
-                    memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(uint_fast8_t));
-                    moves = moves->next;
-                    break;
-                }
-
-                if (best_eval == eval) // on a trouvé un nouveau meilleur move
-                {
-                    meilleur_move = moves->valeur;
-                    meilleure_piece = liste_pieces->valeur;
-                    best_eval = eval;
-                }
-
-                // reset le plateau puis incrémente la liste des moves
-                memcpy(plateau, plateau_backup, TAILLE_ECHEQUIER * sizeof(uint_fast8_t));
-                moves = moves->next;
-            }
-            // liberation de moves avant la prochaine itération:
-            liberation(moves);
-            liste_pieces = liste_pieces->next;
-        }
-        // liberation de liste_pieces:
-        liberation(liste_pieces);
-
-        free(plateau_backup);
-
-        return_minimax->score = best_eval;
-        return_minimax->piece = meilleure_piece;
-        return_minimax->move = meilleur_move;
-        return best_eval; // on retourne l'évaluation maximale
-    }
-
-    else // on cherche a minimizer le score
-    {
-        best_eval = INT_MAX; // on trouvera forcement plus petit
-        liste *liste_pieces = (liste *)malloc(sizeof(liste));
-        liste_pieces = NULL;
-        liste_pieces = liste_moves(couleur, liste_pieces, plateau);
-
-        while (liste_pieces != NULL)
-        {
-            liste *moves = (liste *)malloc(sizeof(liste));
-            moves = NULL;
-            moves = get_legal_all(liste_pieces->valeur, moves, plateau);
-
-            while (moves != NULL)
-            {
-                effectuer_move(liste_pieces->valeur, moves->valeur, plateau); // on effectue le move
-
-                eval = minimax_old(couleur_ennemie, 1, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra maximizer)
+                eval = minimax(couleur_ennemie, 1, plateau, profondeur - 1, alpha, beta); // on évalue l'échequier engendré par le move du point de vue de l'ennemi (il voudra maximizer)
 
                 best_eval = get_min(best_eval, eval);
 

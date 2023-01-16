@@ -31,13 +31,6 @@
 #define VALEUR_REINE 90
 #define VALEUR_ROI 2000
 
-#define PION_V 100
-#define CAVALIER_V 280
-#define FOU_V 320
-#define TOUR_V 479
-#define REINE_V 929
-#define ROI_V 60000
-
 #define MAX_TABLE_SIZE 1000000 //1 million
 #define RAND_64 ((U64)rand() |       \
                  (U64)rand() << 15 | \
@@ -63,16 +56,16 @@ typedef struct nouvelle_partie
 
 typedef struct FEN
 {
-    int tour;         // BLANC OU NOIR (1 ou 2)
-    int nb_pcs_w;     //NOMBRE DE PIECES BLANCHES
-    int nb_pcs_b;     //NOMBRE DE PIECES NOIRES
-    int nb_tours;     //incrémenté a chaque tour
-    int half_move;    // incrémenté a chaque tour, réinitialisé après une capture
-    int_fast8_t full_move;   // incrémenté a chaque tour des noirs
-    int echec;        // -1 par défaut, prend la couleur du roi en échec
-    int echec_et_mat; // -1 par défaut, prend la couleur du perdant (NOIR ou BLANC)
-    int_fast8_t capture;     // 0 par défaut, 1 si le dernier move etait une capture
-    int_fast8_t endgame;     // 0 par défaut, 1 quand on est en endgame
+    int tour;                   // BLANC OU NOIR (1 ou 2)
+    int nb_pcs_w;               //NOMBRE DE PIECES BLANCHES
+    int nb_pcs_b;               //NOMBRE DE PIECES NOIRES
+    int nb_tours;               //incrémenté a chaque tour
+    int half_move;              // incrémenté a chaque tour, réinitialisé après une capture
+    int_fast8_t full_move;      // incrémenté a chaque tour des noirs
+    int echec;                  // -1 par défaut, prend la couleur du roi en échec
+    int echec_et_mat;           // -1 par défaut, prend la couleur du perdant (NOIR ou BLANC)
+    int_fast8_t capture;        // 0 par défaut, 1 si le dernier move etait une capture
+    int_fast8_t endgame;        // 0 par défaut, 1 quand on est en endgame
 } FEN;
 typedef struct best_move
 {
@@ -93,12 +86,6 @@ typedef struct Hash_table
     int nb_entries;
 } Hash_table;
 
-typedef struct Plateau // plateau + key
-{
-    uint_fast8_t *plateau;
-    U64 hash;
-} Plateau;
-
 extern best_move *return_minimax;
 extern FEN *fen;
 extern Hash_table *hashtable;
@@ -110,17 +97,9 @@ extern double total_search;
 // FONCTIONS LISTE:
 liste *creation_maillon(int_fast8_t n);
 
-int_fast8_t liste_vide(liste *l);
-
 void affichage_liste(liste *l);
 
 liste *ajout_tete(liste *l, liste *e);
-
-liste *supprimer_tete(liste *l);
-
-liste *ajout_queue(liste *l, liste *m);
-
-liste *suppression_queue(liste *l);
 
 int_fast8_t recherche(liste *l, int_fast8_t e);
 
@@ -157,7 +136,9 @@ void initialiser_jeu();
 
 void initialiser_fen();
 
-char print_piece(uint_fast8_t position);
+void init_return_minimax();
+
+int_fast8_t print_piece(uint_fast8_t position);
 
 void print_name(uint_fast8_t piece);
 
@@ -170,10 +151,6 @@ void update_fen(FEN *fen);
 int_fast8_t verifier_echec(uint_fast8_t *plateau);
 
 int_fast8_t verifier_echec_fast(int_fast8_t couleur, uint_fast8_t *plateau);
-
-int_fast8_t verifier_echec_faste(int_fast8_t couleur, uint_fast8_t *plateau);
-
-int_fast8_t verifier_echec_couleur(int_fast8_t couleur, uint_fast8_t *plateau);
 
 int_fast8_t check_endgame(uint_fast8_t *plateau);
 
@@ -215,10 +192,6 @@ void ia_move(int_fast8_t profondeur, int_fast8_t couleur, int debug, uint_fast8_
 
 void player_move(int_fast8_t couleur, uint_fast8_t *plateau);
 
-void promotion_ia(int_fast8_t position, uint_fast8_t nouvelle_piece, uint_fast8_t *plateau);
-
-void promotion_user(int_fast8_t position, int_fast8_t piece, uint_fast8_t *plateau);
-
 /* ************************
 // FICHIER IA:
 ***************************/
@@ -237,8 +210,6 @@ int get_score_couleur(int_fast8_t couleur, uint_fast8_t *plateau);
 
 int get_score(uint_fast8_t *plateau);
 
-int get_newscore(uint_fast8_t *plateau);
-
 // MINIMAX:
 int_fast8_t get_minimizer(int_fast8_t maximizer);
 
@@ -248,14 +219,10 @@ int get_max(int a, int b);
 
 int get_min(int a, int b);
 
-int minimax(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, int_fast8_t profondeur, int alpha, int beta, FILE * fp);
-
-int minimax_old(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, int_fast8_t profondeur, int alpha, int beta);
-
-void test();
+int minimax(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, int_fast8_t profondeur, int alpha, int beta);
 
 /* ************************
-// FICHIER TRANSPO:
+// FICHIER HASHTABLE:
 ***************************/
 
 void init_hashkeys();
@@ -271,6 +238,8 @@ int search_table(Hash_table *hashtable, U64 posKey);
 void liberation_hashtable(Hash_table * hashtable);
 
 void fill_from_file(Hash_table * hashtable);
+
+int minimax_ht(int_fast8_t couleur, int_fast8_t maximizer, uint_fast8_t *plateau, int_fast8_t profondeur, int alpha, int beta, FILE * fp);
 
 
 #endif
