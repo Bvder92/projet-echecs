@@ -10,15 +10,13 @@ de fin de partie car elle ne dispose pour l'instant d'aucune connaissances sur l
 
 ### Compilation et Éxécution
 
-Notre programme est fait pour foncitoner sous Linux et pour être compilé avec GCC. Pour compiler et éxécuter le programme, 
+Notre programme est fait pour foncitonner sous Linux et pour être compilé avec GCC. Pour compiler et éxécuter le programme, 
 il suffit d'utiliser la **Makefile**:
 
-    ```
-make && bin/main
-    ```
+    make && bin/main
 
 Nous avons également inclus une **Dockerfile** permettant de générer un environnement Linux (Debian) incluant toutes les bonnes versions des 
-programmes nécéssaires (git, gcc, make). Plus de détails sont fournis dans l'anexe de notre rapport, partie
+programmes nécéssaires (git, gcc, make). Plus de détails sont fournis dans l'annexe de notre rapport, partie
  **B.1 - Mise en place de l'environnement et compilation**.
 
 Par défaut, git ne traque pas les dossiers 'obj' et 'bin', il peut alors être nécéssaire de les créer manuellement.
