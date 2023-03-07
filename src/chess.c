@@ -1,9 +1,4 @@
-#include "chess.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <time.h>
-#include <string.h>
+#include "../include/chess.h"
 
 liste *creation_maillon(int_fast8_t n)
 {

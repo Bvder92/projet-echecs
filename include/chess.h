@@ -1,5 +1,12 @@
+#pragma once
+
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <string.h>
+#include <sys/time.h>
+#include <time.h>
 
 #ifndef __CHESS_H__
 

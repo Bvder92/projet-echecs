@@ -1,8 +1,5 @@
-#include "chess.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <string.h>
+#include "../include/chess.h"
+
 
 // const int PvSize = 0x100000 * 2;
 uint_fast8_t get_piece_index(uint_fast8_t piece)
@@ -154,7 +151,7 @@ void liberation_hashtable(Hash_table *hashtable)
 
 void fill_from_file(Hash_table *hashtable)
 {
-    FILE *fp = fopen("aaa.txt", "r");
+    FILE *fp = fopen("hashtable.txt", "r");
     if (fp == NULL)
     {
         fprintf(stderr, "ERR");

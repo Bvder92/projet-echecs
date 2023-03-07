@@ -1,7 +1,4 @@
-#include "chess.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
+#include "../include/chess.h"
 
 uint_fast8_t echequier[TAILLE_ECHEQUIER];
 U64 PieceKeys[14][64];

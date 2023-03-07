@@ -1,9 +1,4 @@
-#include "chess.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <sys/time.h>
-#include <string.h>
+#include "../include/chess.h"
 
 /* *******************************************************
 TABLES DES CASES OPTIMALES POUR CHAQUE PIECE (BLANCHES):
